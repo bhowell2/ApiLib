@@ -1,0 +1,34 @@
+plugins {
+    id "java"
+    id "maven"
+}
+
+repositories {
+    mavenLocal()
+    mavenCentral()
+}
+
+dependencies {
+    testCompile('junit:junit:4.12')
+}
+
+install {
+    repositories.mavenInstaller {
+        pom.groupId = 'io.bhowell2'
+        pom.version = '1.0.0'
+        pom.artifactId = 'api-lib'
+    }
+}
+//uploadArchives {
+//    repositories {
+//        mavenDeployer {
+//            pom.version = '1.0'
+//            pom.artifactId = 'api-lib'
+//            pom.groupId = 'io.bhowell2'
+//        }
+//    }
+//}
+
+task wrapper(type: Wrapper) {
+    gradleVersion = '3.0'
+}
