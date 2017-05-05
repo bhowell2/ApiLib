@@ -3,7 +3,7 @@ package io.bhowell2.ApiLib;
 /**
  * @author Blake Howell
  */
-public class FunctionCheckReturnTuple {
+public class FunctionCheckTuple {
 
   String failureMessage;
   boolean successful;
@@ -12,7 +12,7 @@ public class FunctionCheckReturnTuple {
    * The parameter's check may fail or pass. If it passes, there is no need for a failure message. If it fails, sometimes there is also no need for a failure message.
    * @param successful whether or not the check failed
    */
-  public FunctionCheckReturnTuple(boolean successful) {
+  public FunctionCheckTuple(boolean successful) {
     this.successful = successful;
   }
 
@@ -20,7 +20,7 @@ public class FunctionCheckReturnTuple {
    * Optionally provide a reason for failure.
    * @param failureMessage
    */
-  public FunctionCheckReturnTuple(String failureMessage) {
+  public FunctionCheckTuple(String failureMessage) {
     this.successful = false;  // if a failure message is provided, it wasn't successful..
     this.failureMessage = failureMessage;
   }
@@ -43,16 +43,16 @@ public class FunctionCheckReturnTuple {
 
   /* Static Creation Methods */
 
-  public static FunctionCheckReturnTuple success() {
-    return new FunctionCheckReturnTuple(true);
+  public static FunctionCheckTuple success() {
+    return new FunctionCheckTuple(true);
   }
 
-  public static FunctionCheckReturnTuple failure() {
-    return new FunctionCheckReturnTuple(false);
+  public static FunctionCheckTuple failure() {
+    return new FunctionCheckTuple(false);
   }
 
-  public static FunctionCheckReturnTuple failure(String failureMessage) {
-    return new FunctionCheckReturnTuple(failureMessage);
+  public static FunctionCheckTuple failure(String failureMessage) {
+    return new FunctionCheckTuple(failureMessage);
   }
 
 }

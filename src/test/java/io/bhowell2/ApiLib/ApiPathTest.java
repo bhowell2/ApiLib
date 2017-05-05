@@ -60,7 +60,7 @@ public class ApiPathTest {
     ApiPathParameters pathParameters = ApiPathParametersBuilder.builder(AppApiVersion.V2)
                                                                .build();
     ApiPath path = new ApiPath(pathParameters);
-    PathParametersCheckReturnTuple returnTuple = path.check(AppApiVersion.V1, new HashMap<>());
+    PathParamsTuple returnTuple = path.check(AppApiVersion.V1, new HashMap<>());
     assertFalse(returnTuple.isSuccessful());
     assertTrue(returnTuple.getCheckFailure() instanceof UnsupportedApiVersionForPath);
   }

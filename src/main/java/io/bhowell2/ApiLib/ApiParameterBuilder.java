@@ -17,7 +17,7 @@ public class ApiParameterBuilder<T> {
   private String parameterName;
   private Class<T> parameterClassType;
   private boolean safeToReturnFunctionCheckFailure = false;              // defaults to false
-  private List<Function<T, FunctionCheckReturnTuple>> functionChecks;
+  private List<Function<T, FunctionCheckTuple>> functionChecks;
 
   public ApiParameterBuilder(String parameterName, Class<T> parameterClassType) {
     this.parameterName = parameterName;
@@ -33,7 +33,7 @@ public class ApiParameterBuilder<T> {
     return new ApiParameter<>(parameterName, parameterClassType, safeToReturnFunctionCheckFailure, this.functionChecks);
   }
 
-  public ApiParameterBuilder<T> addCheckFunction(Function<T, FunctionCheckReturnTuple> function) {
+  public ApiParameterBuilder<T> addCheckFunction(Function<T, FunctionCheckTuple> function) {
     this.functionChecks.add(function);
     return this;
   }

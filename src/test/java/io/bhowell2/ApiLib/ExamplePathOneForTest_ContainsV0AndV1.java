@@ -13,9 +13,9 @@ public class ExamplePathOneForTest_ContainsV0AndV1 extends ApiPath {
   static ApiParameter<Integer> PARAM_ONE_V0 = ApiParameterBuilder.builder("ParamOne", Integer.class)
                                                                 .addCheckFunction(i -> {
                                                                   if (i > 5) {
-                                                                    return FunctionCheckReturnTuple.success();
+                                                                    return FunctionCheckTuple.success();
                                                                   } else {
-                                                                    return FunctionCheckReturnTuple.failure();
+                                                                    return FunctionCheckTuple.failure();
                                                                   }
                                                                 }).build();
 

@@ -1,8 +1,6 @@
 package io.bhowell2.ApiLib;
 
 import io.bhowell2.ApiLib.exceptions.ParameterCastException;
-import io.bhowell2.ApiLib.exceptions.SafeInvalidApiParameterException;
-import io.bhowell2.ApiLib.exceptions.SafeParameterCheckException;
 
 import java.util.List;
 import java.util.Map;
@@ -18,12 +16,12 @@ import java.util.function.Function;
 public class ApiParameter<T> {
 
   private final String parameterName;
-  private final List<Function<T, FunctionCheckReturnTuple>> paramCheckFunctions;
+  private final List<Function<T, FunctionCheckTuple>> paramCheckFunctions;
   private final Class<T> clazz;
   private final boolean safeToReturnFunctionCheckFailureReason;
 
   public ApiParameter(String parameterName, Class<T> parameterClassType, boolean safeToReturnFunctionCheckFailure, List<Function<T,
-      FunctionCheckReturnTuple>> paramCheckFunctions) {
+      FunctionCheckTuple>> paramCheckFunctions) {
     this.parameterName = parameterName;
     this.clazz = parameterClassType;
     this.safeToReturnFunctionCheckFailureReason = safeToReturnFunctionCheckFailure;
@@ -47,8 +45,8 @@ public class ApiParameter<T> {
       return ParameterCheckReturnTuple.missingParameterFailure(this.parameterName);
     if (!this.clazz.isInstance(param))
       return new ParameterCheckReturnTuple(new ParameterCastException(this.parameterName, this.clazz));
-    for (Function<T, FunctionCheckReturnTuple> functionCheck : paramCheckFunctions) {
-      FunctionCheckReturnTuple checkTuple = functionCheck.apply(param);
+    for (Function<T, FunctionCheckTuple> functionCheck : paramCheckFunctions) {
+      FunctionCheckTuple checkTuple = functionCheck.apply(param);
       if (checkTuple.failed()) {
         if (safeToReturnFunctionCheckFailureReason) {
           return checkTuple.hasFailureMessage() ? ParameterCheckReturnTuple.safeInvalidParameterFailure(this.parameterName, checkTuple.failureMessage)

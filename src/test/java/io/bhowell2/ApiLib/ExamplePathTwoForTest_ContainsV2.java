@@ -6,6 +6,4 @@ package io.bhowell2.ApiLib;
  */
 public class ExamplePathTwoForTest_ContainsV2 {
 
-
-
 }

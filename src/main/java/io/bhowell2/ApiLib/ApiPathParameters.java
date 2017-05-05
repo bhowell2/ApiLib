@@ -40,13 +40,13 @@ public class ApiPathParameters {
    * @param requestParameters map containing all the parameters that need to be checked
    * @return returns whether or not the PathParameters were successfully checked
    */
-  public PathParametersCheckReturnTuple check(Map<String, Object> requestParameters) {
+  public PathParamsTuple check(Map<String, Object> requestParameters) {
     List<String> providedParameterNames = new ArrayList<>(startingProvidedParamNamesArraySize);
     for (ApiParameter<?> param : requiredParameters) {
       ParameterCheckReturnTuple parameterCheckReturnTuple = param.check(requestParameters);
       // if not successful, short-circuit
       if (!parameterCheckReturnTuple.isSuccessful()) {
-        return PathParametersCheckReturnTuple.failed(parameterCheckReturnTuple.checkFailure);
+        return PathParamsTuple.failed(parameterCheckReturnTuple.checkFailure);
       }
       // else, add to list of parameters that were provided
       providedParameterNames.add(parameterCheckReturnTuple.getParameterName());
@@ -64,7 +64,7 @@ public class ApiPathParameters {
         providedParameterNames.add(parameterCheckReturnTuple.getParameterName());
       }
     }
-    return PathParametersCheckReturnTuple.successful(providedParameterNames);
+    return PathParamsTuple.successful(providedParameterNames);
   }
 
 }

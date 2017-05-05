@@ -13,19 +13,19 @@ import java.util.Set;
 public class ApiPathParametersBuilder {
 
   /**
-   * Static creation method. May be used instead of new ApiPathParametersBuilder()
+   * Static creation method. May be used instead of {@code new ApiPathParametersBuilder()}
    * @param version the version for which these parameters are valid
-   * @return
+   * @return a fluent builder for the API path's paramters
    */
   public static ApiPathParametersBuilder builder(ApiVersion version) {
     return new ApiPathParametersBuilder(version);
   }
 
-  ApiVersion apiVersion;
-  List<ApiParameter> requiredParameters;
-  List<ConditionalParameters> conditionalRequiredParameters;
-  List<ApiParameter> optionalParameters;
-  List<ConditionalParameters> conditionalOptionalParameters;
+  private ApiVersion apiVersion;
+  private List<ApiParameter> requiredParameters;
+  private List<ConditionalParameters> conditionalRequiredParameters;
+  private List<ApiParameter> optionalParameters;
+  private List<ConditionalParameters> conditionalOptionalParameters;
 
   public ApiPathParametersBuilder(ApiVersion version) {
     this.apiVersion = version;
@@ -35,6 +35,10 @@ public class ApiPathParametersBuilder {
     this.conditionalOptionalParameters = new ArrayList<>();
   }
 
+  /**
+   * Should be called at the end of the building process to get the Path's Parameters that were just added.
+   * @return an object holding the required and optional parameters for a path for a specified version
+   */
   public ApiPathParameters build() {
     ApiParameter<?>[] reqParams = new ApiParameter[requiredParameters.size()];
     ConditionalParameters[] conditReqParams = new ConditionalParameters[conditionalRequiredParameters.size()];
@@ -66,7 +70,7 @@ public class ApiPathParametersBuilder {
     return this;
   }
 
-  // use to check for duplicates when added
+  // use to check for duplicates when added to required and optional parameters
   private Set<String> parameterNameSet = new HashSet<>();
 
   /**
@@ -75,7 +79,7 @@ public class ApiPathParametersBuilder {
    * @param newNameAdded
    */
   private void ensureUniqueParameterName(String newNameAdded) {
-    if (!parameterNameSet.add(newNameAdded)) {
+    if (!this.parameterNameSet.add(newNameAdded)) {
       throw new DuplicateParameterAddedToPathParametersException(newNameAdded);
     }
   }

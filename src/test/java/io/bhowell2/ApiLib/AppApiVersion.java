@@ -13,12 +13,12 @@ public enum AppApiVersion implements ApiVersion {
 
   private String version;
 
-  // to avoid calling .values() every time a value is
+  // to avoid calling .values() every time a value is requested
   // THIS ARRAY CANNOT BE RETURNED AS IT IS MUTABLE. ONLY ITS VALUES (APIVERSION) MAY BE RETURNED, AS THEY ARE CONSTANTS/SINGLETONS
   private static AppApiVersion[] versions = AppApiVersion.values();
 
   // ensure that all versions are in order (precautionary check)
-  // each implementation must write a different version of this to compare
+  // each implementation must write a different version of this to compare (assuming versions are not of the format V0, V1, ... V10, V11, ... VN)
   static {
     if (versions.length == 0)
       throw new RuntimeException("No API Versions specified.");
@@ -42,8 +42,8 @@ public enum AppApiVersion implements ApiVersion {
     return version;
   }
 
-  /// WARNING: IT IS ONLY OKAY TO USE THE ENUM'S COMPARE TO IF THE VALUES ARE CREATED IN ASCENDING ORDER. THAT IS: THE SMALLEST VERSION (OLDEST) TO
-  /// THE GREATEST VERSION (LATEST)
+  /// WARNING: IT IS ONLY OKAY TO USE THE ENUM'S COMPARE TO IF THE VALUES ARE CREATED IN ASCENDING ORDER. I.E., THE SMALLEST VERSION (OLDEST) TO
+  /// THE LARGEST VERSION (NEWEST)
   @Override
   public int compareVersions(ApiVersion version) {
     return this.compareTo((AppApiVersion)version);

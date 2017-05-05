@@ -12,10 +12,11 @@ This will give a bottom up approach, but could just as easily be read backwards 
 [Naming Conventions](#naming-conventions-(suggestions)) for more suggested naming to keep your API readable when extending/creating the following
 classes.)
 
-0. Create a parameter (by extending ApiParameter).
+0. Create a parameter (by extending ApiParameter, or using ApiParameterBuilder).
     a. Optionally, a conditional parameter can be created with multiple ApiParameters.
-1. Create a list of the parameters required for a given path for a given version (e.g., 
+1. Create a list of the parameters required for a given path for a given version (this is most easily done by using ApiPathParametersBuilder).
+2.
 
 ## Naming Conventions (suggestions)
-These are just suggestions and the user can, obviously, choose their own naming conventions if they so wish.
+These are just suggestions and the developer may, obviously, choose their own naming conventions if they wish.
 1. 

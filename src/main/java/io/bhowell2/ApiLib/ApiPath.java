@@ -7,7 +7,7 @@ import java.util.Map;
 import java.util.Optional;
 
 /**
- * Front-facing part of library.
+ * Represents a path that can be checked.
  * @author Blake Howell
  */
 public class ApiPath {
@@ -16,7 +16,7 @@ public class ApiPath {
   private final ApiPathParameters[] pathParameters;
 
   /**
-   * If the user does not want/need a path string this should be used.
+   * If the user does not want/need a path name string, this should be used.
    * @param pathParameters parameters for each version
    */
   public ApiPath(ApiPathParameters... pathParameters) {
@@ -24,10 +24,10 @@ public class ApiPath {
   }
 
   /**
-   * If the user wants a pathName string, it may be set here.
+   * If the user wants a path name string, it may be set here.
    * @param pathName
    */
-  public ApiPath(String pathName, ApiPathParameters ... pathParameters) {
+  public ApiPath(String pathName, ApiPathParameters... pathParameters) {
     this.path = pathName;
     this.pathParameters = pathParameters;
     // arrange the path parameters in descending order (i.e., the newest version first - V3, V2, V1, V0)
@@ -52,14 +52,14 @@ public class ApiPath {
    * @param requestParameters parameters of the request to be checked (will ignore anything that is not specified in the ApiPath to check)
    * @return the list of successfully checked parameters, or an error that was caught in the process of checking the parameters
    */
-  public PathParametersCheckReturnTuple check(ApiVersion requestVersion, Map<String, Object> requestParameters) {
+  public PathParamsTuple check(ApiVersion requestVersion, Map<String, Object> requestParameters) {
     // TODO: Add converters
     for (ApiPathParameters p : pathParameters) {
       if (requestVersion.compareVersions(p.getApiVersion()) >= 0) {
         return p.check(requestParameters);
       }
     }
-    return PathParametersCheckReturnTuple.failed(new UnsupportedApiVersionForPath(requestVersion));
+    return PathParamsTuple.failed(new UnsupportedApiVersionForPath(requestVersion));
   }
 
 }

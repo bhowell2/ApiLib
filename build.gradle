@@ -1,24 +1,25 @@
 plugins {
-    id "java"
-    id "maven"
+  id "java"
+  id "maven"
 }
 
 repositories {
-    mavenLocal()
-    mavenCentral()
+  mavenLocal()
+  mavenCentral()
 }
 
 dependencies {
-    testCompile('junit:junit:4.12')
+  testCompile('junit:junit:4.12')
 }
 
 install {
-    repositories.mavenInstaller {
-        pom.groupId = 'io.bhowell2'
-        pom.version = '1.0.0'
-        pom.artifactId = 'api-lib'
-    }
+  repositories.mavenInstaller {
+    pom.groupId = 'io.bhowell2'
+    pom.artifactId = 'api-lib'
+    pom.version = '1.0.0'
+  }
 }
+
 //uploadArchives {
 //    repositories {
 //        mavenDeployer {
@@ -30,5 +31,5 @@ install {
 //}
 
 task wrapper(type: Wrapper) {
-    gradleVersion = '3.0'
+  gradleVersion = '3.4'
 }

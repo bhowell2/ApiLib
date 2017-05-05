@@ -7,17 +7,17 @@ import java.util.List;
 /**
  * @author Blake Howell
  */
-public final class PathParametersCheckReturnTuple {
+public final class PathParamsTuple {
 
   private final List<String> providedParameterNames;
   private final ParameterCheckException checkFailure;
 
-  PathParametersCheckReturnTuple(List<String> providedParameterNames) {
+  PathParamsTuple(List<String> providedParameterNames) {
     this.providedParameterNames = providedParameterNames;
     this.checkFailure = null;
   }
 
-  PathParametersCheckReturnTuple(ParameterCheckException checkFailure) {
+  PathParamsTuple(ParameterCheckException checkFailure) {
     this.checkFailure = checkFailure;
     this.providedParameterNames = null;
   }
@@ -35,12 +35,12 @@ public final class PathParametersCheckReturnTuple {
   }
 
   /* Static Creation Methods */
-  public static PathParametersCheckReturnTuple successful(List<String> providedParameterNames) {
-    return new PathParametersCheckReturnTuple(providedParameterNames);
+  public static PathParamsTuple successful(List<String> providedParameterNames) {
+    return new PathParamsTuple(providedParameterNames);
   }
 
-  public static PathParametersCheckReturnTuple failed(ParameterCheckException checkFailure) {
-    return new PathParametersCheckReturnTuple(checkFailure);
+  public static PathParamsTuple failed(ParameterCheckException checkFailure) {
+    return new PathParamsTuple(checkFailure);
   }
 
 }
