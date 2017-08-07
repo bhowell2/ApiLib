@@ -15,7 +15,7 @@ public class ApiPathParameters {
   final ApiParameter<?>[] optionalParameters;
 
   private final int startingProvidedParamNamesArraySize;
-
+  // TODO: Conditional params need to be added
   ApiPathParameters(ApiVersion apiVersion, ApiParameter<?>[] requiredParameters, ApiParameter<?>[] optionalParameters) {
     this.apiVersion = apiVersion;
     this.requiredParameters = requiredParameters;
@@ -43,25 +43,25 @@ public class ApiPathParameters {
   public PathParamsTuple check(Map<String, Object> requestParameters) {
     List<String> providedParameterNames = new ArrayList<>(startingProvidedParamNamesArraySize);
     for (ApiParameter<?> param : requiredParameters) {
-      ParameterCheckReturnTuple parameterCheckReturnTuple = param.check(requestParameters);
+      ParameterCheckTuple parameterCheckTuple = param.check(requestParameters);
       // if not successful, short-circuit
-      if (!parameterCheckReturnTuple.isSuccessful()) {
-        return PathParamsTuple.failed(parameterCheckReturnTuple.checkFailure);
+      if (!parameterCheckTuple.isSuccessful()) {
+        return PathParamsTuple.failed(parameterCheckTuple.checkFailure);
       }
       // else, add to list of parameters that were provided
-      providedParameterNames.add(parameterCheckReturnTuple.getParameterName());
+      providedParameterNames.add(parameterCheckTuple.getParameterName());
     }
     // Do required conditional params for short circuit capabilities
     // Since optional parameters aren't required, they do not ever result in an error
-    // TODO: It may be desired to return an error message noting why the optional parameter failed to checkout if it was provided
+    // TODO: It may be desired to return an error message noting why the optional parameter failed to check if it was provided
     // On the optional parameters, check for the different error types (e.g., if instanceof MissingParam.. ignore it, otherwise maybe add reason
     // for failure)
     for (ApiParameter<?> param : optionalParameters) {
-      ParameterCheckReturnTuple parameterCheckReturnTuple = param.check(requestParameters);
+      ParameterCheckTuple parameterCheckTuple = param.check(requestParameters);
       // different than the required cases - if it is successful, add the parameter name
       // otherwise, ignore
-      if (parameterCheckReturnTuple.isSuccessful()) {
-        providedParameterNames.add(parameterCheckReturnTuple.getParameterName());
+      if (parameterCheckTuple.isSuccessful()) {
+        providedParameterNames.add(parameterCheckTuple.getParameterName());
       }
     }
     return PathParamsTuple.successful(providedParameterNames);

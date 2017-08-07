@@ -1,7 +1,7 @@
 package io.bhowell2.ApiLib;
 
 import io.bhowell2.ApiLib.exceptions.InvalidApiParameterException;
-import io.bhowell2.ApiLib.exceptions.SafeMissingApiParametersException;
+import io.bhowell2.ApiLib.exceptions.SafeMissingMultipleApiParametersException;
 import io.bhowell2.ApiLib.exceptions.ParameterCastException;
 import io.bhowell2.ApiLib.exceptions.ParameterCheckException;
 
@@ -45,7 +45,7 @@ public final class ConditionalParamTuple {
       missingParams.append(s).append(", ");
     }
     missingParams.replace(missingParams.length() - 2, missingParams.length(), "."); // replace the trailing ", " with a period.
-    return new ConditionalParamTuple(new SafeMissingApiParametersException(missingParams.toString()));
+    return new ConditionalParamTuple(new SafeMissingMultipleApiParametersException(missingParams.toString()));
   }
 
   public static ConditionalParamTuple invalidParameterFailure(String parameterNames) {
@@ -56,8 +56,8 @@ public final class ConditionalParamTuple {
     return new ConditionalParamTuple(new InvalidApiParameterException(parameterName, reasonForFailure));
   }
 
-  public static ParameterCheckReturnTuple parameterCastException(String parameterName, Class<?> clazz) {
-    return new ParameterCheckReturnTuple(new ParameterCastException(parameterName, clazz));
+  public static ParameterCheckTuple parameterCastException(String parameterName, Class<?> clazz) {
+    return new ParameterCheckTuple(new ParameterCastException(parameterName, clazz));
   }
 
 }

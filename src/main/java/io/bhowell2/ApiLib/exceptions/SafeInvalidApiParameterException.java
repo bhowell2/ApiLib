@@ -7,11 +7,11 @@ package io.bhowell2.ApiLib.exceptions;
 public class SafeInvalidApiParameterException extends SafeParameterCheckException {
 
   public SafeInvalidApiParameterException(String invalidParamName) {
-    super("The parameter provided was invalid for: " + invalidParamName + ".");
+    super("The parameter provided was invalid for: " + invalidParamName + ".", invalidParamName);
   }
 
   public SafeInvalidApiParameterException(String invalidParamName, String reasonForInvalidity) {
-    super("The parameter provided was invalid for: " + invalidParamName + ". Because, " + reasonForInvalidity);
+    super("The parameter provided was invalid for: " + invalidParamName + ". Because, " + reasonForInvalidity, invalidParamName);
   }
 
 }

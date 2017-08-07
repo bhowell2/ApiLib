@@ -1,15 +1,12 @@
 package io.bhowell2.ApiLib;
 
-import io.bhowell2.ApiLib.exceptions.ParameterCastException;
-
 import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
 
 /**
- * Each parameter should extend this class. All functionality is provided and only {@link #check(Map)} or {@link #check(Object)} need be called. Generally
- * the class type and function checks will be the same for every version, but in the rare case that either of these changes, a new class should be
- * created for the parameter.
+ * Each parameter should extend this class. All functionality is provided and only {@link #check(Map)} needs to be called. Generally
+ * the class type and function checks will be the same for every version, but in the rare case that either of these changes, a new class should be created for the parameter.
  *
  * @author Blake Howell
  */
@@ -17,13 +14,13 @@ public class ApiParameter<T> {
 
   private final String parameterName;
   private final List<Function<T, FunctionCheckTuple>> paramCheckFunctions;
-  private final Class<T> clazz;
+  private final Class<T> parameterClassType;
   private final boolean safeToReturnFunctionCheckFailureReason;
 
   public ApiParameter(String parameterName, Class<T> parameterClassType, boolean safeToReturnFunctionCheckFailure, List<Function<T,
       FunctionCheckTuple>> paramCheckFunctions) {
     this.parameterName = parameterName;
-    this.clazz = parameterClassType;
+    this.parameterClassType = parameterClassType;
     this.safeToReturnFunctionCheckFailureReason = safeToReturnFunctionCheckFailure;
     this.paramCheckFunctions = paramCheckFunctions;
   }
@@ -39,24 +36,28 @@ public class ApiParameter<T> {
    * @return a tuple with the name of the successfully checked parameter, or an exception (that may be pulled from the return tuple)
    */
   @SuppressWarnings("unchecked")
-  public ParameterCheckReturnTuple check(Map<String, Object> requestParameters) {
+  public ParameterCheckTuple check(Map<String, Object> requestParameters) {
     T param = (T) requestParameters.get(this.parameterName); // really this is just cast to object due to type erasure
     if (param == null)
-      return ParameterCheckReturnTuple.missingParameterFailure(this.parameterName);
-    if (!this.clazz.isInstance(param))
-      return new ParameterCheckReturnTuple(new ParameterCastException(this.parameterName, this.clazz));
+      return ParameterCheckTuple.missingParameterFailure(this.parameterName);
+
+    if (!this.parameterClassType.isInstance(param))
+      return ParameterCheckTuple.parameterCastException(this.parameterName, this.parameterClassType);
+
     for (Function<T, FunctionCheckTuple> functionCheck : paramCheckFunctions) {
       FunctionCheckTuple checkTuple = functionCheck.apply(param);
+
       if (checkTuple.failed()) {
         if (safeToReturnFunctionCheckFailureReason) {
-          return checkTuple.hasFailureMessage() ? ParameterCheckReturnTuple.safeInvalidParameterFailure(this.parameterName, checkTuple.failureMessage)
-              : ParameterCheckReturnTuple.invalidParameterFailure(this.parameterName);
+          return checkTuple.hasFailureMessage() ? ParameterCheckTuple.safeInvalidParameterFailure(this.parameterName, checkTuple.failureMessage)
+              : ParameterCheckTuple.invalidParameterFailure(this.parameterName);
         }
-        return checkTuple.hasFailureMessage() ? ParameterCheckReturnTuple.invalidParameterFailure(this.parameterName, checkTuple.getFailureMessage()) :
-            ParameterCheckReturnTuple.invalidParameterFailure(this.parameterName);
+        return checkTuple.hasFailureMessage() ? ParameterCheckTuple.invalidParameterFailure(this.parameterName, checkTuple.getFailureMessage()) :
+            ParameterCheckTuple.invalidParameterFailure(this.parameterName);
       }
+
     }
-    return ParameterCheckReturnTuple.success(this.parameterName);
+    return ParameterCheckTuple.success(this.parameterName);
   }
 
 //  /**

@@ -5,6 +5,7 @@ import io.bhowell2.ApiLib.exceptions.UnsupportedApiVersionForPath;
 import java.util.Arrays;
 import java.util.Map;
 import java.util.Optional;
+import java.util.regex.Pattern;
 
 /**
  * Represents a path that can be checked.
@@ -13,6 +14,7 @@ import java.util.Optional;
 public class ApiPath {
 
   private final String path;
+  private final Pattern pathMatchPattern;
   private final ApiPathParameters[] pathParameters;
 
   /**
@@ -20,7 +22,7 @@ public class ApiPath {
    * @param pathParameters parameters for each version
    */
   public ApiPath(ApiPathParameters... pathParameters) {
-    this(null, pathParameters);
+    this(null, null, pathParameters);
   }
 
   /**
@@ -28,9 +30,14 @@ public class ApiPath {
    * @param pathName
    */
   public ApiPath(String pathName, ApiPathParameters... pathParameters) {
+    this(pathName, null, pathParameters);
+  }
+
+  public ApiPath(String pathName, Pattern pathMatchPattern, ApiPathParameters... pathParameters) {
     this.path = pathName;
+    this.pathMatchPattern = pathMatchPattern;
     this.pathParameters = pathParameters;
-    // arrange the path parameters in descending order (i.e., the newest version first - V3, V2, V1, V0)
+    // arrange the path parameters in descending order (i.e., the newest version first. e.g., V3, V2, V1, V0)
     // v1.compareTo(v2) puts in ascending order (e.g., V0, V1, V2). so, reverse it
     Arrays.sort(this.pathParameters, (v1, v2) -> v2.getApiVersion().compareVersions(v1.getApiVersion()));
   }
@@ -40,6 +47,13 @@ public class ApiPath {
    */
   public Optional<String> getPathName() {
     return Optional.ofNullable(path);
+  }
+
+  public boolean matchesPath(String path) {
+    if (pathMatchPattern != null) {
+      return this.pathMatchPattern.matcher(path).matches();
+    }
+    throw new RuntimeException("Api path does not have a registered path match pattern. Check constructors for ApiPath. Path name: " + path);
   }
 
   /**

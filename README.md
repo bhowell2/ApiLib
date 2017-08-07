@@ -15,7 +15,7 @@ classes.)
 0. Create a parameter (by extending ApiParameter, or using ApiParameterBuilder).
     a. Optionally, a conditional parameter can be created with multiple ApiParameters.
 1. Create a list of the parameters required for a given path for a given version (this is most easily done by using ApiPathParametersBuilder).
-2.
+2. (Optional) Create a list of
 
 ## Naming Conventions (suggestions)
 These are just suggestions and the developer may, obviously, choose their own naming conventions if they wish.

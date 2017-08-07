@@ -9,6 +9,21 @@ package io.bhowell2.ApiLib.exceptions;
  */
 public class ParameterCheckException extends IllegalArgumentException {
 
-  public ParameterCheckException(String message) {super(message);}
+  private final String paramName;
+  private final boolean isSafeToReturnMessage;
+
+  public ParameterCheckException(String message, String paramName, boolean isSafeToReturnMessage) {
+    super(message);
+    this.paramName = paramName;
+    this.isSafeToReturnMessage = isSafeToReturnMessage;
+  }
+
+  public String getParamName() {
+    return paramName;
+  }
+
+  public boolean isSafeToReturnMessage() {
+    return isSafeToReturnMessage;
+  }
 
 }

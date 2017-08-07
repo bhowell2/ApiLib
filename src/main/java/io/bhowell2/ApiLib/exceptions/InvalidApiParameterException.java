@@ -5,12 +5,12 @@ package io.bhowell2.ApiLib.exceptions;
  */
 public class InvalidApiParameterException extends ParameterCheckException {
 
-  public InvalidApiParameterException(String invalidParamName) {
-    super("The parameter provided was invalid for: " + invalidParamName + ".");
+  public InvalidApiParameterException(String paramName) {
+    super("The parameter provided was invalid for: " + paramName + ".", paramName, false);
   }
 
-  public InvalidApiParameterException(String invalidParamName, String reasonForInvalidity) {
-    super("The parameter provided was invalid for: " + invalidParamName + ". Because, " + reasonForInvalidity);
+  public InvalidApiParameterException(String paramName, String reasonForInvalidity) {
+    super("The parameter provided was invalid for: " + paramName + ". Because, " + reasonForInvalidity, paramName, false);
   }
 
 }

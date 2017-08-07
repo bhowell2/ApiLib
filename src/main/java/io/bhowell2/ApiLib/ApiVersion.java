@@ -1,7 +1,5 @@
 package io.bhowell2.ApiLib;
 
-import java.util.InputMismatchException;
-
 /**
  * The user should implement ONE of these for each API version, OR, better yet, implement this in an Enum.
  *
@@ -25,13 +23,5 @@ public interface ApiVersion {
    * older/smaller than the PARAMETER.
    */
   int compareVersions(ApiVersion version);
-
-//  /**
-//   * Parses the ApiVersion from the supplied string.
-//   * @param version version as expected in string format
-//   * @return the matching ApiVersion
-//   * @throws InputMismatchException if the string does not match any ApiVersion
-//   */
-//  ApiVersion fromString(String version) throws InputMismatchException;
 
 }
