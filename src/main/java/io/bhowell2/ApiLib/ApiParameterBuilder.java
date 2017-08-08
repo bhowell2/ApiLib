@@ -30,7 +30,7 @@ public class ApiParameterBuilder<T> {
     if (this.functionChecks.size() == 0) {
       throw new NoFunctionChecksProvidedException(this.parameterName);
     }
-    return new ApiParameter<>(parameterName, parameterClassType, safeToReturnFunctionCheckFailure, this.functionChecks);
+    return new ApiParameter<>(parameterName, parameterClassType, this.functionChecks);
   }
 
   public ApiParameterBuilder<T> addCheckFunction(Function<T, FunctionCheckTuple> function) {

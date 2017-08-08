@@ -73,7 +73,8 @@ public class ApiPath {
         return p.check(requestParameters);
       }
     }
-    return PathParamsTuple.failed(new UnsupportedApiVersionForPath(requestVersion));
+    return PathParamsTuple.failed(new ErrorTuple(ErrorType.UNSUPORTED_API_VERSION, "API Version " + requestVersion.getVersionString() +
+                                                 " is not valid for the path."));
   }
 
 }

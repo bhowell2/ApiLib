@@ -42,15 +42,17 @@ public class ApiPathParameters {
    */
   public PathParamsTuple check(Map<String, Object> requestParameters) {
     List<String> providedParameterNames = new ArrayList<>(startingProvidedParamNamesArraySize);
+
     for (ApiParameter<?> param : requiredParameters) {
       ParameterCheckTuple parameterCheckTuple = param.check(requestParameters);
       // if not successful, short-circuit
-      if (!parameterCheckTuple.isSuccessful()) {
-        return PathParamsTuple.failed(parameterCheckTuple.checkFailure);
+      if (parameterCheckTuple.failed()) {
+        return PathParamsTuple.failed(parameterCheckTuple.errorTuple);
       }
       // else, add to list of parameters that were provided
       providedParameterNames.add(parameterCheckTuple.getParameterName());
     }
+
     // Do required conditional params for short circuit capabilities
     // Since optional parameters aren't required, they do not ever result in an error
     // TODO: It may be desired to return an error message noting why the optional parameter failed to check if it was provided

@@ -1,11 +1,5 @@
 package io.bhowell2.ApiLib;
 
-import io.bhowell2.ApiLib.exceptions.InvalidApiParameterException;
-import io.bhowell2.ApiLib.exceptions.SafeInvalidApiParameterException;
-import io.bhowell2.ApiLib.exceptions.SafeMissingApiParameterException;
-import io.bhowell2.ApiLib.exceptions.ParameterCastException;
-import io.bhowell2.ApiLib.exceptions.ParameterCheckException;
-
 /**
  * The return from a parameter check. If the parameter checks out, the parameter name is returned; otherwise, an error is returned. If the returned
  * error is not of type {@link io.bhowell2.ApiLib.exceptions.SafeParameterCheckException} then its error message should probably not be returned to
@@ -16,24 +10,27 @@ import io.bhowell2.ApiLib.exceptions.ParameterCheckException;
 public final class ParameterCheckTuple {
 
   final String parameterName;
-  final ParameterCheckException checkFailure;
+  final ErrorTuple errorTuple;
 
   public ParameterCheckTuple(String parameterName) {
-    this.parameterName = parameterName;
-    this.checkFailure = null;
+    this(parameterName, null);
   }
 
-  public ParameterCheckTuple(ParameterCheckException checkFailure) {
-    this.checkFailure = checkFailure;
-    this.parameterName = null;
+  public ParameterCheckTuple(String parameterName, ErrorTuple errorTuple) {
+    this.parameterName = parameterName;
+    this.errorTuple = errorTuple;
+  }
+
+  public boolean failed() {
+    return errorTuple != null;
   }
 
   public boolean isSuccessful() {
-    return checkFailure == null;
+    return errorTuple == null;
   }
 
-  public Exception getCheckFailure() {
-    return checkFailure;
+  public ErrorTuple getErrorTuple() {
+    return errorTuple;
   }
 
   public String getParameterName() {
@@ -47,23 +44,17 @@ public final class ParameterCheckTuple {
   }
 
   public static ParameterCheckTuple missingParameterFailure(String missingParamName) {
-    return new ParameterCheckTuple(new SafeMissingApiParameterException(missingParamName));
+    return new ParameterCheckTuple(missingParamName, new ErrorTuple(missingParamName, ErrorType.MISSING_PARAMETER, "Missing parameter name: " +
+        missingParamName + "."));
   }
 
-  public static ParameterCheckTuple invalidParameterFailure(String parameterName) {
-    return new ParameterCheckTuple(new InvalidApiParameterException(parameterName));
-  }
-
-  public static ParameterCheckTuple invalidParameterFailure(String parameterName, String reasonForFailure) {
-    return new ParameterCheckTuple(new InvalidApiParameterException(parameterName, reasonForFailure));
-  }
-
-  public static ParameterCheckTuple safeInvalidParameterFailure(String parameterName, String reasonForFailure) {
-    return new ParameterCheckTuple(new SafeInvalidApiParameterException(parameterName, reasonForFailure));
+  public static ParameterCheckTuple invalidParameterFailure(String parameterName, String failureReason) {
+    return new ParameterCheckTuple(parameterName, new ErrorTuple(parameterName, ErrorType.INVALID_PARAMETER, failureReason));
   }
 
   public static ParameterCheckTuple parameterCastException(String parameterName, Class<?> clazz) {
-    return new ParameterCheckTuple(new ParameterCastException(parameterName, clazz));
+    String castMessage = "Failed to cast " + parameterName + " to " + clazz.getTypeName() + ".";
+    return new ParameterCheckTuple(parameterName, new ErrorTuple(parameterName, ErrorType.PARAMETER_CAST, castMessage));
   }
 
 }

@@ -15,13 +15,11 @@ public class ApiParameter<T> {
   private final String parameterName;
   private final List<Function<T, FunctionCheckTuple>> paramCheckFunctions;
   private final Class<T> parameterClassType;
-  private final boolean safeToReturnFunctionCheckFailureReason;
 
-  public ApiParameter(String parameterName, Class<T> parameterClassType, boolean safeToReturnFunctionCheckFailure, List<Function<T,
+  public ApiParameter(String parameterName, Class<T> parameterClassType, List<Function<T,
       FunctionCheckTuple>> paramCheckFunctions) {
     this.parameterName = parameterName;
     this.parameterClassType = parameterClassType;
-    this.safeToReturnFunctionCheckFailureReason = safeToReturnFunctionCheckFailure;
     this.paramCheckFunctions = paramCheckFunctions;
   }
 
@@ -33,7 +31,7 @@ public class ApiParameter<T> {
    * Some web frameworks/platforms automatically wrap the parameters for the user in a Map (or JsonObject - which is sometimes just a wrapping
    * over {@link Map}. e.g., Vert.x). This method will pull the parameter from the map, with the {@link #parameterName} provided in the constructor.
    * @param requestParameters contains the parameter to be checked, which will be pulled from the map
-   * @return a tuple with the name of the successfully checked parameter, or an exception (that may be pulled from the return tuple)
+   * @return a tuple with the name of the successfully checked parameter, or error information
    */
   @SuppressWarnings("unchecked")
   public ParameterCheckTuple check(Map<String, Object> requestParameters) {
@@ -47,43 +45,15 @@ public class ApiParameter<T> {
     for (Function<T, FunctionCheckTuple> functionCheck : paramCheckFunctions) {
       FunctionCheckTuple checkTuple = functionCheck.apply(param);
 
+      // short circuit checks and return (if one check fails, it all fails)
       if (checkTuple.failed()) {
-        if (safeToReturnFunctionCheckFailureReason) {
-          return checkTuple.hasFailureMessage() ? ParameterCheckTuple.safeInvalidParameterFailure(this.parameterName, checkTuple.failureMessage)
-              : ParameterCheckTuple.invalidParameterFailure(this.parameterName);
-        }
         return checkTuple.hasFailureMessage() ? ParameterCheckTuple.invalidParameterFailure(this.parameterName, checkTuple.getFailureMessage()) :
-            ParameterCheckTuple.invalidParameterFailure(this.parameterName);
+            ParameterCheckTuple.invalidParameterFailure(this.parameterName, "Failed to pass parameter check.");
       }
 
     }
+    // all checks have passed, parameter is deemed successfully checked
     return ParameterCheckTuple.success(this.parameterName);
   }
-
-//  /**
-//   * If the user has the parameters individually rather than in a {@link Map}, they may simply call this method, which will ensure that the
-//   * parameter meets all criteria.
-//   * @param param the parameter to be checked
-//   * @return a tuple with the name of the successfully checked parameter, or an exception (that may be pulled from the return tuple)
-//   */
-//  public ParameterCheckReturnTuple check(T param) {
-//    if (param == null)
-//      return ParameterCheckReturnTuple.invalidParameterFailure(this.parameterName, "argument was null");
-//    if (!this.clazz.isInstance(param))
-//      return ParameterCheckReturnTuple.parameterCastException(this.parameterName, this.clazz);
-//    for (Function<T, FunctionCheckReturnTuple> functionCheck : paramCheckFunctions) {
-//      FunctionCheckReturnTuple checkTuple = functionCheck.apply(param);
-//      if (checkTuple.failed()) {
-//        // returns the reason for failure if one is available
-//        if (safeToReturnFunctionCheckFailureReason) {
-//          return checkTuple.hasFailureMessage() ? ParameterCheckReturnTuple.safeInvalidParameterFailure(this.parameterName, checkTuple.failureMessage)
-//              : ParameterCheckReturnTuple.invalidParameterFailure(this.parameterName);
-//        }
-//        return checkTuple.hasFailureMessage() ? ParameterCheckReturnTuple.invalidParameterFailure(this.parameterName, checkTuple.getFailureMessage()) :
-//            ParameterCheckReturnTuple.invalidParameterFailure(this.parameterName);
-//      }
-//    }
-//    return ParameterCheckReturnTuple.success(this.parameterName);
-//  }
 
 }

@@ -5,29 +5,36 @@ import io.bhowell2.ApiLib.exceptions.ParameterCheckException;
 import java.util.List;
 
 /**
+ * Tuple to return after checking all parameters for a given path. Either provides the list of provided parameters, or a tuple representing an
+ * error that occurred.
  * @author Blake Howell
  */
 public final class PathParamsTuple {
 
   private final List<String> providedParameterNames;
-  private final ParameterCheckException checkFailure;
+  private final ErrorTuple errorTuple;
+
 
   PathParamsTuple(List<String> providedParameterNames) {
     this.providedParameterNames = providedParameterNames;
-    this.checkFailure = null;
+    this.errorTuple = null;
   }
 
-  PathParamsTuple(ParameterCheckException checkFailure) {
-    this.checkFailure = checkFailure;
+  PathParamsTuple(ErrorTuple errorTuple) {
+    this.errorTuple = errorTuple;
     this.providedParameterNames = null;
   }
 
-  public boolean isSuccessful() {
-    return checkFailure == null;
+  public boolean failed() {
+    return errorTuple != null;
   }
 
-  public ParameterCheckException getCheckFailure() {
-    return checkFailure;
+  public boolean isSuccessful() {
+    return errorTuple == null;
+  }
+
+  public ErrorTuple getErrorTuple() {
+    return errorTuple;
   }
 
   public List<String> getProvidedParameterNames() {
@@ -39,8 +46,8 @@ public final class PathParamsTuple {
     return new PathParamsTuple(providedParameterNames);
   }
 
-  public static PathParamsTuple failed(ParameterCheckException checkFailure) {
-    return new PathParamsTuple(checkFailure);
+  public static PathParamsTuple failed(ErrorTuple errorTuple) {
+    return new PathParamsTuple(errorTuple);
   }
 
 }
