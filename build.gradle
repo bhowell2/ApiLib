@@ -12,6 +12,7 @@ dependencies {
   testCompile('junit:junit:4.12')
 }
 
+// use 'gradle install' to install to local maven repo
 install {
   repositories.mavenInstaller {
     pom.groupId = 'io.bhowell2'
