@@ -8,7 +8,7 @@ import java.util.function.Function;
  * Facilitates the creation of a parameter for the library user.
  * @author Blake Howell
  */
-public class ApiParameterBuilder<T> {
+public final class ApiParameterBuilder<T> {
 
   public static <T> ApiParameterBuilder<T> builder(String parameterName, Class<T> parameterClassType) {
     return new ApiParameterBuilder<>(parameterName, parameterClassType);
@@ -16,8 +16,8 @@ public class ApiParameterBuilder<T> {
 
   private String parameterName;
   private Class<T> parameterClassType;
-  private boolean safeToReturnFunctionCheckFailure = false;              // defaults to false
   private List<Function<T, FunctionCheckTuple>> functionChecks;
+  private Function<? super Object, T> parameterCastFunction;
 
   public ApiParameterBuilder(String parameterName, Class<T> parameterClassType) {
     this.parameterName = parameterName;
@@ -30,7 +30,15 @@ public class ApiParameterBuilder<T> {
     if (this.functionChecks.size() == 0) {
       throw new NoFunctionChecksProvidedException(this.parameterName);
     }
-    return new ApiParameter<>(parameterName, parameterClassType, this.functionChecks);
+    return new ApiParameter<>(parameterName, parameterClassType, this.functionChecks, this.parameterCastFunction);
+  }
+
+  public ApiParameterBuilder<T> setParameterCastFunction(Function<? super Object, T> castFunction) {
+    if (this.parameterCastFunction != null) {
+      throw new RuntimeException("Cast function has already been set for " + this.parameterName);
+    }
+    this.parameterCastFunction = castFunction;
+    return this;
   }
 
   public ApiParameterBuilder<T> addCheckFunction(Function<T, FunctionCheckTuple> function) {
@@ -38,23 +46,11 @@ public class ApiParameterBuilder<T> {
     return this;
   }
 
-  /**
-   * The value defaults to false.
-   * @param b whether or not to return the reason that a function check failed
-   * @return the builder for which this was set
-   */
-  public ApiParameterBuilder<T> setSafeToReturnFunctionCheckFailure(boolean b) {
-    this.safeToReturnFunctionCheckFailure = b;
-    return this;
-  }
-
   private static class NoFunctionChecksProvidedException extends RuntimeException {
     public NoFunctionChecksProvidedException(String parameterName) {
       super("No function checks were provided for the parameter " + "'" + parameterName + "'. If this is intentional, just provide a function" +
-                " " +
-                "check" +
-                " that returns success (e.g., FunctionCheckReturnTuple.success()) if you want it to always pass, or failure if it should always " +
-                "fail or is a placeholder that has not been implemented.");
+                "check that returns success (e.g., FunctionCheckReturnTuple.success()) if you want it to always pass, or failure if it should " +
+                "always fail or is a placeholder that has not yet been implemented.");
     }
   }
 

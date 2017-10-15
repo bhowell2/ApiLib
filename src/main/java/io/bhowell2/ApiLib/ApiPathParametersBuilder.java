@@ -45,7 +45,9 @@ public class ApiPathParametersBuilder {
     ApiParameter<?>[] optParams = new ApiParameter[optionalParameters.size()];
     ConditionalParameters[] conditOptParams = new ConditionalParameters[conditionalOptionalParameters.size()];
     // TODO: conditional params need to be added
-    return new ApiPathParameters(this.apiVersion, this.requiredParameters.toArray(reqParams), this.optionalParameters.toArray(optParams));
+    return new ApiPathParameters(this.apiVersion, this.requiredParameters.toArray(reqParams), this.optionalParameters.toArray(optParams),
+                                 this.conditionalRequiredParameters.toArray(conditReqParams),
+                                 this.conditionalOptionalParameters.toArray(conditOptParams));
   }
 
   public ApiPathParametersBuilder addRequiredParameter(ApiParameter<?> parameter) {

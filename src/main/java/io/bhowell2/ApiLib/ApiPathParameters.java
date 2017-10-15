@@ -10,63 +10,83 @@ import java.util.Map;
  */
 public class ApiPathParameters {
 
-  final ApiVersion apiVersion;
-  final ApiParameter<?>[] requiredParameters;
-  final ApiParameter<?>[] optionalParameters;
+    final ApiVersion apiVersion;
+    final ApiParameter<?>[] requiredParameters;
+    final ApiParameter<?>[] optionalParameters;
+    final ConditionalParameters[] requiredConditionalParameters;
+    final ConditionalParameters[] optionalConditionalParameters;
 
-  private final int startingProvidedParamNamesArraySize;
-  // TODO: Conditional params need to be added
-  ApiPathParameters(ApiVersion apiVersion, ApiParameter<?>[] requiredParameters, ApiParameter<?>[] optionalParameters) {
-    this.apiVersion = apiVersion;
-    this.requiredParameters = requiredParameters;
-    this.optionalParameters = optionalParameters;
-    // Note, optional/3 is arbitrarily chosen and maybe later some code will be added to optimize the sizing of the array, but this may not even
-    // really be worth it as the code to dynamically optimize may take longer
-    this.startingProvidedParamNamesArraySize = requiredParameters.length + optionalParameters.length/3;
-  }
-
-  /**
-   * Mainly used to compare {@link ApiPathParameters} to each other for ordering.
-   * @return the ApiVersion for which this set of parameters is valid
-   */
-  public ApiVersion getApiVersion() {
-    return apiVersion;
-  }
-
-  /**
-   * Checks each parameter provided with the specified supplied required, optional, requiredConditional, and optionalConditional parameters. This
-   * will short-circuit if a parameter does not check out (i.e., it returns as soon as a failed check occurs).
-   *
-   * @param requestParameters map containing all the parameters that need to be checked
-   * @return returns whether or not the PathParameters were successfully checked
-   */
-  public PathParamsTuple check(Map<String, Object> requestParameters) {
-    List<String> providedParameterNames = new ArrayList<>(startingProvidedParamNamesArraySize);
-
-    for (ApiParameter<?> param : requiredParameters) {
-      ParameterCheckTuple parameterCheckTuple = param.check(requestParameters);
-      // if not successful, short-circuit
-      if (parameterCheckTuple.failed()) {
-        return PathParamsTuple.failed(parameterCheckTuple.errorTuple);
-      }
-      // else, add to list of parameters that were provided
-      providedParameterNames.add(parameterCheckTuple.getParameterName());
+    private final int startingProvidedParamNamesArraySize;
+    // TODO: Conditional params need to be added
+    ApiPathParameters(ApiVersion apiVersion, ApiParameter<?>[] requiredParameters, ApiParameter<?>[] optionalParameters,
+                      ConditionalParameters[] requiredConditionalParameters, ConditionalParameters[] optionalConditionalParameters) {
+        this.apiVersion = apiVersion;
+        this.requiredParameters = requiredParameters;
+        this.optionalParameters = optionalParameters;
+        this.requiredConditionalParameters = requiredConditionalParameters;
+        this.optionalConditionalParameters = optionalConditionalParameters;
+        // Note, these sizes were arbitrarily chosen and maybe later some heuristic code will be added to optimize the sizing of the array
+        this.startingProvidedParamNamesArraySize = requiredParameters.length + optionalParameters.length/3 + requiredConditionalParameters.length * 2 +
+            optionalConditionalParameters.length;
     }
 
-    // Do required conditional params for short circuit capabilities
-    // Since optional parameters aren't required, they do not ever result in an error
-    // TODO: It may be desired to return an error message noting why the optional parameter failed to check if it was provided
-    // On the optional parameters, check for the different error types (e.g., if instanceof MissingParam.. ignore it, otherwise maybe add reason
-    // for failure)
-    for (ApiParameter<?> param : optionalParameters) {
-      ParameterCheckTuple parameterCheckTuple = param.check(requestParameters);
-      // different than the required cases - if it is successful, add the parameter name
-      // otherwise, ignore
-      if (parameterCheckTuple.isSuccessful()) {
-        providedParameterNames.add(parameterCheckTuple.getParameterName());
-      }
+    /**
+     * Mainly used to compare {@link ApiPathParameters} to each other for ordering.
+     * @return the ApiVersion for which this set of parameters is valid
+     */
+    public ApiVersion getApiVersion() {
+        return apiVersion;
     }
-    return PathParamsTuple.successful(providedParameterNames);
-  }
+
+    /**
+     * Checks each parameter provided with the specified supplied required, optional, requiredConditional, and optionalConditional parameters. This
+     * will short-circuit if a parameter does not check out (i.e., it returns as soon as a failed check occurs).
+     *
+     * @param requestParameters map containing all the parameters that need to be checked
+     * @return returns whether or not the PathParameters were successfully checked
+     */
+    public PathParamsCheckTuple check(Map<String, Object> requestParameters) {
+        List<String> providedParameterNames = new ArrayList<>(startingProvidedParamNamesArraySize);
+
+        for (ApiParameter<?> param : requiredParameters) {
+            ApiParamCheckTuple apiParamCheckTuple = param.check(requestParameters);
+            // if not successful, short-circuit
+            if (apiParamCheckTuple.failed()) {
+                return PathParamsCheckTuple.failed(apiParamCheckTuple.errorTuple);
+            }
+            // else, add to list of parameters that were provided
+            providedParameterNames.add(apiParamCheckTuple.getParameterName());
+        }
+
+        for (ConditionalParameters conditionalParms : this.requiredConditionalParameters) {
+            ConditionalCheckTuple conditionalCheckTuple = conditionalParms.check(requestParameters);
+            if (conditionalCheckTuple.failed()) {
+                return PathParamsCheckTuple.failed(conditionalCheckTuple.errorTuple);
+            }
+            providedParameterNames.addAll(conditionalCheckTuple.parameterNames);
+        }
+
+        // Even though optional parameters aren't required, if they are provided and fail, a failure is returned -- this is to ensure that an optional
+        // parameter is not provided
+        for (ApiParameter<?> param : optionalParameters) {
+            ApiParamCheckTuple apiParamCheckTuple = param.check(requestParameters);
+            // different than the required cases - if it is successful, add the parameter name
+            // otherwise, ignore
+            if (apiParamCheckTuple.failed()) {
+                return PathParamsCheckTuple.failed(apiParamCheckTuple.errorTuple);
+            }
+            providedParameterNames.add(apiParamCheckTuple.getParameterName());
+        }
+
+        for (ConditionalParameters conditionalParams : this.optionalConditionalParameters) {
+            ConditionalCheckTuple conditionalCheckTuple = conditionalParams.check(requestParameters);
+            if (conditionalCheckTuple.failed()) {
+                return PathParamsCheckTuple.failed(conditionalCheckTuple.errorTuple);
+            }
+            providedParameterNames.addAll(conditionalCheckTuple.parameterNames);
+        }
+
+        return PathParamsCheckTuple.successful(providedParameterNames);
+    }
 
 }

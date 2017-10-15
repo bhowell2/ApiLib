@@ -1,6 +1,5 @@
 package io.bhowell2.ApiLib;
 
-import io.bhowell2.ApiLib.exceptions.UnsupportedApiVersionForPath;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
@@ -60,9 +59,9 @@ public class ApiPathTest {
     ApiPathParameters pathParameters = ApiPathParametersBuilder.builder(AppApiVersion.V2)
                                                                .build();
     ApiPath path = new ApiPath(pathParameters);
-    PathParamsTuple returnTuple = path.check(AppApiVersion.V1, new HashMap<>());
+    PathParamsCheckTuple returnTuple = path.check(AppApiVersion.V1, new HashMap<>());
     assertFalse(returnTuple.isSuccessful());
-    assertTrue(returnTuple.getErrorTuple().errorType == ErrorType.UNSUPORTED_API_VERSION);
+    // TODO HERE! something
   }
 
 }

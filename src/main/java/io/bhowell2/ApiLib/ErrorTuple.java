@@ -1,27 +1,23 @@
 package io.bhowell2.ApiLib;
 
-import java.util.List;
 
 /**
+ *
  * @author Blake Howell
  */
 public final class ErrorTuple {
 
-  final String parameterName;
-  final ErrorType errorType;
-  final String errorMessage;
-
-  public ErrorTuple(String parameterName, ErrorType type) {
-    this(parameterName, type, null);
-  }
+  public final String parameterName;
+  public final ErrorType errorType;
+  public final String errorMessage;
 
   public ErrorTuple(ErrorType type, String errorMessage) {
-    this(null, type, errorMessage);
+    this(type, errorMessage, null);
   }
 
-  public ErrorTuple(String parameterName, ErrorType type, String errorMessage) {
-    this.parameterName = parameterName;
+  public ErrorTuple(ErrorType type, String errorMessage, String parameterName) {
     this.errorType = type;
+    this.parameterName = parameterName;
     this.errorMessage = errorMessage;
   }
 
