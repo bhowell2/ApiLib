@@ -5,7 +5,7 @@ import io.bhowell2.ApiLib.exceptions.ApiVersionFormatException;
 /**
  * @author Blake Howell
  */
-public enum AppApiVersion implements ApiVersion {
+public enum ApiVersionForTests implements ApiVersion {
 
   V0("V0"),
   V1("V1"),
@@ -15,14 +15,14 @@ public enum AppApiVersion implements ApiVersion {
 
   // to avoid calling .values() every time a value is requested
   // THIS ARRAY CANNOT BE RETURNED AS IT IS MUTABLE. ONLY ITS VALUES (APIVERSION) MAY BE RETURNED, AS THEY ARE CONSTANTS/SINGLETONS
-  private static AppApiVersion[] versions = AppApiVersion.values();
+  private static ApiVersionForTests[] versions = ApiVersionForTests.values();
 
   // ensure that all versions are in order (precautionary check)
   // each implementation must write a different version of this to compare (assuming versions are not of the format V0, V1, ... V10, V11, ... VN)
   static {
     if (versions.length == 0)
       throw new RuntimeException("No API Versions specified.");
-    AppApiVersion tmp = versions[0];
+    ApiVersionForTests tmp = versions[0];
     for (int i = 1; i < versions.length; i++) {
       Integer tmpVersion = Integer.parseInt(tmp.version.substring(1));
       Integer nextVersion = Integer.parseInt(versions[i].version.substring(1));
@@ -33,7 +33,7 @@ public enum AppApiVersion implements ApiVersion {
     }
   }
 
-  AppApiVersion(String versionAsString) {
+  ApiVersionForTests(String versionAsString) {
     version = versionAsString;
   }
 
@@ -46,7 +46,7 @@ public enum AppApiVersion implements ApiVersion {
   /// THE LARGEST VERSION (NEWEST)
   @Override
   public int compareVersions(ApiVersion version) {
-    return this.compareTo((AppApiVersion)version);
+    return this.compareTo((ApiVersionForTests)version);
   }
 
   public static ApiVersion getPreviousVersion(String apiVersion) throws ArrayIndexOutOfBoundsException, ApiVersionFormatException {
@@ -70,9 +70,9 @@ public enum AppApiVersion implements ApiVersion {
    * @return
    * @throws ApiVersionFormatException
    */
-  public static AppApiVersion fromString(String version) throws ApiVersionFormatException {
+  public static ApiVersionForTests fromString(String version) throws ApiVersionFormatException {
     if (version != null) {
-      for (AppApiVersion v : AppApiVersion.versions) {
+      for (ApiVersionForTests v : ApiVersionForTests.versions) {
         if (version.equals(v.version))
           return v;
       }

@@ -23,44 +23,44 @@ public class ApiPathTest {
 
   @Test
   public void shouldPassWithAdmissibleParametersForV0() {
-    ApiVersion requestVersion = AppApiVersion.V0;
+    ApiVersion requestVersion = ApiVersionForTests.V0;
     Map<String, Object> requestParameters = new HashMap<>();
     requestParameters.put("ParamOne", 6);               // must be greater than 5
     requestParameters.put("ParamTwo", "pass this");     // 5 < string length <= 10
     requestParameters.put("ParamThree", "11");          // string length > 1
-    assertTrue(pathOneForTest.check(requestVersion, requestParameters).isSuccessful());
+    assertTrue(pathOneForTest.check(requestVersion, requestParameters).successful());
   }
 
 
   @Test
   public void shouldFailWithInvalidParametersForV0() {
-    ApiVersion requestVersion = AppApiVersion.V0;
+    ApiVersion requestVersion = ApiVersionForTests.V0;
     Map<String, Object> requestParameters = new HashMap<>();
     requestParameters.put("ParamOne", 4);               // must be greater than 5 - should cause failure
     requestParameters.put("ParamTwo", "pass this");     // 5 < string length <= 10
     requestParameters.put("ParamThree", "11");          // string length > 1
-    assertFalse(pathOneForTest.check(requestVersion, requestParameters).isSuccessful());
+    assertFalse(pathOneForTest.check(requestVersion, requestParameters).successful());
   }
 
   @Test
   public void shouldUseLatestAvailableVersion() {
     // Expecting the path to check with the latest version - which would be V1
     // for V1 to pass, the length of ParamThree must be greater than 3
-    ApiVersion requestVersion = AppApiVersion.V2;
+    ApiVersion requestVersion = ApiVersionForTests.V2;
     Map<String, Object> requestParameters = new HashMap<>();
     requestParameters.put("ParamOne", 6);               // must be greater than 5 - should cause failure
     requestParameters.put("ParamTwo", "pass this");     // 5 < string length <= 10
     requestParameters.put("ParamThree", "11");          // string length > 1
-    assertFalse(pathOneForTest.check(requestVersion, requestParameters).isSuccessful());
+    assertFalse(pathOneForTest.check(requestVersion, requestParameters).successful());
   }
 
   @Test
   public void shouldReturnIllegalVersionException() {
-    ApiPathParameters pathParameters = ApiPathParametersBuilder.builder(AppApiVersion.V2)
+    ApiPathParameters pathParameters = ApiPathParametersBuilder.builder(ApiVersionForTests.V2)
                                                                .build();
     ApiPath path = new ApiPath(pathParameters);
-    PathParamsCheckTuple returnTuple = path.check(AppApiVersion.V1, new HashMap<>());
-    assertFalse(returnTuple.isSuccessful());
+    PathParamsCheckTuple returnTuple = path.check(ApiVersionForTests.V1, new HashMap<>());
+    assertFalse(returnTuple.successful());
     // TODO HERE! something
   }
 

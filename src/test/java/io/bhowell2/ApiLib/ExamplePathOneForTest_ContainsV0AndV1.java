@@ -30,7 +30,7 @@ public class ExamplePathOneForTest_ContainsV0AndV1 extends ApiPath {
                                                                   .addCheckFunction(ParameterStringChecks.lengthGreaterThan(1))
                                                                   .build();
 
-  static ApiPathParameters V0_PARAMS = ApiPathParametersBuilder.builder(AppApiVersion.V0)
+  static ApiPathParameters V0_PARAMS = ApiPathParametersBuilder.builder(ApiVersionForTests.V0)
                                                                .addRequiredParameter(PARAM_ONE_V0)
                                                                .addRequiredParameter(PARAM_TWO_V0)
                                                                .addOptionalParameter(PARAM_THREE_V0)
@@ -43,7 +43,7 @@ public class ExamplePathOneForTest_ContainsV0AndV1 extends ApiPath {
                                                                   .addCheckFunction(ParameterStringChecks.lengthGreaterThan(3))
                                                                   .build();
 
-  static ApiPathParameters V1_PARAMS = ApiPathParametersBuilder.builder(AppApiVersion.V1)
+  static ApiPathParameters V1_PARAMS = ApiPathParametersBuilder.builder(ApiVersionForTests.V1)
                                                                .addRequiredParameter(PARAM_ONE_V1)
                                                                .addRequiredParameter(PARAM_TWO_V1)
                                                                .addRequiredParameter(PARAM_THREE_V1)

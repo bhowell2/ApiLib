@@ -9,42 +9,42 @@ import java.util.List;
  */
 public final class PathParamsCheckTuple {
 
-  public final List<String> providedParameterNames;
-  public final ErrorTuple errorTuple;
+    public final List<String> providedParameterNames;
+    public final ErrorTuple errorTuple;
 
-  PathParamsCheckTuple(List<String> providedParameterNames) {
-    this.providedParameterNames = providedParameterNames;
-    this.errorTuple = null;
-  }
+    PathParamsCheckTuple(List<String> providedParameterNames) {
+        this.providedParameterNames = providedParameterNames;
+        this.errorTuple = null;
+    }
 
-  PathParamsCheckTuple(ErrorTuple errorTuple) {
-    this.errorTuple = errorTuple;
-    this.providedParameterNames = null;
-  }
+    PathParamsCheckTuple(ErrorTuple errorTuple) {
+        this.errorTuple = errorTuple;
+        this.providedParameterNames = null;
+    }
 
-  public boolean failed() {
-    return errorTuple != null;
-  }
+    public boolean failed() {
+        return errorTuple != null;
+    }
 
-  public boolean isSuccessful() {
-    return errorTuple == null;
-  }
+    public boolean successful() {
+        return errorTuple == null;
+    }
 
-  public ErrorTuple getErrorTuple() {
-    return errorTuple;
-  }
+    public ErrorTuple getErrorTuple() {
+        return errorTuple;
+    }
 
-  public List<String> getProvidedParameterNames() {
-    return providedParameterNames;
-  }
+    public List<String> getProvidedParameterNames() {
+        return providedParameterNames;
+    }
 
-  /* Static Creation Methods */
-  public static PathParamsCheckTuple successful(List<String> providedParameterNames) {
-    return new PathParamsCheckTuple(providedParameterNames);
-  }
+    /* Static Creation Methods */
+    public static PathParamsCheckTuple successful(List<String> providedParameterNames) {
+        return new PathParamsCheckTuple(providedParameterNames);
+    }
 
-  public static PathParamsCheckTuple failed(ErrorTuple errorTuple) {
-    return new PathParamsCheckTuple(errorTuple);
-  }
+    public static PathParamsCheckTuple failed(ErrorTuple errorTuple) {
+        return new PathParamsCheckTuple(errorTuple);
+    }
 
 }
