@@ -64,14 +64,14 @@ public class ApiPath<RequestParameters> {
      * @param requestParameters parameters of the request to be checked (will ignore anything that is not specified in the ApiPath to check)
      * @return the list of successfully checked parameters, or an error that was caught in the process of checking the parameters
      */
-    public ApiNestedParamCheckTuple check(ApiVersion requestVersion, RequestParameters requestParameters) {
+    public ApiPathRequestParamsCheckTuple check(ApiVersion requestVersion, RequestParameters requestParameters) {
         // TODO: Add converters
         for (ApiPathRequestParameters<RequestParameters> p : pathRequestParameters) {
             if (requestVersion.compareVersions(p.apiVersion) >= 0) {
                 return p.check(requestParameters);
             }
         }
-        return ApiNestedParamCheckTuple.failed(new ApiParamErrorTuple(ErrorType.UNSUPPORTED_API_VERSION, "API Version " + requestVersion.getVersionString() +
+        return ApiPathRequestParamsCheckTuple.failed(new ErrorTuple(ErrorType.UNSUPPORTED_API_VERSION, "API Version " + requestVersion.getVersionString() +
             " is not valid for the path."));
     }
 

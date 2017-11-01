@@ -22,7 +22,7 @@ public class ApiPathRequestParametersTests {
 
         Map<String, Object> requestParameters = new HashMap<>();
         requestParameters.put(INTEGER1.parameterName, 5);
-        ApiNestedParamCheckTuple checkTuple = pathRequestParameters.check(requestParameters);
+        ApiPathRequestParamsCheckTuple checkTuple = pathRequestParameters.check(requestParameters);
         assertTrue(checkTuple.failed());
         assertEquals(checkTuple.errorTuple.errorType, ErrorType.MISSING_PARAMETER);
         assertEquals(checkTuple.errorTuple.parameterName, INTEGER2.parameterName);
@@ -47,10 +47,10 @@ public class ApiPathRequestParametersTests {
         Map<String, Object> innerNestedParameters = new HashMap<>();
         innerNestedParameters.put(INTEGER2.parameterName, 101);
         requestParameters.put(NESTED_PARAM.parameterName, innerNestedParameters);
-        ApiNestedParamCheckTuple checkTuple = pathRequestParameters.check(requestParameters);
+        ApiPathRequestParamsCheckTuple checkTuple = pathRequestParameters.check(requestParameters);
         assertTrue(checkTuple.failed());
         assertEquals(checkTuple.errorTuple.errorType, ErrorType.MISSING_PARAMETER);
-        assertEquals(checkTuple.errorTuple.parameterName, INTEGER1.parameterName);
+        assertEquals(checkTuple.errorTuple.parameterName, "Integer1 of (nested) NestedParameter");
     }
 
 }

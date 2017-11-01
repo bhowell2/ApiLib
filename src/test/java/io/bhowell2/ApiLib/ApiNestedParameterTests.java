@@ -27,7 +27,7 @@ public class ApiNestedParameterTests {
         ApiNestedParamCheckTuple checkTuple = nestedParameter.check(requestParameters);
         assertTrue(checkTuple.failed());
         assertEquals(checkTuple.errorTuple.errorType, ErrorType.MISSING_PARAMETER);
-        assertEquals(checkTuple.errorTuple.parameterName, INTEGER2.parameterName);
+        assertTrue(checkTuple.errorTuple.parameterName.matches("Integer2 of .*"));
 
     }
 
@@ -51,7 +51,7 @@ public class ApiNestedParameterTests {
         ApiNestedParamCheckTuple checkTuple = nestedParameter.check(requestParameters);
         assertTrue(checkTuple.failed());
         assertEquals(checkTuple.errorTuple.errorType, ErrorType.MISSING_PARAMETER);
-        assertEquals(checkTuple.errorTuple.parameterName, INTEGER1.parameterName);
+        assertTrue(checkTuple.errorTuple.parameterName.matches("Integer1 of .*"));
     }
 
 }

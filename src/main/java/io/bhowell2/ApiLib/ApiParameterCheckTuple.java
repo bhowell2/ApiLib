@@ -10,14 +10,14 @@ package io.bhowell2.ApiLib;
 public final class ApiParameterCheckTuple {
 
   public final String parameterName;
-  public final ApiParamErrorTuple errorTuple;
+  public final ErrorTuple errorTuple;
 
   public ApiParameterCheckTuple(String parameterName) {
       this.parameterName = parameterName;
       this.errorTuple = null;
   }
 
-  public ApiParameterCheckTuple(ApiParamErrorTuple errorTuple) {
+  public ApiParameterCheckTuple(ErrorTuple errorTuple) {
     this.errorTuple = errorTuple;
     this.parameterName = null;
   }
@@ -30,7 +30,7 @@ public final class ApiParameterCheckTuple {
     return errorTuple == null;
   }
 
-  public ApiParamErrorTuple getErrorTuple() {
+  public ErrorTuple getErrorTuple() {
     return errorTuple;
   }
 
@@ -45,16 +45,16 @@ public final class ApiParameterCheckTuple {
   }
 
   public static ApiParameterCheckTuple missingParameterFailure(String missingParamName) {
-    return new ApiParameterCheckTuple(new ApiParamErrorTuple(ErrorType.MISSING_PARAMETER, "Missing parameter name: " +
+    return new ApiParameterCheckTuple(new ErrorTuple(ErrorType.MISSING_PARAMETER, "Missing parameter name: " +
         missingParamName + ".", missingParamName));
   }
 
   public static ApiParameterCheckTuple invalidParameterFailure(String parameterName, String failureReason) {
-    return new ApiParameterCheckTuple(new ApiParamErrorTuple(ErrorType.INVALID_PARAMETER, failureReason, parameterName));
+    return new ApiParameterCheckTuple(new ErrorTuple(ErrorType.INVALID_PARAMETER, failureReason, parameterName));
   }
 
   public static ApiParameterCheckTuple parameterCastException(String parameterName, String message) {
-    return new ApiParameterCheckTuple(new ApiParamErrorTuple(ErrorType.PARAMETER_CAST, message, parameterName));
+    return new ApiParameterCheckTuple(new ErrorTuple(ErrorType.PARAMETER_CAST, message, parameterName));
   }
 
 }

@@ -9,7 +9,5 @@ public enum ErrorType {
     MISSING_PARAMETER,
     INVALID_PARAMETER,
     PARAMETER_CAST,
-    NESTED_PARAMETER_ERROR,      // use when there is an error in a nested parameter
-    CUSTOM_PARAMETER_ERROR
 
 }

@@ -11,7 +11,7 @@ import java.util.List;
 public class ApiCustomParamsCheckTuple {
 
     final List<String> providedParameterNames;
-    final ApiParamErrorTuple errorTuple;
+    final ErrorTuple errorTuple;
 
     public ApiCustomParamsCheckTuple(String... providedParameterNames) {
         this(new ArrayList<String>(Arrays.asList(providedParameterNames)));
@@ -22,7 +22,7 @@ public class ApiCustomParamsCheckTuple {
         this.errorTuple = null;
     }
 
-    public ApiCustomParamsCheckTuple(ApiParamErrorTuple errorTuple) {
+    public ApiCustomParamsCheckTuple(ErrorTuple errorTuple) {
         this.errorTuple = errorTuple;
         this.providedParameterNames = null;
     }
@@ -41,7 +41,7 @@ public class ApiCustomParamsCheckTuple {
         return new ApiCustomParamsCheckTuple(parameterNames);
     }
 
-    public static ApiCustomParamsCheckTuple failure(ApiParamErrorTuple errorTuple) {
+    public static ApiCustomParamsCheckTuple failure(ErrorTuple errorTuple) {
         return new ApiCustomParamsCheckTuple(errorTuple);
     }
 
@@ -50,7 +50,7 @@ public class ApiCustomParamsCheckTuple {
     }
 
     public static ApiCustomParamsCheckTuple failure(ErrorType errorType, String parameterName, String failureMessage) {
-        return new ApiCustomParamsCheckTuple(new ApiParamErrorTuple(errorType, failureMessage, parameterName));
+        return new ApiCustomParamsCheckTuple(new ErrorTuple(errorType, failureMessage, parameterName));
     }
 
 }
