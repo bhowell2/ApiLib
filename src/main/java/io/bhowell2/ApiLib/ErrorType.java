@@ -8,6 +8,8 @@ public enum ErrorType {
     UNSUPPORTED_API_VERSION,
     MISSING_PARAMETER,
     INVALID_PARAMETER,
-    PARAMETER_CAST
+    PARAMETER_CAST,
+    NESTED_PARAMETER_ERROR,      // use when there is an error in a nested parameter
+    CUSTOM_PARAMETER_ERROR
 
 }

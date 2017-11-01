@@ -7,7 +7,7 @@ import java.util.Map;
 /**
  * @author Blake Howell
  */
-public class MapRequestParametersRetrievalFunctions {
+public class MapRequestParameterRetrievalFunctions {
 
     public static ParameterRetrievalFunction<String, Map<String, Object>> STRING_FROM_MAP = (s, m) -> (String) m.get(s);
 

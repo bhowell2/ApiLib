@@ -1,7 +1,6 @@
 package io.bhowell2.ApiLib;
 
 import java.util.Arrays;
-import java.util.Map;
 import java.util.Optional;
 import java.util.regex.Pattern;
 
@@ -20,7 +19,7 @@ public class ApiPath<RequestParameters> {
      * If the user does not want/need a path name string, this should be used.
      * @param pathRequestParameters parameters for each version
      */
-    public ApiPath(ApiPathRequestParameters<RequestParameters>... pathRequestParameters) {
+    public ApiPath(ApiPathRequestParameters<RequestParameters>[] pathRequestParameters) {
         this(null, null, pathRequestParameters);
     }
 /**/
@@ -28,11 +27,11 @@ public class ApiPath<RequestParameters> {
      * If the user wants a path name string, it may be set here.
      * @param pathName
      */
-    public ApiPath(String pathName, ApiPathRequestParameters<RequestParameters>... pathRequestParameters) {
+    public ApiPath(String pathName, ApiPathRequestParameters<RequestParameters>[] pathRequestParameters) {
         this(pathName, null, pathRequestParameters);
     }
 
-    public ApiPath(String pathName, Pattern pathMatchPattern, ApiPathRequestParameters<RequestParameters>... pathRequestParameters) {
+    public ApiPath(String pathName, Pattern pathMatchPattern, ApiPathRequestParameters<RequestParameters>[] pathRequestParameters) {
         this.pathName = pathName;
         this.pathMatchPattern = pathMatchPattern;
         this.pathRequestParameters = pathRequestParameters;
@@ -72,7 +71,8 @@ public class ApiPath<RequestParameters> {
                 return p.check(requestParameters);
             }
         }
-        return ApiNestedParamCheckTuple.failed(new ErrorTuple(ErrorType.UNSUPPORTED_API_VERSION, "API Version " + requestVersion.getVersionString() +            " is not valid for the path."));
+        return ApiNestedParamCheckTuple.failed(new ApiParamErrorTuple(ErrorType.UNSUPPORTED_API_VERSION, "API Version " + requestVersion.getVersionString() +
+            " is not valid for the path."));
     }
 
 }

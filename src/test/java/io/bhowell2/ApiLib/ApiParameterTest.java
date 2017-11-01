@@ -1,13 +1,12 @@
 package io.bhowell2.ApiLib;
 
-import io.bhowell2.ApiLib.utils.MapRequestParametersRetrievalFunctions;
 import io.bhowell2.ApiLib.utils.ParameterIntegerChecks;
 import org.junit.Test;
 
 import java.util.HashMap;
 import java.util.Map;
 
-import static io.bhowell2.ApiLib.utils.MapRequestParametersRetrievalFunctions.*;
+import static io.bhowell2.ApiLib.utils.MapRequestParameterRetrievalFunctions.*;
 import static org.junit.Assert.*;
 
 /**

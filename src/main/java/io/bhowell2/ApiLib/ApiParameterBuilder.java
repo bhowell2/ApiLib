@@ -7,9 +7,10 @@ import java.util.List;
  * Facilitates the creation of a parameter for the library user.
  * @author Blake Howell
  */
-public final class ApiParameterBuilder<ParamType, ParamsObj> {
+public class ApiParameterBuilder<ParamType, ParamsObj> {
 
-    public static <ParamType, ParamsObj> ApiParameterBuilder<ParamType, ParamsObj> builder(String parameterName, ParameterRetrievalFunction<ParamType, ParamsObj> retrievalFunction) {
+    public static <ParamType, ParamsObj> ApiParameterBuilder<ParamType, ParamsObj> builder(String parameterName,
+                                                                                           ParameterRetrievalFunction<ParamType, ParamsObj> retrievalFunction) {
         return new ApiParameterBuilder<>(parameterName, retrievalFunction);
     }
 

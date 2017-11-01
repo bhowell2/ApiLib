@@ -1,6 +1,6 @@
 package io.bhowell2.ApiLib;
 
-import io.bhowell2.ApiLib.utils.MapRequestParametersRetrievalFunctions;
+import io.bhowell2.ApiLib.utils.MapRequestParameterRetrievalFunctions;
 import org.junit.Test;
 
 import java.util.HashMap;
@@ -17,7 +17,7 @@ public class ApiNestedParameterTests {
     @Test
     public void shouldFailFromMissingParameters() {
         ApiNestedParameter<Map<String, Object>, Map<String, Object>> nestedParameter = ApiNestedParameterBuilder.builder("",
-                                                                                                                         MapRequestParametersRetrievalFunctions.RETURN_SELF_MAP)
+                                                                                                                         MapRequestParameterRetrievalFunctions.RETURN_SELF_MAP)
                                                                                                                 .addRequiredParameter(INTEGER1)
                                                                                                                 .addRequiredParameter(INTEGER2)
                                                                                                                 .build();
@@ -34,7 +34,7 @@ public class ApiNestedParameterTests {
     @Test
     public void shouldFailFromMissingNestedParameter() {
         ApiNestedParameter<Map<String, Object>, Map<String, Object>> nestedParameter = ApiNestedParameterBuilder.builder("",
-                                                                                                                         MapRequestParametersRetrievalFunctions.RETURN_SELF_MAP)
+                                                                                                                         MapRequestParameterRetrievalFunctions.RETURN_SELF_MAP)
                                                                                                                 .addRequiredParameter(INTEGER1)
                                                                                                                 .addRequiredParameter(INTEGER2)
                                                                                                                 .addRequiredNestedParameter(NESTED_PARAM)

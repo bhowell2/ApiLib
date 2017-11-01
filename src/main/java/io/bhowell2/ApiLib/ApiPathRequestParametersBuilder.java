@@ -1,7 +1,7 @@
 package io.bhowell2.ApiLib;
 
 /**
- * 
+ *
  * @author Blake Howell
  */
 public class ApiPathRequestParametersBuilder<RequestParameters> {
@@ -10,18 +10,19 @@ public class ApiPathRequestParametersBuilder<RequestParameters> {
     // so the object is just returned
     public static <RequestParameters> ApiPathRequestParametersBuilder<RequestParameters> builder(ApiVersion apiVersion) {
         ParameterRetrievalFunction<RequestParameters, RequestParameters> retrievalFunction = (paramName, params) -> params;
-        return new ApiPathRequestParametersBuilder<>(apiVersion, new ApiNestedParameterBuilder<>("", retrievalFunction));
+        return new ApiPathRequestParametersBuilder<>(apiVersion, new ApiNestedParameterBuilder<>(ApiPathRequestParameters.ROOT_LEVEL_NESTED_PARAMETER_NAME,
+                                                                                                 retrievalFunction));
     }
 
     final ApiVersion version;
     final ApiNestedParameterBuilder<RequestParameters, RequestParameters> nestedParameterBuilder;
-    
+
     public ApiPathRequestParametersBuilder(ApiVersion version,
                                            ApiNestedParameterBuilder<RequestParameters, RequestParameters> nestedParameterBuilder) {
         this.version = version;
         this.nestedParameterBuilder = nestedParameterBuilder;
     }
-    
+
     public ApiPathRequestParametersBuilder<RequestParameters> setContinueOnOptionalFailure(boolean b) {
         this.nestedParameterBuilder.setContinueOnOptionalFailure(b);
         return this;

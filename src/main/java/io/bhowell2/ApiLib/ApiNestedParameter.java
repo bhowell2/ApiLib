@@ -6,7 +6,8 @@ import java.util.List;
 /**
  * Use {@code parameterRetrievalFunction} to retrieve nested parameters and pass them into the check.
  *
- * NestedParamType - the parameter type that will be retrieved from ParentParamType to be checked
+ * NestedParamType - the parameter type that will be retrieved from ParentParamType to be checked (note all "sub-parameters" will take in request
+ * parameters of NestedParamType)
  * ParentParamType - the object from which to retrieve
  *
  * TODO: currently the simple ErrorTuple is returned if there is an error. It may be more appropriate to wrap this and return which nested
@@ -69,14 +70,14 @@ public class ApiNestedParameter<NestedParamType, ParentParamType> {
 
         for (ApiCustomParameters<NestedParamType> apiCustomParameters : requiredCustomParameters) {
             try {
-                ApiCustomParametersCheckTuple checkTuple = apiCustomParameters.check(paramsToCheck);
+                ApiCustomParamsCheckTuple checkTuple = apiCustomParameters.check(paramsToCheck);
                 if (checkTuple.failed()) {
                     return ApiNestedParamCheckTuple.failed(checkTuple.errorTuple);
                 }
                 providedParameterNames.addAll(checkTuple.providedParameterNames);
             } catch (ClassCastException e) {
                 return ApiNestedParamCheckTuple
-                    .failed(new ErrorTuple(ErrorType.PARAMETER_CAST, "Failed to case parameter in ApiCustomParameters check. " + e.getMessage()));
+                    .failed(new ApiParamErrorTuple(ErrorType.PARAMETER_CAST, "Failed to case parameter in ApiCustomParameters check. " + e.getMessage()));
             }
         }
 
@@ -90,7 +91,7 @@ public class ApiNestedParameter<NestedParamType, ParentParamType> {
                 providedParameterNames.addAll(checkTuple.providedParameterNames);
             } catch (ClassCastException e) {
                 return ApiNestedParamCheckTuple
-                    .failed(new ErrorTuple(ErrorType.PARAMETER_CAST, "Failed to cast parameter to correct type. " + e.getMessage()));
+                    .failed(new ApiParamErrorTuple(ErrorType.PARAMETER_CAST, "Failed to cast parameter to correct type. " + e.getMessage()));
             }
         }
 
@@ -107,7 +108,7 @@ public class ApiNestedParameter<NestedParamType, ParentParamType> {
         }
 
         for (ApiCustomParameters<NestedParamType> apiCustomParameters : optionalCustomParameters) {
-            ApiCustomParametersCheckTuple checkTuple = apiCustomParameters.check(paramsToCheck);
+            ApiCustomParamsCheckTuple checkTuple = apiCustomParameters.check(paramsToCheck);
             if (checkTuple.failed()) {
                 if (checkTuple.errorTuple.errorType == ErrorType.MISSING_PARAMETER || continueOnOptionalFailure) {
                     continue;

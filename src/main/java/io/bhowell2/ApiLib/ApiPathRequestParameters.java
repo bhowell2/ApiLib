@@ -10,6 +10,9 @@ package io.bhowell2.ApiLib;
  */
 public class ApiPathRequestParameters<RequestParameters> {
 
+    // this constant is used for
+    public static final String ROOT_LEVEL_NESTED_PARAMETER_NAME = "ROOT_NESTED_PARAM";
+
     public final ApiVersion apiVersion;
     final ApiNestedParameter<RequestParameters, RequestParameters> nestedParameter;
 

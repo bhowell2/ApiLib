@@ -11,6 +11,6 @@ public interface ApiCustomParameters<RequestParams> {
      * @param requestParameters object from which to obtain parameters
      * @return
      */
-    ApiCustomParametersCheckTuple check(RequestParams requestParameters);
+    ApiCustomParamsCheckTuple check(RequestParams requestParameters);
 
 }
