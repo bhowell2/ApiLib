@@ -1,8 +1,8 @@
 package io.bhowell2.ApiLib.utils;
 
+import io.bhowell2.ApiLib.CheckFunction;
 import io.bhowell2.ApiLib.FunctionCheckTuple;
 
-import java.util.function.Function;
 import java.util.regex.Pattern;
 
 /**
@@ -10,7 +10,7 @@ import java.util.regex.Pattern;
  */
 public final class ParameterStringChecks {
 
-    public static Function<String, FunctionCheckTuple> lengthGreaterThan(int minLength) {
+    public static CheckFunction<String> lengthGreaterThan(int minLength) {
         return s -> {
             if (s.length() > minLength) {
                 return FunctionCheckTuple.success();
@@ -20,7 +20,7 @@ public final class ParameterStringChecks {
         };
     }
 
-    public static Function<String, FunctionCheckTuple> lengthGreaterThanOrEqual(int minLength) {
+    public static CheckFunction<String> lengthGreaterThanOrEqual(int minLength) {
         return s -> {
             if (s.length() >= minLength) {
                 return FunctionCheckTuple.success();
@@ -30,7 +30,7 @@ public final class ParameterStringChecks {
         };
     }
 
-    public static Function<String, FunctionCheckTuple> lengthLessThan(int maxLength) {
+    public static CheckFunction<String> lengthLessThan(int maxLength) {
         return s -> {
             if (s.length() < maxLength) {
                 return FunctionCheckTuple.success();
@@ -40,7 +40,7 @@ public final class ParameterStringChecks {
         };
     }
 
-    public static Function<String, FunctionCheckTuple> lengthLessThanOrEqual(int maxLength) {
+    public static CheckFunction<String> lengthLessThanOrEqual(int maxLength) {
         return s -> {
             if (s.length() <= maxLength) {
                 return FunctionCheckTuple.success();
@@ -50,7 +50,7 @@ public final class ParameterStringChecks {
         };
     }
 
-    public static Function <String, FunctionCheckTuple> lengthEqualTo(int length) {
+    public static CheckFunction<String> lengthEqualTo(int length) {
         return s -> {
             if (s.length() == length) {
                 return FunctionCheckTuple.success();
@@ -60,7 +60,7 @@ public final class ParameterStringChecks {
         };
     }
 
-    public static Function<String, FunctionCheckTuple> matchesRegex(Pattern pattern) {
+    public static CheckFunction<String> matchesRegex(Pattern pattern) {
         return s -> {
             if (pattern.matcher(s).matches()) {
                 return FunctionCheckTuple.success();
@@ -70,7 +70,7 @@ public final class ParameterStringChecks {
         };
     }
 
-    public static Function<String, FunctionCheckTuple> mustContainAtLeastNChars(int n, String mustContainChars) {
+    public static CheckFunction<String> mustContainAtLeastNChars(int n, String mustContainChars) {
         return s -> {
             int counter = 0;
           for (int i = 0; i < mustContainChars.length(); i++) {
@@ -88,7 +88,7 @@ public final class ParameterStringChecks {
         };
     }
 
-    public static Function<String, FunctionCheckTuple> lessThanNRepeatedChars(int n) {
+    public static CheckFunction<String> lessThanNRepeatedChars(int n) {
         return s -> {
             if (s.length() > 0) {
                 Character consecutiveChar = s.charAt(0);

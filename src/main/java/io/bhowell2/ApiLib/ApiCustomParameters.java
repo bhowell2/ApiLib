@@ -1,18 +1,16 @@
 package io.bhowell2.ApiLib;
 
-import java.util.Map;
-
 /**
- * Allows users to create a custom check for a parameter. This may be that the parameter is a JsonObject within an JsonOject or JsonArray.
+ * Allows users to create a custom check for a parameter(s).
  * @author Blake Howell
  */
-public interface ApiCustomParameters {
+public interface ApiCustomParameters<RequestParams> {
 
     /**
      *
-     * @param requestParameters
+     * @param requestParameters object from which to obtain parameters
      * @return
      */
-    CustomParametersCheckTuple check(Map<String, Object> requestParameters);
+    ApiCustomParametersCheckTuple check(RequestParams requestParameters);
 
 }

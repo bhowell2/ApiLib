@@ -1,15 +1,14 @@
 package io.bhowell2.ApiLib.utils;
 
+import io.bhowell2.ApiLib.CheckFunction;
 import io.bhowell2.ApiLib.FunctionCheckTuple;
-
-import java.util.function.Function;
 
 /**
  * @author Blake Howell
  */
 public class ParameterDoubleChecks {
 
-    public static Function<Double, FunctionCheckTuple> valueGreaterThan(Double d) {
+    public static CheckFunction<Double> valueGreaterThan(Double d) {
         return dub -> {
             if (dub > d) {
                 return FunctionCheckTuple.success();
@@ -19,7 +18,7 @@ public class ParameterDoubleChecks {
         };
     }
 
-    public static Function<Double, FunctionCheckTuple> valueGreaterThanOrEqualTo(Double d) {
+    public static CheckFunction<Double> valueGreaterThanOrEqualTo(Double d) {
         return dub -> {
             if (dub >= d) {
                 return FunctionCheckTuple.success();
@@ -29,7 +28,7 @@ public class ParameterDoubleChecks {
         };
     }
 
-    public static Function<Double, FunctionCheckTuple> valueLessThan(Double d) {
+    public static CheckFunction<Double> valueLessThan(Double d) {
         return dub -> {
             if (dub < d) {
                 return FunctionCheckTuple.success();
@@ -39,7 +38,7 @@ public class ParameterDoubleChecks {
         };
     }
 
-    public static Function<Double, FunctionCheckTuple> valueLessThanOrEqualTo(Double d) {
+    public static CheckFunction<Double> valueLessThanOrEqualTo(Double d) {
         return dub -> {
             if (dub <= d) {
                 return FunctionCheckTuple.success();
@@ -49,9 +48,10 @@ public class ParameterDoubleChecks {
         };
     }
 
-    public static Function<Double, FunctionCheckTuple> valueEqualTo(Double d) {
+    public static CheckFunction<Double> valueEqualTo(Double d) {
         return dub -> {
-            if (dub == d) {
+            // have to use .equals so not to compare two objects rather than double value
+            if (dub.equals(d)) {
                 return FunctionCheckTuple.success();
             } else {
                 return FunctionCheckTuple.failure("Value not less than or equal to " + d);

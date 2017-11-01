@@ -1,11 +1,13 @@
 package io.bhowell2.ApiLib;
 
+import io.bhowell2.ApiLib.utils.MapRequestParametersRetrievalFunctions;
 import io.bhowell2.ApiLib.utils.ParameterIntegerChecks;
 import org.junit.Test;
 
 import java.util.HashMap;
 import java.util.Map;
 
+import static io.bhowell2.ApiLib.utils.MapRequestParametersRetrievalFunctions.*;
 import static org.junit.Assert.*;
 
 /**
@@ -13,9 +15,11 @@ import static org.junit.Assert.*;
  */
 public class ApiParameterTest {
 
+
+
     @Test
     public void shouldFailParameterCheck() {
-        ApiParameter<Integer> failingIntegerApiParameter = ApiParameterBuilder.builder("TestInteger", Integer.class)
+        ApiParameter<Integer, Map<String, Object>> failingIntegerApiParameter = ApiParameterBuilder.builder("TestInteger", INTEGER_FROM_MAP)
                                                                               .addCheckFunction(ParameterIntegerChecks.valueGreaterThanOrEqualTo(0))
                                                                               .addCheckFunction(i -> FunctionCheckTuple.failure("Failed!"))
                                                                               .build();
@@ -28,7 +32,7 @@ public class ApiParameterTest {
 
     @Test
     public void shouldFailWithMissingParameter() {
-        ApiParameter<Integer> failingIntegerApiParameter = ApiParameterBuilder.builder("TestInteger", Integer.class)
+        ApiParameter<Integer, Map<String, Object>> failingIntegerApiParameter = ApiParameterBuilder.builder("TestInteger", INTEGER_FROM_MAP)
                                                                               .addCheckFunction(ParameterIntegerChecks.valueGreaterThanOrEqualTo(0))
                                                                               .addCheckFunction(i -> FunctionCheckTuple.failure("Failed!"))
                                                                               .build();
@@ -40,7 +44,7 @@ public class ApiParameterTest {
 
     @Test
     public void shouldSuccessfullyCheckParameter() {
-        ApiParameter<Integer> passingIntegerApiParameter = ApiParameterBuilder.builder("TestInteger", Integer.class)
+        ApiParameter<Integer, Map<String, Object>> passingIntegerApiParameter = ApiParameterBuilder.builder("TestInteger", INTEGER_FROM_MAP)
                                                                               .addCheckFunction(ParameterIntegerChecks.valueLessThan(100))
                                                                               .addCheckFunction(ParameterIntegerChecks.valueGreaterThan(5))
                                                                               .build();
@@ -53,13 +57,13 @@ public class ApiParameterTest {
 
     @Test
     public void shouldSuccessfullyCastParameterAndCheck() {
-        ApiParameter<Integer> passingIntegerApiParameter = ApiParameterBuilder.builder("TestInteger", Integer.class)
-                                                                              .setParameterCastFunction(o -> Integer.parseInt((String) o))
+        ApiParameter<Integer, Map<String, Object>> passingIntegerApiParameter = ApiParameterBuilder.builder("TestInteger", CAST_AND_REPLACE_STRING_TO_INT_FROM_MAP)
                                                                               .addCheckFunction(ParameterIntegerChecks.valueLessThan(100))
                                                                               .addCheckFunction(ParameterIntegerChecks.valueGreaterThan(5))
                                                                               .build();
         Map<String, Object> stringObjectMap = new HashMap<>(1);
         stringObjectMap.put("TestInteger", "55");
+        assertTrue(stringObjectMap.get("TestInteger") instanceof String);
         ApiParameterCheckTuple checkTuple = passingIntegerApiParameter.check(stringObjectMap);
         assertTrue(checkTuple.successful());
         assertEquals("TestInteger", checkTuple.parameterName);

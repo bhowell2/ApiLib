@@ -13,12 +13,13 @@ public final class ApiParameterCheckTuple {
   public final ErrorTuple errorTuple;
 
   public ApiParameterCheckTuple(String parameterName) {
-    this(parameterName, null);
+      this.parameterName = parameterName;
+      this.errorTuple = null;
   }
 
-  public ApiParameterCheckTuple(String parameterName, ErrorTuple errorTuple) {
-    this.parameterName = parameterName;
+  public ApiParameterCheckTuple(ErrorTuple errorTuple) {
     this.errorTuple = errorTuple;
+    this.parameterName = null;
   }
 
   public boolean failed() {
@@ -33,7 +34,7 @@ public final class ApiParameterCheckTuple {
     return errorTuple;
   }
 
-  public String getParameterName() {
+  public String getParameterName(){
     return parameterName;
   }
 
@@ -44,17 +45,16 @@ public final class ApiParameterCheckTuple {
   }
 
   public static ApiParameterCheckTuple missingParameterFailure(String missingParamName) {
-    return new ApiParameterCheckTuple(missingParamName, new ErrorTuple(ErrorType.MISSING_PARAMETER, "Missing parameter name: " +
+    return new ApiParameterCheckTuple(new ErrorTuple(ErrorType.MISSING_PARAMETER, "Missing parameter name: " +
         missingParamName + ".", missingParamName));
   }
 
   public static ApiParameterCheckTuple invalidParameterFailure(String parameterName, String failureReason) {
-    return new ApiParameterCheckTuple(parameterName, new ErrorTuple(ErrorType.INVALID_PARAMETER, failureReason, parameterName));
+    return new ApiParameterCheckTuple(new ErrorTuple(ErrorType.INVALID_PARAMETER, failureReason, parameterName));
   }
 
-  public static ApiParameterCheckTuple parameterCastException(String parameterName, Class<?> clazz) {
-    String castMessage = "Failed to cast " + parameterName + " to " + clazz.getTypeName() + ".";
-    return new ApiParameterCheckTuple(parameterName, new ErrorTuple(ErrorType.PARAMETER_CAST, castMessage, parameterName));
+  public static ApiParameterCheckTuple parameterCastException(String parameterName, String message) {
+    return new ApiParameterCheckTuple(new ErrorTuple(ErrorType.PARAMETER_CAST, message, parameterName));
   }
 
 }

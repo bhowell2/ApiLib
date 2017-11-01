@@ -9,6 +9,7 @@ repositories {
 }
 
 dependencies {
+//    compile 'org.slf4j:slf4j-api:1.7.25'
     testCompile('junit:junit:4.12')
 }
 
@@ -17,7 +18,7 @@ install {
     repositories.mavenInstaller {
         pom.groupId = 'io.bhowell2'
         pom.artifactId = 'api-lib'
-        pom.version = '0.1.0'
+        pom.version = '0.2.0'
     }
 }
 
