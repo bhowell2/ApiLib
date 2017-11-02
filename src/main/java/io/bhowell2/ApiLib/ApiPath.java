@@ -12,7 +12,6 @@ public class ApiPath<RequestParameters> {
 
     private final String pathName;
     private final Pattern pathMatchPattern;
-//    private final ApiPathParameters[] pathParameters;
     ApiPathRequestParameters<RequestParameters>[] pathRequestParameters;
 
     /**
@@ -22,7 +21,7 @@ public class ApiPath<RequestParameters> {
     public ApiPath(ApiPathRequestParameters<RequestParameters>[] pathRequestParameters) {
         this(null, null, pathRequestParameters);
     }
-/**/
+
     /**
      * If the user wants a path name string, it may be set here.
      * @param pathName

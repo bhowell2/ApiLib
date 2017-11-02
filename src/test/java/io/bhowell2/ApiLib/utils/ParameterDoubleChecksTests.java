@@ -1,10 +1,8 @@
 package io.bhowell2.ApiLib.utils;
 
 import io.bhowell2.ApiLib.CheckFunction;
-import io.bhowell2.ApiLib.FunctionCheckTuple;
+import io.bhowell2.ApiLib.CheckFunctionTuple;
 import org.junit.Test;
-
-import java.util.function.Function;
 
 import static org.junit.Assert.*;
 import static io.bhowell2.ApiLib.utils.ParameterDoubleChecks.*;
@@ -20,21 +18,21 @@ public class ParameterDoubleChecksTests {
 
         // failing
 
-        FunctionCheckTuple checkTuple = checkTupleFunction.check(-1.0);
+        CheckFunctionTuple checkTuple = checkTupleFunction.check(-1.0);
         assertFalse(checkTuple.successful);
 
-        FunctionCheckTuple checkTuple1 = checkTupleFunction.check(-Double.MIN_VALUE);
+        CheckFunctionTuple checkTuple1 = checkTupleFunction.check(-Double.MIN_VALUE);
         assertFalse(checkTuple1.successful);
 
-        FunctionCheckTuple checkTuple2 = checkTupleFunction.check(0.0);
+        CheckFunctionTuple checkTuple2 = checkTupleFunction.check(0.0);
         assertFalse(checkTuple2.successful);
 
         // passing
 
-        FunctionCheckTuple checkTuple3 = checkTupleFunction.check(Double.MAX_VALUE);
+        CheckFunctionTuple checkTuple3 = checkTupleFunction.check(Double.MAX_VALUE);
         assertTrue(checkTuple3.successful);
 
-        FunctionCheckTuple checkTuple4 = checkTupleFunction.check(0.1);
+        CheckFunctionTuple checkTuple4 = checkTupleFunction.check(0.1);
         assertTrue(checkTuple4.successful);
     }
 
@@ -44,21 +42,21 @@ public class ParameterDoubleChecksTests {
 
         // failing
 
-        FunctionCheckTuple checkTuple = checkTupleFunction.check(-1.0);
+        CheckFunctionTuple checkTuple = checkTupleFunction.check(-1.0);
         assertFalse(checkTuple.successful);
 
-        FunctionCheckTuple checkTuple1 = checkTupleFunction.check(-Double.MIN_VALUE);
+        CheckFunctionTuple checkTuple1 = checkTupleFunction.check(-Double.MIN_VALUE);
         assertFalse(checkTuple1.successful);
 
         // passing
 
-        FunctionCheckTuple checkTuple2 = checkTupleFunction.check(0.0);
+        CheckFunctionTuple checkTuple2 = checkTupleFunction.check(0.0);
         assertTrue(checkTuple2.successful);
 
-        FunctionCheckTuple checkTuple3 = checkTupleFunction.check(Double.MAX_VALUE);
+        CheckFunctionTuple checkTuple3 = checkTupleFunction.check(Double.MAX_VALUE);
         assertTrue(checkTuple3.successful);
 
-        FunctionCheckTuple checkTuple4 = checkTupleFunction.check(0.1);
+        CheckFunctionTuple checkTuple4 = checkTupleFunction.check(0.1);
         assertTrue(checkTuple4.successful);
     }
 
@@ -68,21 +66,21 @@ public class ParameterDoubleChecksTests {
 
         // passing
 
-        FunctionCheckTuple checkTuple = checkTupleFunction.check(-1.0);
+        CheckFunctionTuple checkTuple = checkTupleFunction.check(-1.0);
         assertTrue(checkTuple.successful);
 
-        FunctionCheckTuple checkTuple1 = checkTupleFunction.check(-Double.MIN_VALUE);
+        CheckFunctionTuple checkTuple1 = checkTupleFunction.check(-Double.MIN_VALUE);
         assertTrue(checkTuple1.successful);
 
         // failing
 
-        FunctionCheckTuple checkTuple2 = checkTupleFunction.check(0.0);
+        CheckFunctionTuple checkTuple2 = checkTupleFunction.check(0.0);
         assertFalse(checkTuple2.successful);
 
-        FunctionCheckTuple checkTuple3 = checkTupleFunction.check(Double.MAX_VALUE);
+        CheckFunctionTuple checkTuple3 = checkTupleFunction.check(Double.MAX_VALUE);
         assertFalse(checkTuple3.successful);
 
-        FunctionCheckTuple checkTuple4 = checkTupleFunction.check(0.1);
+        CheckFunctionTuple checkTuple4 = checkTupleFunction.check(0.1);
         assertFalse(checkTuple4.successful);
     }
 
@@ -92,21 +90,21 @@ public class ParameterDoubleChecksTests {
 
         // passing
 
-        FunctionCheckTuple checkTuple = checkTupleFunction.check(-1.0);
+        CheckFunctionTuple checkTuple = checkTupleFunction.check(-1.0);
         assertTrue(checkTuple.successful);
 
-        FunctionCheckTuple checkTuple1 = checkTupleFunction.check(-Double.MIN_VALUE);
+        CheckFunctionTuple checkTuple1 = checkTupleFunction.check(-Double.MIN_VALUE);
         assertTrue(checkTuple1.successful);
 
-        FunctionCheckTuple checkTuple2 = checkTupleFunction.check(0.0);
+        CheckFunctionTuple checkTuple2 = checkTupleFunction.check(0.0);
         assertTrue(checkTuple2.successful);
 
         // failing
 
-        FunctionCheckTuple checkTuple3 = checkTupleFunction.check(Double.MAX_VALUE);
+        CheckFunctionTuple checkTuple3 = checkTupleFunction.check(Double.MAX_VALUE);
         assertFalse(checkTuple3.successful);
 
-        FunctionCheckTuple checkTuple4 = checkTupleFunction.check(0.1);
+        CheckFunctionTuple checkTuple4 = checkTupleFunction.check(0.1);
         assertFalse(checkTuple4.successful);
     }
 
@@ -117,21 +115,21 @@ public class ParameterDoubleChecksTests {
 
         // Failing
 
-        FunctionCheckTuple checkTuple = checkTupleFunction.check(0.1);
+        CheckFunctionTuple checkTuple = checkTupleFunction.check(0.1);
         assertFalse(checkTuple.successful);
 
-        FunctionCheckTuple checkTuple1 = checkTupleFunction.check(Double.MAX_VALUE);
+        CheckFunctionTuple checkTuple1 = checkTupleFunction.check(Double.MAX_VALUE);
         assertFalse(checkTuple1.successful);
 
-        FunctionCheckTuple checkTuple2 = checkTupleFunction.check(-Double.MIN_VALUE);
+        CheckFunctionTuple checkTuple2 = checkTupleFunction.check(-Double.MIN_VALUE);
         assertFalse(checkTuple2.successful);
 
         // Passing
 
-        FunctionCheckTuple checkTuple3 = checkTupleFunction.check(0.000);
+        CheckFunctionTuple checkTuple3 = checkTupleFunction.check(0.000);
         assertTrue(checkTuple3.successful);
 
-        FunctionCheckTuple checkTuple4 = checkTupleFunction.check(0.0);
+        CheckFunctionTuple checkTuple4 = checkTupleFunction.check(0.0);
         assertTrue(checkTuple4.successful);
 
     }

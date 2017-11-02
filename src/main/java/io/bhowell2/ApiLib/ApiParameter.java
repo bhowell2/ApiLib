@@ -1,7 +1,6 @@
 package io.bhowell2.ApiLib;
 
 /**
- * Generally, this class should be extended to reduce the amount of generics in required in a definition (e.g., if the user has the same ParamObject for all of their application (e.g. string is used to retrieve the ) then they could do: {@code public class ApiParameterExtended<ParamType> extends ApiParameter<ParamType, String, Map<String, Object>>}.
  *
  * @author Blake Howell
  */
@@ -31,7 +30,7 @@ public class ApiParameter<ParamType, ParamsObj> {
             if (param == null)
                 return ApiParameterCheckTuple.missingParameterFailure(this.parameterName);
             for (CheckFunction<ParamType> functionCheck : paramCheckFunctions) {
-                FunctionCheckTuple checkTuple = functionCheck.check(param);
+                CheckFunctionTuple checkTuple = functionCheck.check(param);
 
                 // short circuit checks and return (if one check fails, it all fails)
                 if (checkTuple.failed()) {

@@ -1,10 +1,8 @@
 package io.bhowell2.ApiLib.utils;
 
 import io.bhowell2.ApiLib.CheckFunction;
-import io.bhowell2.ApiLib.FunctionCheckTuple;
+import io.bhowell2.ApiLib.CheckFunctionTuple;
 import org.junit.Test;
-
-import java.util.function.Function;
 
 import static org.junit.Assert.*;
 import static io.bhowell2.ApiLib.utils.ParameterStringChecks.*;
@@ -20,18 +18,18 @@ public class ParameterStringChecksTests {
 
         // failing
 
-        FunctionCheckTuple checkTuple = checkTupleFunction.check("");
+        CheckFunctionTuple checkTuple = checkTupleFunction.check("");
         assertFalse(checkTuple.successful);
 
-        FunctionCheckTuple checkTuple2 = checkTupleFunction.check("1");
+        CheckFunctionTuple checkTuple2 = checkTupleFunction.check("1");
         assertFalse(checkTuple2.successful);
 
-        FunctionCheckTuple checkTuple3 = checkTupleFunction.check("12345");
+        CheckFunctionTuple checkTuple3 = checkTupleFunction.check("12345");
         assertFalse(checkTuple3.successful);
 
         // passing
 
-        FunctionCheckTuple checkTuple4 = checkTupleFunction.check("12345678");
+        CheckFunctionTuple checkTuple4 = checkTupleFunction.check("12345678");
         assertTrue(checkTuple4.successful);
 
         // testing greater than 0
@@ -40,12 +38,12 @@ public class ParameterStringChecksTests {
 
         // failing
 
-        FunctionCheckTuple checkTuple5 = checkTupleFunction2.check("");
+        CheckFunctionTuple checkTuple5 = checkTupleFunction2.check("");
         assertFalse(checkTuple5.successful);
 
         // passing
 
-        FunctionCheckTuple checkTuple6 = checkTupleFunction2.check("0");
+        CheckFunctionTuple checkTuple6 = checkTupleFunction2.check("0");
         assertTrue(checkTuple6.successful);
     }
 
@@ -55,18 +53,18 @@ public class ParameterStringChecksTests {
 
         // failing
 
-        FunctionCheckTuple checkTuple = checkTupleFunction.check("");
+        CheckFunctionTuple checkTuple = checkTupleFunction.check("");
         assertFalse(checkTuple.successful);
 
-        FunctionCheckTuple checkTuple2 = checkTupleFunction.check("1");
+        CheckFunctionTuple checkTuple2 = checkTupleFunction.check("1");
         assertFalse(checkTuple2.successful);
 
         // passing
 
-        FunctionCheckTuple checkTuple3 = checkTupleFunction.check("12345");
+        CheckFunctionTuple checkTuple3 = checkTupleFunction.check("12345");
         assertTrue(checkTuple3.successful);
 
-        FunctionCheckTuple checkTuple4 = checkTupleFunction.check("12345678");
+        CheckFunctionTuple checkTuple4 = checkTupleFunction.check("12345678");
         assertTrue(checkTuple4.successful);
 
         // testing greater than 0
@@ -74,10 +72,10 @@ public class ParameterStringChecksTests {
 
         // passing
 
-        FunctionCheckTuple checkTuple5 = checkTupleFunction2.check("");
+        CheckFunctionTuple checkTuple5 = checkTupleFunction2.check("");
         assertTrue(checkTuple5.successful);
 
-        FunctionCheckTuple checkTuple6 = checkTupleFunction2.check("0");
+        CheckFunctionTuple checkTuple6 = checkTupleFunction2.check("0");
         assertTrue(checkTuple6.successful);
     }
 
@@ -87,21 +85,21 @@ public class ParameterStringChecksTests {
 
         // passing
 
-        FunctionCheckTuple checkTuple = checkTupleFunction.check("");
+        CheckFunctionTuple checkTuple = checkTupleFunction.check("");
         assertTrue(checkTuple.successful);
 
-        FunctionCheckTuple checkTuple2 = checkTupleFunction.check("1");
+        CheckFunctionTuple checkTuple2 = checkTupleFunction.check("1");
         assertTrue(checkTuple2.successful);
 
-        FunctionCheckTuple checkTuple3 = checkTupleFunction.check("1234");
+        CheckFunctionTuple checkTuple3 = checkTupleFunction.check("1234");
         assertTrue(checkTuple3.successful);
 
         // Failing
 
-        FunctionCheckTuple checkTuple4 = checkTupleFunction.check("12345");
+        CheckFunctionTuple checkTuple4 = checkTupleFunction.check("12345");
         assertFalse(checkTuple4.successful);
 
-        FunctionCheckTuple checkTuple5 = checkTupleFunction.check("12345678");
+        CheckFunctionTuple checkTuple5 = checkTupleFunction.check("12345678");
         assertFalse(checkTuple5.successful);
 
         // testing less than 0
@@ -110,10 +108,10 @@ public class ParameterStringChecksTests {
 
         // only failing
 
-        FunctionCheckTuple checkTuple6 = checkTupleFunction2.check("");
+        CheckFunctionTuple checkTuple6 = checkTupleFunction2.check("");
         assertFalse(checkTuple6.successful);
 
-        FunctionCheckTuple checkTuple7 = checkTupleFunction2.check("1");
+        CheckFunctionTuple checkTuple7 = checkTupleFunction2.check("1");
         assertFalse(checkTuple7.successful);
     }
 
@@ -123,21 +121,21 @@ public class ParameterStringChecksTests {
 
         // passing
 
-        FunctionCheckTuple checkTuple = checkTupleFunction.check("");
+        CheckFunctionTuple checkTuple = checkTupleFunction.check("");
         assertTrue(checkTuple.successful);
 
-        FunctionCheckTuple checkTuple2 = checkTupleFunction.check("1");
+        CheckFunctionTuple checkTuple2 = checkTupleFunction.check("1");
         assertTrue(checkTuple2.successful);
 
-        FunctionCheckTuple checkTuple3 = checkTupleFunction.check("1234");
+        CheckFunctionTuple checkTuple3 = checkTupleFunction.check("1234");
         assertTrue(checkTuple3.successful);
 
-        FunctionCheckTuple checkTuple4 = checkTupleFunction.check("12345");
+        CheckFunctionTuple checkTuple4 = checkTupleFunction.check("12345");
         assertTrue(checkTuple4.successful);
 
         // Failing
 
-        FunctionCheckTuple checkTuple5 = checkTupleFunction.check("123456");
+        CheckFunctionTuple checkTuple5 = checkTupleFunction.check("123456");
         assertFalse(checkTuple5.successful);
 
         // testing less than or equal to 0
@@ -145,12 +143,12 @@ public class ParameterStringChecksTests {
 
         // passing
 
-        FunctionCheckTuple checkTuple6 = checkTupleFunction2.check("");
+        CheckFunctionTuple checkTuple6 = checkTupleFunction2.check("");
         assertTrue(checkTuple6.successful);
 
         // failing
 
-        FunctionCheckTuple checkTuple7 = checkTupleFunction2.check("1");
+        CheckFunctionTuple checkTuple7 = checkTupleFunction2.check("1");
         assertFalse(checkTuple7.successful);
     }
 

@@ -1,6 +1,6 @@
 package io.bhowell2.ApiLib;
 
-import io.bhowell2.ApiLib.utils.MapRequestParameterRetrievalFunctions;
+import io.bhowell2.ApiLib.extensions.map.MapRequestParameterRetrievalFunctions;
 import org.junit.Test;
 
 import java.util.HashMap;

@@ -6,6 +6,6 @@ package io.bhowell2.ApiLib;
 @FunctionalInterface
 public interface CheckFunction<T> {
 
-    FunctionCheckTuple check(T param);
+    CheckFunctionTuple check(T param);
 
 }
