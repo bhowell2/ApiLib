@@ -7,8 +7,6 @@ import java.util.List;
  * For this base case, {@link ApiNestedParameter#parameterRetrievalFunction} will just return the object to be checked (not pulling out a nested
  * parameter) -- use {@link ApiPathRequestParametersBuilder}) to do this.
  *
- * The
- *
  * @author Blake Howell
  */
 public class ApiPathRequestParameters<RequestParameters> {
@@ -46,7 +44,6 @@ public class ApiPathRequestParameters<RequestParameters> {
         this.startingProvidedParametersArraySize = requiredParameters.length + requiredCustomParameters.length + optionalParameters.length / 3 + optionalCustomParameters.length / 3;
     }
 
-    // TODO: Setup ApiPathRequestParametersCheckTuple
     public ApiPathRequestParamsCheckTuple check(RequestParameters requestParameters) {
         List<String> providedParameterNames = new ArrayList<>(this.startingProvidedParametersArraySize);
         List<ApiNestedParamCheckTuple> providedNestedParameters = new ArrayList<>(this.requiredNestedParameters.length);
@@ -80,7 +77,8 @@ public class ApiPathRequestParameters<RequestParameters> {
                 if (checkTuple.failed()) {
                     return ApiPathRequestParamsCheckTuple.failed(checkTuple.errorTuple);
                 }
-                providedParameterNames.addAll(checkTuple.providedParameterNames);
+                providedNestedParameters.add(checkTuple);
+                providedParameterNames.add(checkTuple.nestedParameterName);
             } catch (ClassCastException e) {
                 return ApiPathRequestParamsCheckTuple
                     .failed(new ErrorTuple(ErrorType.PARAMETER_CAST, "Failed to cast parameter to correct type. " + e.getMessage()));
@@ -120,7 +118,8 @@ public class ApiPathRequestParameters<RequestParameters> {
                     return ApiPathRequestParamsCheckTuple.failed(checkTuple.errorTuple);
                 }
             }
-            providedParameterNames.addAll(checkTuple.providedParameterNames);
+            providedNestedParameters.add(checkTuple);
+            providedParameterNames.add(checkTuple.nestedParameterName);
         }
 
         return ApiPathRequestParamsCheckTuple.success(providedParameterNames, providedNestedParameters);

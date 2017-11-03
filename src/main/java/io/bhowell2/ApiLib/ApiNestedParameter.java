@@ -93,7 +93,8 @@ public class ApiNestedParameter<NestedParamType, ParentParamType> {
                     // wrap the errortuple, describing which nested parameter the error occured in (this will work for arbitrary depth)
                     return ApiNestedParamCheckTuple.failed(wrapErrorTupleForNested(checkTuple.errorTuple));
                 }
-                providedParameterNames.addAll(checkTuple.providedParameterNames);
+                providedInnerNestedParams.add(checkTuple);
+                providedParameterNames.add(checkTuple.nestedParameterName);
             } catch (ClassCastException e) {
                 return ApiNestedParamCheckTuple
                     .failed(new ErrorTuple(ErrorType.PARAMETER_CAST, "Failed to cast parameter to correct type. " + e.getMessage()));
@@ -133,7 +134,8 @@ public class ApiNestedParameter<NestedParamType, ParentParamType> {
                     return ApiNestedParamCheckTuple.failed(wrapErrorTupleForNested(checkTuple.errorTuple));
                 }
             }
-            providedParameterNames.addAll(checkTuple.providedParameterNames);
+            providedInnerNestedParams.add(checkTuple);
+            providedParameterNames.add(checkTuple.nestedParameterName);
         }
 
         return ApiNestedParamCheckTuple.success(this.parameterName, providedParameterNames, providedInnerNestedParams);
