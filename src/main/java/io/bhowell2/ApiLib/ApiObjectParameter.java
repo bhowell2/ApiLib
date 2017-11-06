@@ -27,8 +27,8 @@ public class ApiObjectParameter<ObjectParamType, ParentParamType> {
     final ApiParameter<?, ObjectParamType>[] optionalParams;
     final ApiObjectParameter<?, ObjectParamType>[] requiredObjParams;
     final ApiObjectParameter<?, ObjectParamType>[] optionalObjParams;
-    final ApiArrayParameter<?, ObjectParamType>[] requiredArrayParams;
-    final ApiArrayParameter<?, ObjectParamType>[] optionalArrayParams;
+//    final ApiArrayParameter<?, ObjectParamType>[] requiredArrayParams;
+//    final ApiArrayParameter<?, ObjectParamType>[] optionalArrayParams;
     final ApiCustomParameters<ObjectParamType>[] requiredCustomParams;
     final ApiCustomParameters<ObjectParamType>[] optionalCustomParams;
 
@@ -41,8 +41,8 @@ public class ApiObjectParameter<ObjectParamType, ParentParamType> {
      * @param optionalParams
      * @param requiredObjParams
      * @param optionalObjParams
-     * @param requiredArrayParams
-     * @param optionalArrayParams
+//     * @param requiredArrayParams
+//     * @param optionalArrayParams
      * @param requiredCustomParams
      * @param optionalCustomParams
      */
@@ -52,8 +52,8 @@ public class ApiObjectParameter<ObjectParamType, ParentParamType> {
                               ApiParameter<?, ObjectParamType>[] optionalParams,
                               ApiObjectParameter<?, ObjectParamType>[] requiredObjParams,
                               ApiObjectParameter<?, ObjectParamType>[] optionalObjParams,
-                              ApiArrayParameter<?, ObjectParamType>[] requiredArrayParams,
-                              ApiArrayParameter<?, ObjectParamType>[] optionalArrayParams,
+//                              ApiArrayParameter<?, ObjectParamType>[] requiredArrayParams,
+//                              ApiArrayParameter<?, ObjectParamType>[] optionalArrayParams,
                               ApiCustomParameters<ObjectParamType>[] requiredCustomParams,
                               ApiCustomParameters<ObjectParamType>[] optionalCustomParams) {
         this(null,
@@ -63,8 +63,8 @@ public class ApiObjectParameter<ObjectParamType, ParentParamType> {
              optionalParams,
              requiredObjParams,
              optionalObjParams,
-             requiredArrayParams,
-             optionalArrayParams,
+//             requiredArrayParams,
+//             optionalArrayParams,
              requiredCustomParams,
              optionalCustomParams);
     }
@@ -76,8 +76,8 @@ public class ApiObjectParameter<ObjectParamType, ParentParamType> {
                               ApiParameter<?, ObjectParamType>[] optionalParams,
                               ApiObjectParameter<?, ObjectParamType>[] requiredObjParams,
                               ApiObjectParameter<?, ObjectParamType>[] optionalObjParams,
-                              ApiArrayParameter<?, ObjectParamType>[] requiredArrayParams,
-                              ApiArrayParameter<?, ObjectParamType>[] optionalArrayParams,
+//                              ApiArrayParameter<?, ObjectParamType>[] requiredArrayParams,
+//                              ApiArrayParameter<?, ObjectParamType>[] optionalArrayParams,
                               ApiCustomParameters<ObjectParamType>[] requiredCustomParams,
                               ApiCustomParameters<ObjectParamType>[] optionalCustomParams) {
         this.parameterName = parameterName;
@@ -105,15 +105,15 @@ public class ApiObjectParameter<ObjectParamType, ParentParamType> {
         else
             this.optionalObjParams = optionalObjParams;
 
-        if (requiredArrayParams == null)
-            this.requiredArrayParams = new ApiArrayParameter[0];
-        else
-            this.requiredArrayParams = requiredArrayParams;
-
-        if (optionalArrayParams == null)
-            this.optionalArrayParams = new ApiArrayParameter[0];
-        else
-            this.optionalArrayParams = optionalArrayParams;
+//        if (requiredArrayParams == null)
+//            this.requiredArrayParams = new ApiArrayParameter[0];
+//        else
+//            this.requiredArrayParams = requiredArrayParams;
+//
+//        if (optionalArrayParams == null)
+//            this.optionalArrayParams = new ApiArrayParameter[0];
+//        else
+//            this.optionalArrayParams = optionalArrayParams;
 
         if (requiredCustomParams == null)
             this.requiredCustomParams = new ApiCustomParameters[0];
@@ -135,22 +135,22 @@ public class ApiObjectParameter<ObjectParamType, ParentParamType> {
         List<String> providedParamNames = null;
         List<ApiCustomParamsTuple> providedCustomParams = null;
         List<ApiObjectParamTuple> providedObjParams = null;
-        List<ApiArrayParamTuple> providedArrayParams = null;
+//        List<ApiArrayParamTuple> providedArrayParams = null;
         if (requiredParams.length > 0 || optionalParams.length > 0)
             providedParamNames = new ArrayList<>(this.requiredParams.length);
         if (requiredCustomParams.length > 0 || optionalCustomParams.length > 0)
             providedCustomParams = new ArrayList<>(this.requiredCustomParams.length);
         if (requiredObjParams.length > 0 || optionalObjParams.length > 0)
             providedObjParams = new ArrayList<>(this.requiredObjParams.length);
-        if (requiredArrayParams.length > 0 || optionalArrayParams.length > 0)
-            providedArrayParams = new ArrayList<>(this.requiredArrayParams.length);
+//        if (requiredArrayParams.length > 0 || optionalArrayParams.length > 0)
+//            providedArrayParams = new ArrayList<>(this.requiredArrayParams.length);
 
         // check required first so failure will short-circuit
 
         for (ApiParameter<?, ObjectParamType> apiParameter : requiredParams) {
             ApiParamTuple checkTuple = apiParameter.check(objParamsToCheck);
             if (checkTuple.failed()) {
-                return ApiObjectParamTuple.failed(wrapErrorTupleForNested(checkTuple.errorTuple));
+                return ApiObjectParamTuple.failed(wrapErrorTupleForObject(checkTuple.errorTuple));
             }
             providedParamNames.add(checkTuple.parameterName);
         }
@@ -159,43 +159,47 @@ public class ApiObjectParameter<ObjectParamType, ParentParamType> {
             try {
                 ApiCustomParamsTuple checkTuple = apiCustomParameters.check(objParamsToCheck);
                 if (checkTuple.failed()) {
-                    return ApiObjectParamTuple.failed(wrapErrorTupleForNested(checkTuple.errorTuple));
+                    return ApiObjectParamTuple.failed(wrapErrorTupleForObject(checkTuple.errorTuple));
                 }
                 providedCustomParams.add(checkTuple);
+                providedParamNames.addAll(checkTuple.providedParamNames);
             } catch (ClassCastException e) {
                 return ApiObjectParamTuple
                     .failed(new ErrorTuple(ErrorType.PARAMETER_CAST, "Failed to case parameter in ApiCustomParameters check. " + e.getMessage()));
             }
         }
 
-        // It's easily possible that a ClassCastException happens in the retrieval
         for (ApiObjectParameter<?, ObjectParamType> objectParameter : requiredObjParams) {
             try {
                 ApiObjectParamTuple checkTuple = objectParameter.check(objParamsToCheck);
                 if (checkTuple.failed()) {
                     // wrap the errortuple, describing which nested parameter the error occured in (this will work for arbitrary depth)
-                    return ApiObjectParamTuple.failed(wrapErrorTupleForNested(checkTuple.errorTuple));
+                    return ApiObjectParamTuple.failed(wrapErrorTupleForObject(checkTuple.errorTuple));
                 }
+                // all objects checked here will have an object name (the only time that an object will not have an object name is when it is an array value (and, technically the root object))
                 providedObjParams.add(checkTuple);
+                providedParamNames.add(checkTuple.parameterName);
             } catch (ClassCastException e) {
                 return ApiObjectParamTuple
                     .failed(new ErrorTuple(ErrorType.PARAMETER_CAST, "Failed to cast parameter to correct type. " + e.getMessage()));
             }
         }
 
-        for (ApiArrayParameter<?, ObjectParamType> arrayParameter : requiredArrayParams) {
-            try {
-                ApiArrayParamTuple checkTuple = arrayParameter.check(objParamsToCheck);
-                if (checkTuple.failed()) {
-                    return ApiObjectParamTuple.failed(checkTuple.errorTuple);
-                }
-                providedArrayParams.add(checkTuple);
-            } catch (ClassCastException e) {
-                // TODO: NOTE ARRAY PARAM NAME COULD BE NULL IF IT'S NESTED IN ANOTHER ARRAY, check for that.
-                return ApiObjectParamTuple.failed(new ErrorTuple(ErrorType.PARAMETER_CAST, "Failed to cast array " + (arrayParameter.parameterName)
-                    +" to correct type."));
-            }
-        }
+//        for (ApiArrayParameter<?, ObjectParamType> arrayParameter : requiredArrayParams) {
+//            try {
+//                ApiArrayParamTuple checkTuple = arrayParameter.check(objParamsToCheck);
+//                if (checkTuple.failed()) {
+//                    return ApiObjectParamTuple.failed(checkTuple.errorTuple);
+//                }
+//                // array tuple will have parameter name here (only time it will not is if it is an array within an array)
+//                providedArrayParams.add(checkTuple);
+//                providedParamNames.add(arrayParameter.parameterName);
+//            } catch (ClassCastException e) {
+//                // TODO: NOTE ARRAY PARAM NAME COULD BE NULL IF IT'S NESTED IN ANOTHER ARRAY, check for that.
+//                return ApiObjectParamTuple.failed(new ErrorTuple(ErrorType.PARAMETER_CAST, "Failed to cast array " + (arrayParameter.parameterName)
+//                    +" to correct type."));
+//            }
+//        }
 
         for (ApiParameter<?, ObjectParamType> apiParameter : optionalParams) {
             ApiParamTuple checkTuple = apiParameter.check(objParamsToCheck);
@@ -203,7 +207,7 @@ public class ApiObjectParameter<ObjectParamType, ParentParamType> {
                 if (checkTuple.errorTuple.errorType == ErrorType.MISSING_PARAMETER || continueOnOptionalFailure) {
                     continue;
                 } else {
-                    return ApiObjectParamTuple.failed(wrapErrorTupleForNested(checkTuple.errorTuple));
+                    return ApiObjectParamTuple.failed(wrapErrorTupleForObject(checkTuple.errorTuple));
                 }
             }
             providedParamNames.add(checkTuple.parameterName);
@@ -215,10 +219,11 @@ public class ApiObjectParameter<ObjectParamType, ParentParamType> {
                 if (checkTuple.errorTuple.errorType == ErrorType.MISSING_PARAMETER || continueOnOptionalFailure) {
                     continue;
                 } else {
-                    return ApiObjectParamTuple.failed(wrapErrorTupleForNested(checkTuple.errorTuple));
+                    return ApiObjectParamTuple.failed(wrapErrorTupleForObject(checkTuple.errorTuple));
                 }
             }
             providedCustomParams.add(checkTuple);
+            providedParamNames.addAll(checkTuple.providedParamNames);
         }
 
         for (ApiObjectParameter<?, ObjectParamType> nestedParameter : optionalObjParams) {
@@ -227,29 +232,40 @@ public class ApiObjectParameter<ObjectParamType, ParentParamType> {
                 if (checkTuple.errorTuple.errorType == ErrorType.MISSING_PARAMETER || continueOnOptionalFailure) {
                     continue;
                 } else {
-                    return ApiObjectParamTuple.failed(wrapErrorTupleForNested(checkTuple.errorTuple));
+                    return ApiObjectParamTuple.failed(wrapErrorTupleForObject(checkTuple.errorTuple));
                 }
             }
             providedObjParams.add(checkTuple);
+            providedParamNames.add(checkTuple.parameterName);
         }
 
-        for (ApiArrayParameter<?, ObjectParamType> arrayParameter : optionalArrayParams) {
-            ApiArrayParamTuple checkTuple = arrayParameter.check(objParamsToCheck);
-            if (checkTuple.failed()) {
-                if (checkTuple.errorTuple.errorType == ErrorType.MISSING_PARAMETER || continueOnOptionalFailure) {
-                    continue;
-                } else {
-                    return ApiObjectParamTuple.failed(wrapErrorTupleForNested(checkTuple.errorTuple));
-                }
-            }
-            providedArrayParams.add(checkTuple);
-        }
+//        for (ApiArrayParameter<?, ObjectParamType> arrayParameter : optionalArrayParams) {
+//            ApiArrayParamTuple checkTuple = arrayParameter.check(objParamsToCheck);
+//            if (checkTuple.failed()) {
+//                if (checkTuple.errorTuple.errorType == ErrorType.MISSING_PARAMETER || continueOnOptionalFailure) {
+//                    continue;
+//                } else {
+//                    return ApiObjectParamTuple.failed(wrapErrorTupleForObject(checkTuple.errorTuple));
+//                }
+//            }
+//            providedArrayParams.add(checkTuple);
+//            providedParamNames.add(checkTuple.parameterName);
+//        }
 
         return ApiObjectParamTuple.success(this.parameterName, providedParamNames, providedObjParams, providedArrayParams, providedCustomParams);
     }
 
-    private ErrorTuple wrapErrorTupleForNested(ErrorTuple errorTuple) {
-        return new ErrorTuple(errorTuple.errorType, errorTuple.errorMessage, errorTuple.parameterName + " of (nested) " + this.parameterName);
+    /**
+     * Returns an error tuple that specifies the topmost object parameter in which the error occurred.
+     * @param errorTuple
+     * @return
+     */
+    private ErrorTuple wrapErrorTupleForObject(ErrorTuple errorTuple) {
+        if (this.parameterName == null) {
+            return errorTuple;
+        }
+        return new ErrorTuple(errorTuple.errorType, errorTuple.errorMessage, errorTuple.parameterName + " of " + this.parameterName);
+
     }
 
 }

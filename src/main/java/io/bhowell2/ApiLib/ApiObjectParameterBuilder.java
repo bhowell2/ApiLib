@@ -10,8 +10,14 @@ import java.util.List;
  */
 public final class ApiObjectParameterBuilder<ObjectType, ParentParamType> {
 
-    public static <NestedParamType, ParentParamType> ApiObjectParameterBuilder<NestedParamType, ParentParamType> builder(String nestedParameterName, ParameterRetrievalFunction<NestedParamType, ParentParamType> retrievalFunction) {
-        return new ApiObjectParameterBuilder<>(nestedParameterName, retrievalFunction);
+    public static <ObjectType, ParentParamType> ApiObjectParameterBuilder<ObjectType, ParentParamType> builder(
+        ParameterRetrievalFunction<ObjectType, ParentParamType> retrievalFunction) {
+        return new ApiObjectParameterBuilder<>(null, retrievalFunction);
+    }
+
+    public static <ObjectType, ParentParamType> ApiObjectParameterBuilder<ObjectType, ParentParamType> builder(String objectParameterName,
+                                                                                                               ParameterRetrievalFunction<ObjectType, ParentParamType> retrievalFunction) {
+        return new ApiObjectParameterBuilder<>(objectParameterName, retrievalFunction);
     }
 
     private String nestedParameterName;

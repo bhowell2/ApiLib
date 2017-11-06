@@ -14,12 +14,12 @@ public final class ApiObjectParamTuple {
     public final List<String> providedParamNames;                   // name of parameters successfully checked/provided
     public final List<ApiCustomParamsTuple> providedCustomParams;   //
     public final List<ApiObjectParamTuple> providedObjParams;       // if objects are nested within this object
-    public final List<ApiArrayParamTuple> providedArrayParams;      //
+//    public final List<ApiArrayParamTuple> providedArrayParams;      //
     public final ErrorTuple errorTuple;                         //
 
     public ApiObjectParamTuple(List<String> providedParamNames,
                                List<ApiObjectParamTuple> providedObjParams,
-                               List<ApiArrayParamTuple> providedArrayParams,
+//                               List<ApiArrayParamTuple> providedArrayParams,
                                List<ApiCustomParamsTuple> providedCustomParams) {
         this(null, providedParamNames, providedObjParams, providedArrayParams, providedCustomParams);
     }
@@ -27,7 +27,7 @@ public final class ApiObjectParamTuple {
     public ApiObjectParamTuple(String parameterName,
                                List<String> providedParamNames,
                                List<ApiObjectParamTuple> providedObjParams,
-                               List<ApiArrayParamTuple> providedArrayParams,
+//                               List<ApiArrayParamTuple> providedArrayParams,
                                List<ApiCustomParamsTuple> providedCustomParams) {
         this.parameterName = parameterName;
         if (providedParamNames == null || providedParamNames.size() == 0) {
@@ -40,11 +40,11 @@ public final class ApiObjectParamTuple {
         } else {
             this.providedObjParams = providedObjParams;
         }
-        if (providedArrayParams == null || providedArrayParams.size() == 0) {
-            this.providedArrayParams = null;
-        } else {
-            this.providedArrayParams = providedArrayParams;
-        }
+//        if (providedArrayParams == null || providedArrayParams.size() == 0) {
+//            this.providedArrayParams = null;
+//        } else {
+//            this.providedArrayParams = providedArrayParams;
+//        }
         if (providedCustomParams == null || providedCustomParams.size() == 0) {
             this.providedCustomParams = null;
         } else {
@@ -58,7 +58,7 @@ public final class ApiObjectParamTuple {
         this.parameterName = null;
         this.providedParamNames = null;
         this.providedObjParams = null;
-        this.providedArrayParams = null;
+//        this.providedArrayParams = null;
         this.providedCustomParams = null;
     }
 
