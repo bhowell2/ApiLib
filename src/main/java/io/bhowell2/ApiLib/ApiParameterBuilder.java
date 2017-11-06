@@ -14,9 +14,9 @@ public class ApiParameterBuilder<ParamType, ParamsObj> {
         return new ApiParameterBuilder<>(parameterName, retrievalFunction);
     }
 
-    private String parameterName;
-    private List<CheckFunction<ParamType>> checkFunctions;
-    private ParameterRetrievalFunction<ParamType, ParamsObj> retrievalFunction;
+    protected String parameterName;
+    protected List<CheckFunction<ParamType>> checkFunctions;
+    protected ParameterRetrievalFunction<ParamType, ParamsObj> retrievalFunction;
 
     public ApiParameterBuilder(String parameterName, ParameterRetrievalFunction<ParamType, ParamsObj> retrievalFunction) {
         this.parameterName = parameterName;
@@ -41,7 +41,7 @@ public class ApiParameterBuilder<ParamType, ParamsObj> {
         return this;
     }
 
-    private static class NoFunctionChecksProvidedException extends RuntimeException {
+    protected static class NoFunctionChecksProvidedException extends RuntimeException {
         public NoFunctionChecksProvidedException(String parameterName) {
             super("No function checks were provided for the parameter " + "'" + parameterName + "'. If this is intentional, just provide a function" +
                       "check that returns success (e.g., FunctionCheckReturnTuple.success()) if you want it to always pass, or failure if it should " +

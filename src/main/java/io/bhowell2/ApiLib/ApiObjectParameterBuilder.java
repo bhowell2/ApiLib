@@ -19,15 +19,15 @@ public final class ApiObjectParameterBuilder<ObjectType, ParentParamType> {
         return new ApiObjectParameterBuilder<>(objectParameterName, retrievalFunction);
     }
 
-    private String nestedParameterName;
-    private ParameterRetrievalFunction<ObjectType, ParentParamType> retrievalFunction;
-    private List<ApiParameter<?, ObjectType>> requiredParams;
-    private List<ApiParameter<?, ObjectType>> optionalParams;
-    private List<ApiObjectParameter<?, ObjectType>> requiredObjParams;
-    private List<ApiObjectParameter<?, ObjectType>> optionalObjParams;
-    private List<ApiCustomParameters<ObjectType>> requiredCustomParams;
-    private List<ApiCustomParameters<ObjectType>> optionalCustomParams;
-    private boolean continueOnOptionalFailure = false;
+    protected String nestedParameterName;
+    protected ParameterRetrievalFunction<ObjectType, ParentParamType> retrievalFunction;
+    protected List<ApiParameter<?, ObjectType>> requiredParams;
+    protected List<ApiParameter<?, ObjectType>> optionalParams;
+    protected List<ApiObjectParameter<?, ObjectType>> requiredObjParams;
+    protected List<ApiObjectParameter<?, ObjectType>> optionalObjParams;
+    protected List<ApiCustomParameters<ObjectType>> requiredCustomParams;
+    protected List<ApiCustomParameters<ObjectType>> optionalCustomParams;
+    protected boolean continueOnOptionalFailure = false;
 
     public ApiObjectParameterBuilder(String nestedParameterName, ParameterRetrievalFunction<ObjectType, ParentParamType> retrievalFunction) {
         this.nestedParameterName = nestedParameterName;

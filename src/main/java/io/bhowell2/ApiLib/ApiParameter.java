@@ -7,8 +7,8 @@ package io.bhowell2.ApiLib;
 public class ApiParameter<ParamType, ParamsObj> {
 
     final String parameterName;
-    private final CheckFunction<ParamType>[] paramCheckFunctions;
-    private final ParameterRetrievalFunction<ParamType, ParamsObj> parameterRetrievalFunction;
+    protected final CheckFunction<ParamType>[] paramCheckFunctions;
+    protected final ParameterRetrievalFunction<ParamType, ParamsObj> parameterRetrievalFunction;
 
     @SuppressWarnings("varargs")
     public ApiParameter(String parameterName,
