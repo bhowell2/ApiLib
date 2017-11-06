@@ -24,7 +24,7 @@ public class ApiParameterTest {
                                                                               .build();
         Map<String, Object> stringObjectMap = new HashMap<>(1);
         stringObjectMap.put("TestInteger", 55);
-        ApiParameterCheckTuple checkTuple = failingIntegerApiParameter.check(stringObjectMap);
+        ApiParamTuple checkTuple = failingIntegerApiParameter.check(stringObjectMap);
         assertTrue(checkTuple.failed());
         assertEquals(checkTuple.errorTuple.errorType, ErrorType.INVALID_PARAMETER);
     }
@@ -36,7 +36,7 @@ public class ApiParameterTest {
                                                                               .addCheckFunction(i -> CheckFunctionTuple.failure("Failed!"))
                                                                               .build();
         Map<String, Object> stringObjectMap = new HashMap<>(0);
-        ApiParameterCheckTuple checkTuple = failingIntegerApiParameter.check(stringObjectMap);
+        ApiParamTuple checkTuple = failingIntegerApiParameter.check(stringObjectMap);
         assertTrue(checkTuple.failed());
         assertEquals(checkTuple.errorTuple.errorType, ErrorType.MISSING_PARAMETER);
     }
@@ -49,7 +49,7 @@ public class ApiParameterTest {
                                                                               .build();
         Map<String, Object> stringObjectMap = new HashMap<>(1);
         stringObjectMap.put("TestInteger", 55);
-        ApiParameterCheckTuple checkTuple = passingIntegerApiParameter.check(stringObjectMap);
+        ApiParamTuple checkTuple = passingIntegerApiParameter.check(stringObjectMap);
         assertTrue(checkTuple.successful());
         assertEquals("TestInteger", checkTuple.parameterName);
     }
@@ -63,7 +63,7 @@ public class ApiParameterTest {
         Map<String, Object> stringObjectMap = new HashMap<>(1);
         stringObjectMap.put("TestInteger", "55");
         assertTrue(stringObjectMap.get("TestInteger") instanceof String);
-        ApiParameterCheckTuple checkTuple = passingIntegerApiParameter.check(stringObjectMap);
+        ApiParamTuple checkTuple = passingIntegerApiParameter.check(stringObjectMap);
         assertTrue(checkTuple.successful());
         assertEquals("TestInteger", checkTuple.parameterName);
         assertTrue(stringObjectMap.get("TestInteger") instanceof Integer);

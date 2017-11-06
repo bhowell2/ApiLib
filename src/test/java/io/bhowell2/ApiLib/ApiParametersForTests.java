@@ -37,10 +37,10 @@ public final class ApiParametersForTests {
                                                                                                  .addCheckFunction(ParameterIntegerChecks.valueGreaterThan(100))
                                                                                                  .build();
 
-    public static final ApiNestedParameter<Map<String, Object>, Map<String, Object>> NESTED_PARAM = ApiNestedParameterBuilder.builder("NestedParameter",
-                                                                                                                                      MapRequestParameterRetrievalFunctions.INNER_MAP_FROM_MAP)
-                                                                                                                             .addRequiredParameter(INTEGER1)
-                                                                                                                             .addOptionalParameter(INTEGER2)
-                                                                                                                             .build();
+    public static final ApiObjectParameter<Map<String, Object>, Map<String, Object>> INNER_OBJ_PARAM = ApiObjectParameterBuilder.builder("NestedParameter",
+                                                                                                                                         MapRequestParameterRetrievalFunctions.INNER_MAP_FROM_MAP)
+                                                                                                                                .addRequiredParameter(INTEGER1)
+                                                                                                                                .addOptionalParameter(INTEGER2)
+                                                                                                                                .build();
 
 }

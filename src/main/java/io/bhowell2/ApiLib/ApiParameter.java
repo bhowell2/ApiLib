@@ -24,26 +24,26 @@ public class ApiParameter<ParamType, ParamsObj> {
      * @param requestParameters contains the parameter to be checked, which will be pulled from the map
      * @return a tuple with the name of the successfully checked parameter, or error information
      */
-    public ApiParameterCheckTuple check(ParamsObj requestParameters) {
+    public ApiParamTuple check(ParamsObj requestParameters) {
         try {
             ParamType param = parameterRetrievalFunction.retrieveParameter(parameterName, requestParameters);
             if (param == null)
-                return ApiParameterCheckTuple.missingParameterFailure(this.parameterName);
+                return ApiParamTuple.missingParameterFailure(this.parameterName);
             for (CheckFunction<ParamType> functionCheck : paramCheckFunctions) {
                 CheckFunctionTuple checkTuple = functionCheck.check(param);
 
                 // short circuit checks and return (if one check fails, it all fails)
                 if (checkTuple.failed()) {
-                    return checkTuple.hasFailureMessage() ? ApiParameterCheckTuple.invalidParameterFailure(this.parameterName, checkTuple.failureMessage):
-                        ApiParameterCheckTuple.invalidParameterFailure(this.parameterName, "Failed to pass parameter check.");
+                    return checkTuple.hasFailureMessage() ? ApiParamTuple.invalidParameterFailure(this.parameterName, checkTuple.failureMessage):
+                        ApiParamTuple.invalidParameterFailure(this.parameterName, "Failed to pass parameter check.");
                 }
 
             }
             // all checks have passed, parameter is deemed successfully checked
-            return ApiParameterCheckTuple.success(this.parameterName);
+            return ApiParamTuple.success(this.parameterName);
 
         } catch (ClassCastException e) {
-            return ApiParameterCheckTuple.parameterCastException(this.parameterName, e.getMessage());
+            return ApiParamTuple.parameterCastException(this.parameterName, e.getMessage());
         }
     }
 

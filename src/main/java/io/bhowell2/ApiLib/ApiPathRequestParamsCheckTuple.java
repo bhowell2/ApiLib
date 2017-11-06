@@ -8,14 +8,14 @@ import java.util.List;
 public final class ApiPathRequestParamsCheckTuple {
 
     public final List<String> providedParameterNames;      // name of parameters successfully checked/provided
-    public final List<ApiNestedParamCheckTuple> innerNestedParameters;
+    public final List<ApiObjectParamTuple> innerNestedParameters;
     public final ErrorTuple errorTuple;
 
     public ApiPathRequestParamsCheckTuple(List<String> providedParameterNames) {
         this(providedParameterNames, null);
     }
 
-    public ApiPathRequestParamsCheckTuple(List<String> providedParameterNames, List<ApiNestedParamCheckTuple> innerNestedParameters) {
+    public ApiPathRequestParamsCheckTuple(List<String> providedParameterNames, List<ApiObjectParamTuple> innerNestedParameters) {
         this.providedParameterNames = providedParameterNames;
         if (innerNestedParameters == null || innerNestedParameters.size() == 0) {
             this.innerNestedParameters = null;
@@ -49,7 +49,7 @@ public final class ApiPathRequestParamsCheckTuple {
         return new ApiPathRequestParamsCheckTuple(providedParameterNames);
     }
 
-    public static ApiPathRequestParamsCheckTuple success(List<String> providedParameterNames, List<ApiNestedParamCheckTuple>
+    public static ApiPathRequestParamsCheckTuple success(List<String> providedParameterNames, List<ApiObjectParamTuple>
         innerNestedParameters) {
         return new ApiPathRequestParamsCheckTuple(providedParameterNames, innerNestedParameters);
     }

@@ -1,6 +1,6 @@
 package io.bhowell2.ApiLib.extensions.map;
 
-import io.bhowell2.ApiLib.ApiNestedParameterBuilder;
+import io.bhowell2.ApiLib.ApiObjectParameterBuilder;
 
 import java.util.Map;
 
@@ -9,8 +9,8 @@ import java.util.Map;
  */
 public class ApiMapNestedParameterBuilder {
 
-    public static ApiNestedParameterBuilder<Map<String,Object>, Map<String,Object>> builder(String nestedMapName) {
-        return new ApiNestedParameterBuilder<>(nestedMapName, MapRequestParameterRetrievalFunctions.INNER_MAP_FROM_MAP);
+    public static ApiObjectParameterBuilder<Map<String,Object>, Map<String,Object>> builder(String nestedMapName) {
+        return new ApiObjectParameterBuilder<>(nestedMapName, MapRequestParameterRetrievalFunctions.INNER_MAP_FROM_MAP);
     }
 
 }

@@ -12,11 +12,11 @@ import static io.bhowell2.ApiLib.ApiParametersForTests.*;
 /**
  * @author Blake Howell
  */
-public class ApiNestedParameterTests {
+public class ApiObjectParameterTests {
 
     @Test
     public void shouldFailFromMissingParameters() {
-        ApiNestedParameter<Map<String, Object>, Map<String, Object>> nestedParameter = ApiNestedParameterBuilder.builder("",
+        ApiObjectParameter<Map<String, Object>, Map<String, Object>> nestedParameter = ApiObjectParameterBuilder.builder("",
                                                                                                                          MapRequestParameterRetrievalFunctions.RETURN_SELF_MAP)
                                                                                                                 .addRequiredParameter(INTEGER1)
                                                                                                                 .addRequiredParameter(INTEGER2)
@@ -24,7 +24,7 @@ public class ApiNestedParameterTests {
 
         Map<String, Object> requestParameters = new HashMap<>();
         requestParameters.put(INTEGER1.parameterName, 5);
-        ApiNestedParamCheckTuple checkTuple = nestedParameter.check(requestParameters);
+        ApiObjectParamTuple checkTuple = nestedParameter.check(requestParameters);
         assertTrue(checkTuple.failed());
         assertEquals(checkTuple.errorTuple.errorType, ErrorType.MISSING_PARAMETER);
         assertTrue(checkTuple.errorTuple.parameterName.matches("Integer2 of .*"));
@@ -33,11 +33,11 @@ public class ApiNestedParameterTests {
 
     @Test
     public void shouldFailFromMissingNestedParameter() {
-        ApiNestedParameter<Map<String, Object>, Map<String, Object>> nestedParameter = ApiNestedParameterBuilder.builder("",
+        ApiObjectParameter<Map<String, Object>, Map<String, Object>> nestedParameter = ApiObjectParameterBuilder.builder("",
                                                                                                                          MapRequestParameterRetrievalFunctions.RETURN_SELF_MAP)
                                                                                                                 .addRequiredParameter(INTEGER1)
                                                                                                                 .addRequiredParameter(INTEGER2)
-                                                                                                                .addRequiredNestedParameter(NESTED_PARAM)
+                                                                                                                .addRequiredObjectParameter(INNER_OBJ_PARAM)
                                                                                                                 .build();
 
         Map<String, Object> requestParameters = new HashMap<>();
@@ -47,8 +47,8 @@ public class ApiNestedParameterTests {
         // test again by putting in nested parameters
         Map<String, Object> innerNestedParameters = new HashMap<>();
         innerNestedParameters.put(INTEGER2.parameterName, 101);
-        requestParameters.put(NESTED_PARAM.parameterName, innerNestedParameters);
-        ApiNestedParamCheckTuple checkTuple = nestedParameter.check(requestParameters);
+        requestParameters.put(INNER_OBJ_PARAM.parameterName, innerNestedParameters);
+        ApiObjectParamTuple checkTuple = nestedParameter.check(requestParameters);
         assertTrue(checkTuple.failed());
         assertEquals(checkTuple.errorTuple.errorType, ErrorType.MISSING_PARAMETER);
         assertTrue(checkTuple.errorTuple.parameterName.matches("Integer1 of .*"));

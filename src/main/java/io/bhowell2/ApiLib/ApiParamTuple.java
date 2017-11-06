@@ -7,17 +7,17 @@ package io.bhowell2.ApiLib;
  *
  * @author Blake Howell
  */
-public final class ApiParameterCheckTuple {
+public final class ApiParamTuple {
 
   public final String parameterName;
   public final ErrorTuple errorTuple;
 
-  public ApiParameterCheckTuple(String parameterName) {
+  public ApiParamTuple(String parameterName) {
       this.parameterName = parameterName;
       this.errorTuple = null;
   }
 
-  public ApiParameterCheckTuple(ErrorTuple errorTuple) {
+  public ApiParamTuple(ErrorTuple errorTuple) {
     this.errorTuple = errorTuple;
     this.parameterName = null;
   }
@@ -40,21 +40,21 @@ public final class ApiParameterCheckTuple {
 
   /* Static creation methods */
 
-  public static ApiParameterCheckTuple success(String parameterName) {
-    return new ApiParameterCheckTuple(parameterName);
+  public static ApiParamTuple success(String parameterName) {
+    return new ApiParamTuple(parameterName);
   }
 
-  public static ApiParameterCheckTuple missingParameterFailure(String missingParamName) {
-    return new ApiParameterCheckTuple(new ErrorTuple(ErrorType.MISSING_PARAMETER, "Missing parameter name: " +
+  public static ApiParamTuple missingParameterFailure(String missingParamName) {
+    return new ApiParamTuple(new ErrorTuple(ErrorType.MISSING_PARAMETER, "Missing parameter name: " +
         missingParamName + ".", missingParamName));
   }
 
-  public static ApiParameterCheckTuple invalidParameterFailure(String parameterName, String failureReason) {
-    return new ApiParameterCheckTuple(new ErrorTuple(ErrorType.INVALID_PARAMETER, failureReason, parameterName));
+  public static ApiParamTuple invalidParameterFailure(String parameterName, String failureReason) {
+    return new ApiParamTuple(new ErrorTuple(ErrorType.INVALID_PARAMETER, failureReason, parameterName));
   }
 
-  public static ApiParameterCheckTuple parameterCastException(String parameterName, String message) {
-    return new ApiParameterCheckTuple(new ErrorTuple(ErrorType.PARAMETER_CAST, message, parameterName));
+  public static ApiParamTuple parameterCastException(String parameterName, String message) {
+    return new ApiParamTuple(new ErrorTuple(ErrorType.PARAMETER_CAST, message, parameterName));
   }
 
 }
