@@ -12,11 +12,11 @@ import java.util.Map;
 public class ApiMapParameter<ParamType> extends ApiParameter<ParamType, Map<String, Object>> {
 
     public ApiMapParameter(String parameterName, CheckFunction<ParamType>[] checkFunction, ParameterRetrievalFunction<ParamType, Map<String, Object>> retrievalFunction) {
-        super(parameterName, checkFunction, retrievalFunction);
+        super(parameterName, retrievalFunction, checkFunction);
     }
 
     public ApiMapParameter(String parameterName, CheckFunction<ParamType>[] checkFunction, Class<ParamType> paramTypeClass) {
-        super(parameterName, checkFunction, MapRequestParameterRetrievalFunctions.typeFromMap(paramTypeClass));
+        super(parameterName, MapRequestParameterRetrievalFunctions.typeFromMap(paramTypeClass), checkFunction);
     }
     
 }
