@@ -31,8 +31,8 @@ public class ApiParameterBuilder<ParamType, ParamsObj> {
             throw new NoFunctionChecksProvidedException(this.parameterName);
         }
         return new ApiParameter<>(parameterName,
-                                  checkFunctions.toArray((CheckFunction<ParamType>[]) new CheckFunction[checkFunctions.size()]),
-                                  retrievalFunction);
+                                  retrievalFunction,
+                                  checkFunctions.toArray((CheckFunction<ParamType>[]) new CheckFunction[checkFunctions.size()]));
     }
 
 

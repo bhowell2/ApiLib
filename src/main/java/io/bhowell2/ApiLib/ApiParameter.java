@@ -10,9 +10,10 @@ public class ApiParameter<ParamType, ParamsObj> {
     private final CheckFunction<ParamType>[] paramCheckFunctions;
     private final ParameterRetrievalFunction<ParamType, ParamsObj> parameterRetrievalFunction;
 
+    @SuppressWarnings("varargs")
     public ApiParameter(String parameterName,
-                        CheckFunction<ParamType>[] paramCheckFunctions,
-                        ParameterRetrievalFunction<ParamType, ParamsObj> parameterRetrievalFunction) {
+                        ParameterRetrievalFunction<ParamType, ParamsObj> parameterRetrievalFunction,
+                        CheckFunction<ParamType>... paramCheckFunctions) {
         this.parameterName = parameterName;
         this.paramCheckFunctions = paramCheckFunctions;
         this.parameterRetrievalFunction = parameterRetrievalFunction;
