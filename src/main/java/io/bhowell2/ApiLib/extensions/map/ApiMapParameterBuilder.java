@@ -1,11 +1,9 @@
 package io.bhowell2.ApiLib.extensions.map;
 
-import io.bhowell2.ApiLib.ApiParameter;
 import io.bhowell2.ApiLib.ApiParameterBuilder;
 import io.bhowell2.ApiLib.CheckFunction;
 import io.bhowell2.ApiLib.ParameterRetrievalFunction;
 
-import java.util.List;
 import java.util.Map;
 
 import static io.bhowell2.ApiLib.extensions.map.MapRequestParameterRetrievalFunctions.*;
@@ -13,10 +11,21 @@ import static io.bhowell2.ApiLib.extensions.map.MapRequestParameterRetrievalFunc
 /**
  * @author Blake Howell
  */
-public class ApiMapParameterBuilder {
+public class ApiMapParameterBuilder<ParamType> extends ApiParameterBuilder<ParamType, Map<String, Object>> {
 
-    public static <T> ApiParameterBuilder<T, Map<String, Object>> builder(String parameterName, Class<T> paramType) {
-        return new ApiParameterBuilder<>(parameterName, typeFromMap(paramType));
+    public static <ParamType> ApiMapParameterBuilder<ParamType> builder(String parameterName, Class<ParamType> paramType) {
+        return new ApiMapParameterBuilder<>(parameterName, paramType);
+    }
+
+    public ApiMapParameterBuilder(String parameterName, Class<ParamType> paramType) {
+        super(parameterName, typeFromMap(paramType));
+    }
+
+    @SuppressWarnings("unchecked")
+    public ApiMapParameter<ParamType> build() {
+        return new ApiMapParameter<ParamType>(this.parameterName,
+                                              this.retrievalFunction,
+                                              this.checkFunctions.toArray((CheckFunction<ParamType>[])new CheckFunction[this.checkFunctions.size()]));
     }
 
 }

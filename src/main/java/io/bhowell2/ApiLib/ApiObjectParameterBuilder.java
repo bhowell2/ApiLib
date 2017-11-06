@@ -8,7 +8,7 @@ import java.util.List;
  *
  * @author Blake Howell
  */
-public final class ApiObjectParameterBuilder<ObjectType, ParentParamType> {
+public class ApiObjectParameterBuilder<ObjectType, ParentParamType> {
 
     public static <ObjectType, ParentParamType> ApiObjectParameterBuilder<ObjectType, ParentParamType> builder(
         ParameterRetrievalFunction<ObjectType, ParentParamType> retrievalFunction) {
@@ -19,7 +19,7 @@ public final class ApiObjectParameterBuilder<ObjectType, ParentParamType> {
         return new ApiObjectParameterBuilder<>(objectParameterName, retrievalFunction);
     }
 
-    protected String nestedParameterName;
+    protected String objectParameterName;
     protected ParameterRetrievalFunction<ObjectType, ParentParamType> retrievalFunction;
     protected List<ApiParameter<?, ObjectType>> requiredParams;
     protected List<ApiParameter<?, ObjectType>> optionalParams;
@@ -29,8 +29,8 @@ public final class ApiObjectParameterBuilder<ObjectType, ParentParamType> {
     protected List<ApiCustomParameters<ObjectType>> optionalCustomParams;
     protected boolean continueOnOptionalFailure = false;
 
-    public ApiObjectParameterBuilder(String nestedParameterName, ParameterRetrievalFunction<ObjectType, ParentParamType> retrievalFunction) {
-        this.nestedParameterName = nestedParameterName;
+    public ApiObjectParameterBuilder(String objectParameterName, ParameterRetrievalFunction<ObjectType, ParentParamType> retrievalFunction) {
+        this.objectParameterName = objectParameterName;
         this.retrievalFunction = retrievalFunction;
         this.requiredParams = new ArrayList<>();
         this.optionalParams = new ArrayList<>();
@@ -83,10 +83,10 @@ public final class ApiObjectParameterBuilder<ObjectType, ParentParamType> {
         ApiParameter<?, ObjectType>[] optionalApiParamsAry = this.optionalParams
             .toArray((ApiParameter<?, ObjectType>[])new ApiParameter[this.optionalParams.size()]);
 
-        ApiObjectParameter<?, ObjectType>[] requiredApiNestedParamsAry = this.requiredObjParams
+        ApiObjectParameter<?, ObjectType>[] requiredApiObjectParamsAry = this.requiredObjParams
             .toArray((ApiObjectParameter<?, ObjectType>[])new ApiObjectParameter[this.requiredObjParams.size()]);
 
-        ApiObjectParameter<?, ObjectType>[] optionalApiNestedParamsAry =   this.optionalObjParams
+        ApiObjectParameter<?, ObjectType>[] optionalApiObjectParamsAry =   this.optionalObjParams
             .toArray((ApiObjectParameter<?, ObjectType>[])new ApiObjectParameter[this.optionalObjParams.size()]);
 
         ApiCustomParameters<ObjectType>[] requiredCustomParamsAry = this.requiredCustomParams
@@ -95,13 +95,13 @@ public final class ApiObjectParameterBuilder<ObjectType, ParentParamType> {
         ApiCustomParameters<ObjectType>[] optionalCustomParamsAry = this.optionalCustomParams
             .toArray((ApiCustomParameters<ObjectType>[])new ApiCustomParameters[this.optionalCustomParams.size()]);
 
-        return new ApiObjectParameter<>(this.nestedParameterName,
+        return new ApiObjectParameter<>(this.objectParameterName,
                                         this.continueOnOptionalFailure,
                                         this.retrievalFunction,
                                         requiredApiParamsAry,
                                         optionalApiParamsAry,
-                                        requiredApiNestedParamsAry,
-                                        optionalApiNestedParamsAry,
+                                        requiredApiObjectParamsAry,
+                                        optionalApiObjectParamsAry,
                                         requiredCustomParamsAry,
                                         optionalCustomParamsAry);
     }
