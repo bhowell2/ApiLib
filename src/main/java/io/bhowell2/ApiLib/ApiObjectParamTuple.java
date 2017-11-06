@@ -14,20 +14,17 @@ public final class ApiObjectParamTuple {
     public final List<String> providedParamNames;                   // name of parameters successfully checked/provided
     public final List<ApiCustomParamsTuple> providedCustomParams;   //
     public final List<ApiObjectParamTuple> providedObjParams;       // if objects are nested within this object
-//    public final List<ApiArrayParamTuple> providedArrayParams;      //
     public final ErrorTuple errorTuple;                         //
 
     public ApiObjectParamTuple(List<String> providedParamNames,
                                List<ApiObjectParamTuple> providedObjParams,
-//                               List<ApiArrayParamTuple> providedArrayParams,
                                List<ApiCustomParamsTuple> providedCustomParams) {
-        this(null, providedParamNames, providedObjParams, providedArrayParams, providedCustomParams);
+        this(null, providedParamNames, providedObjParams, providedCustomParams);
     }
 
     public ApiObjectParamTuple(String parameterName,
                                List<String> providedParamNames,
                                List<ApiObjectParamTuple> providedObjParams,
-//                               List<ApiArrayParamTuple> providedArrayParams,
                                List<ApiCustomParamsTuple> providedCustomParams) {
         this.parameterName = parameterName;
         if (providedParamNames == null || providedParamNames.size() == 0) {
@@ -40,11 +37,6 @@ public final class ApiObjectParamTuple {
         } else {
             this.providedObjParams = providedObjParams;
         }
-//        if (providedArrayParams == null || providedArrayParams.size() == 0) {
-//            this.providedArrayParams = null;
-//        } else {
-//            this.providedArrayParams = providedArrayParams;
-//        }
         if (providedCustomParams == null || providedCustomParams.size() == 0) {
             this.providedCustomParams = null;
         } else {
@@ -78,18 +70,13 @@ public final class ApiObjectParamTuple {
         return providedObjParams != null;
     }
 
-    public boolean hasArrayParams() {
-        return providedArrayParams != null;
-    }
-
     /* Static creation methods */
 
     public static ApiObjectParamTuple success(String parameterName,
                                               List<String> providedParamNames,
                                               List<ApiObjectParamTuple> providedObjParams,
-                                              List<ApiArrayParamTuple> providedArrayParams,
                                               List<ApiCustomParamsTuple> providedCustomParams) {
-        return new ApiObjectParamTuple(parameterName, providedParamNames, providedObjParams, providedArrayParams, providedCustomParams);
+        return new ApiObjectParamTuple(parameterName, providedParamNames, providedObjParams, providedCustomParams);
     }
 
     public static ApiObjectParamTuple failed(ErrorTuple errorTuple) {

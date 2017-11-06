@@ -57,9 +57,9 @@ public class ApiObjectParameterTests {
 
     @Test
     public void shouldFailFromFailingArrayCheck() {
-        ApiObjectParameter<Map<String, Object>, Map<String, Object>> objectParam =
+        ApiObjectParameter<Map<String, Object>, Map<String, Object>> requestParams =
             ApiObjectParameterBuilder.builder(MapRequestParameterRetrievalFunctions.RETURN_SELF_MAP)
-                                     .addRequiredArrayParameter(ARRAY1)
+                                     .addRequiredCustomParameters(CUSTOM_ARRAY1)
                                      .build();
 
         List<Integer> failingList = new ArrayList<>();
@@ -71,20 +71,21 @@ public class ApiObjectParameterTests {
 
         Map<String, Object> failingArrayObject = new HashMap<>();
         failingArrayObject.put("Array1", failingList);
-        ApiObjectParamTuple failedCheckTuple = objectParam.check(failingArrayObject);
+        ApiObjectParamTuple failedCheckTuple = requestParams.check(failingArrayObject);
         assertTrue(failedCheckTuple.failed());
         assertEquals(failedCheckTuple.errorTuple.errorType, ErrorType.INVALID_PARAMETER);
         assertEquals(failedCheckTuple.errorTuple.parameterName, "Array1");
 
         Map<String, Object> passingArrayObject = new HashMap<>();
         passingArrayObject.put("Array1", passingList);
-        ApiObjectParamTuple passingCheckTuple = objectParam.check(passingArrayObject);
+        ApiObjectParamTuple passingCheckTuple = requestParams.check(passingArrayObject);
         assertTrue(passingCheckTuple.successful());
         assertNull(passingCheckTuple.parameterName);
         assertEquals(passingCheckTuple.providedParamNames.size(), 1);
         assertEquals(passingCheckTuple.providedParamNames.get(0), "Array1");
-        assertEquals(passingCheckTuple.providedArrayParams.size(), 1);
-        assertEquals(passingCheckTuple.providedArrayParams.get(0).parameterName, "Array1");
+        assertEquals(passingCheckTuple.providedCustomParams.size(), 1);
+        assertEquals(passingCheckTuple.providedCustomParams.get(0).providedParamNames.size(), 1);
+        assertEquals(passingCheckTuple.providedCustomParams.get(0).providedParamNames.get(0), "Array1");
     }
 
 }

@@ -13,28 +13,24 @@ public class ApiCustomParamsTuple {
 
     public final List<String> providedParamNames;                   // name of parameters successfully checked/provided
     public final List<ApiObjectParamTuple> providedObjParams;       // if objects are nested within this object
-    public final List<ApiArrayParamTuple> providedArrayParams;      //
     final ErrorTuple errorTuple;
 
     public ApiCustomParamsTuple() {
         this(null, null, null);
     }
 
-    public ApiCustomParamsTuple(String... providedParameterNames) {
-        this(new ArrayList<>(Arrays.asList(providedParameterNames)), null, null);
+    public ApiCustomParamsTuple(String... providedParamNames) {
+        this(new ArrayList<>(Arrays.asList(providedParamNames)), null);
     }
 
-    public ApiCustomParamsTuple(List<String> providedParamNames, List<ApiObjectParamTuple> providedObjParams,
-                                List<ApiArrayParamTuple> providedArrayParams) {
-        this.errorTuple = null;
+    public ApiCustomParamsTuple(List<String> providedParamNames, List<ApiObjectParamTuple> providedObjParams) {
         this.providedParamNames = providedParamNames;
         this.providedObjParams = providedObjParams;
-        this.providedArrayParams = providedArrayParams;
+        this.errorTuple = null;
     }
 
     public ApiCustomParamsTuple(ErrorTuple errorTuple) {
         this.errorTuple = errorTuple;
-        this.providedArrayParams = null;
         this.providedObjParams = null;
         this.providedParamNames = null;
     }
@@ -63,9 +59,8 @@ public class ApiCustomParamsTuple {
     }
 
     public static ApiCustomParamsTuple success(List<String> providedParamNames,
-                                               List<ApiObjectParamTuple> providedObjParams,
-                                               List<ApiArrayParamTuple> providedArrayParams) {
-        return new ApiCustomParamsTuple(providedParamNames, providedObjParams, providedArrayParams);
+                                               List<ApiObjectParamTuple> providedObjParams) {
+        return new ApiCustomParamsTuple(providedParamNames, providedObjParams);
     }
 
     public static ApiCustomParamsTuple success(String... parameterNames) {

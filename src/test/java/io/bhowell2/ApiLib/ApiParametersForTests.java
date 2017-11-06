@@ -51,18 +51,13 @@ public final class ApiParametersForTests {
                                  .addOptionalParameter(INTEGER2)
                                  .build();
 
-    public static final ApiCustomParameters<List<Integer>> CUSTOM_INTEGERS_ARRAY = list -> {
-        for (Integer i : list) {
+    @SuppressWarnings("unchecked")
+    public static final ApiCustomParameters<Map<String, Object>> CUSTOM_ARRAY1 = map -> {
+        for (Integer i : (List<Integer>)map.get("Array1")) {
             if (i < 10)
-                return ApiCustomParamsTuple.failure(new ErrorTuple(ErrorType.INVALID_PARAMETER, "Integers in list must be greater than or equal to 10"));
+                return ApiCustomParamsTuple.failure(new ErrorTuple(ErrorType.INVALID_PARAMETER, "Integers in list must be greater than or equal to 10", "Array1"));
         }
-        return ApiCustomParamsTuple.success();
+        return ApiCustomParamsTuple.success("Array1");
     };
-
-//    public static final ApiArrayParameter<List<Integer>, Map<String, Object>> ARRAY1 =
-//        ApiArrayParameterBuilder.builder("Array1",
-//                                         (String name, Map<String, Object> params) -> (List<Integer>) params.get(name))
-//                                .addRequiredCustomParameter(CUSTOM_INTEGERS_ARRAY)
-//                                .build();
 
 }

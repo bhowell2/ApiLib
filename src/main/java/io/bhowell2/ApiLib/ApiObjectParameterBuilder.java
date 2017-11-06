@@ -15,8 +15,7 @@ public final class ApiObjectParameterBuilder<ObjectType, ParentParamType> {
         return new ApiObjectParameterBuilder<>(null, retrievalFunction);
     }
 
-    public static <ObjectType, ParentParamType> ApiObjectParameterBuilder<ObjectType, ParentParamType> builder(String objectParameterName,
-                                                                                                               ParameterRetrievalFunction<ObjectType, ParentParamType> retrievalFunction) {
+    public static <ObjectType, ParentParamType> ApiObjectParameterBuilder<ObjectType, ParentParamType> builder(String objectParameterName, ParameterRetrievalFunction<ObjectType, ParentParamType> retrievalFunction) {
         return new ApiObjectParameterBuilder<>(objectParameterName, retrievalFunction);
     }
 
@@ -26,8 +25,6 @@ public final class ApiObjectParameterBuilder<ObjectType, ParentParamType> {
     private List<ApiParameter<?, ObjectType>> optionalParams;
     private List<ApiObjectParameter<?, ObjectType>> requiredObjParams;
     private List<ApiObjectParameter<?, ObjectType>> optionalObjParams;
-    private List<ApiArrayParameter<?, ObjectType>> requiredArrayParams;
-    private List<ApiArrayParameter<?, ObjectType>> optionalArrayParams;
     private List<ApiCustomParameters<ObjectType>> requiredCustomParams;
     private List<ApiCustomParameters<ObjectType>> optionalCustomParams;
     private boolean continueOnOptionalFailure = false;
@@ -39,8 +36,6 @@ public final class ApiObjectParameterBuilder<ObjectType, ParentParamType> {
         this.optionalParams = new ArrayList<>();
         this.requiredObjParams = new ArrayList<>();
         this.optionalObjParams = new ArrayList<>();
-        this.requiredArrayParams = new ArrayList<>();
-        this.optionalArrayParams = new ArrayList<>();
         this.requiredCustomParams = new ArrayList<>();
         this.optionalCustomParams = new ArrayList<>();
     }
@@ -80,16 +75,6 @@ public final class ApiObjectParameterBuilder<ObjectType, ParentParamType> {
         return this;
     }
 
-    public ApiObjectParameterBuilder<ObjectType, ParentParamType> addRequiredArrayParameter(ApiArrayParameter<?, ObjectType> arrayParameter) {
-        this.requiredArrayParams.add(arrayParameter);
-        return this;
-    }
-
-    public ApiObjectParameterBuilder<ObjectType, ParentParamType> addOptionalArrayParameter(ApiArrayParameter<?, ObjectType> arrayParameter) {
-        this.optionalArrayParams.add(arrayParameter);
-        return this;
-    }
-
     @SuppressWarnings("unchecked")
     public ApiObjectParameter<ObjectType, ParentParamType> build() {
         ApiParameter<?, ObjectType>[] requiredApiParamsAry = this.requiredParams
@@ -104,16 +89,11 @@ public final class ApiObjectParameterBuilder<ObjectType, ParentParamType> {
         ApiObjectParameter<?, ObjectType>[] optionalApiNestedParamsAry =   this.optionalObjParams
             .toArray((ApiObjectParameter<?, ObjectType>[])new ApiObjectParameter[this.optionalObjParams.size()]);
 
-        ApiArrayParameter<?, ObjectType>[] requiredArrayParamsAry = this.requiredArrayParams.toArray(new ApiArrayParameter[this.requiredArrayParams.size()]);
-
-        ApiArrayParameter<?, ObjectType>[] optionalArrayParamsAry = this.optionalArrayParams.toArray(new ApiArrayParameter[this.optionalArrayParams.size()]);
-
         ApiCustomParameters<ObjectType>[] requiredCustomParamsAry = this.requiredCustomParams
             .toArray((ApiCustomParameters<ObjectType>[])new ApiCustomParameters[this.requiredCustomParams.size()]);
 
         ApiCustomParameters<ObjectType>[] optionalCustomParamsAry = this.optionalCustomParams
             .toArray((ApiCustomParameters<ObjectType>[])new ApiCustomParameters[this.optionalCustomParams.size()]);
-
 
         return new ApiObjectParameter<>(this.nestedParameterName,
                                         this.continueOnOptionalFailure,
@@ -122,8 +102,6 @@ public final class ApiObjectParameterBuilder<ObjectType, ParentParamType> {
                                         optionalApiParamsAry,
                                         requiredApiNestedParamsAry,
                                         optionalApiNestedParamsAry,
-                                        requiredArrayParamsAry,
-                                        optionalArrayParamsAry,
                                         requiredCustomParamsAry,
                                         optionalCustomParamsAry);
     }
