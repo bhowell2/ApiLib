@@ -26,6 +26,42 @@ public class ApiMapObjectParameterBuilder extends ApiObjectParameterBuilder<Map<
         super(objectParameterName, retrievalFunction);
     }
 
+    public ApiMapObjectParameterBuilder setContinueOnOptionalFailure(boolean b) {
+        this.continueOnOptionalFailure = b;
+        return this;
+    }
+
+    public ApiMapObjectParameterBuilder addRequiredParameter(ApiMapParameter<?> requiredApiParameter) {
+        this.requiredParams.add(requiredApiParameter);
+        return this;
+    }
+
+    public ApiMapObjectParameterBuilder addOptionalParameter(ApiMapParameter<?> optionalApiParameter) {
+        this.optionalParams.add(optionalApiParameter);
+        return this;
+    }
+
+    public ApiMapObjectParameterBuilder addRequiredObjectParameter(ApiMapObjectParameter objectParameter) {
+        this.requiredObjParams.add(objectParameter);
+        return this;
+    }
+
+    public ApiMapObjectParameterBuilder addOptionalObjectParameter(ApiMapObjectParameter objectParameter) {
+        this.optionalObjParams.add(objectParameter);
+        return this;
+    }
+
+    public ApiMapObjectParameterBuilder addRequiredCustomParameters(ApiMapCustomParameters customParameters) {
+        this.requiredCustomParams.add(customParameters);
+        return this;
+    }
+
+    public ApiMapObjectParameterBuilder addOptionalCustomParameters(ApiMapCustomParameters customParameters) {
+        this.optionalCustomParams.add(customParameters);
+        return this;
+    }
+
+
     @SuppressWarnings("unchecked")
     public ApiMapObjectParameter build() {
         ApiMapParameter<?>[] requiredApiParamsAry = this.requiredParams

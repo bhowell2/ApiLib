@@ -1,12 +1,14 @@
 package io.bhowell2.ApiLib;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Use {@code parameterRetrievalFunction} to retrieve nested parameters and pass them into the check.
  *
- * Theoretically, there could be an arbitrary number of nested parameters (anything deeper than 2 or 3 though i'm thinking there's a high liklihood of
+ * Theoretically, there could be an arbitrary number of nested parameters (anything deeper than 2 or 3 though i'm thinking there's a high likelihood of
  * a design flaw and you should rethink your API a bit!)
  *
  * NestedParamType - the parameter type that will be retrieved from ParentParamType to be checked (note all "sub-parameters" will take in request
@@ -61,6 +63,7 @@ public class ApiObjectParameter<ObjectParamType, ParentParamType> {
              optionalCustomParams);
     }
 
+    @SuppressWarnings("unchecked")
     public ApiObjectParameter(String parameterName,
                               boolean continueOnOptionalFailure,
                               ParameterRetrievalFunction<ObjectParamType, ParentParamType> retrievalFunction,
@@ -115,14 +118,13 @@ public class ApiObjectParameter<ObjectParamType, ParentParamType> {
 
         // TODO: Write code to dynamically chose best array sizes
         // do not need to create objects for nothing here
-        List<String> providedParamNames = null;
+        List<String> providedParamNames = new ArrayList<>(this.requiredParams.length);
         List<ApiCustomParamsTuple> providedCustomParams = null;
-        List<ApiObjectParamTuple> providedObjParams = null;
-            providedParamNames = new ArrayList<>(this.requiredParams.length);
+        Map<String, ApiObjectParamTuple> providedObjParams = null;
         if (requiredCustomParams.length > 0 || optionalCustomParams.length > 0)
             providedCustomParams = new ArrayList<>(this.requiredCustomParams.length);
         if (requiredObjParams.length > 0 || optionalObjParams.length > 0)
-            providedObjParams = new ArrayList<>(this.requiredObjParams.length);
+            providedObjParams = new HashMap<>(this.requiredObjParams.length);
 
         // check REQUIRED params first so failure will short-circuit
 
@@ -156,7 +158,7 @@ public class ApiObjectParameter<ObjectParamType, ParentParamType> {
                     return ApiObjectParamTuple.failed(wrapErrorTupleForObject(checkTuple.errorTuple));
                 }
                 // all objects checked here will have an object name (the only time that an object will not have an object name is when it is an array value (and, technically the root object))
-                providedObjParams.add(checkTuple);
+                providedObjParams.put(checkTuple.parameterName, checkTuple);
                 providedParamNames.add(checkTuple.parameterName);
             } catch (ClassCastException e) {
                 return ApiObjectParamTuple
@@ -198,7 +200,7 @@ public class ApiObjectParameter<ObjectParamType, ParentParamType> {
                     return ApiObjectParamTuple.failed(wrapErrorTupleForObject(checkTuple.errorTuple));
                 }
             }
-            providedObjParams.add(checkTuple);
+            providedObjParams.put(checkTuple.parameterName, checkTuple);
             providedParamNames.add(checkTuple.parameterName);
         }
 

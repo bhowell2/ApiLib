@@ -1,13 +1,13 @@
 package io.bhowell2.ApiLib;
 
-import io.bhowell2.ApiLib.extensions.map.MapRequestParameterRetrievalFunctions;
+import io.bhowell2.ApiLib.extensions.map.MapParameterRetrievalFunctions;
 import io.bhowell2.ApiLib.utils.ParameterIntegerChecks;
 import io.bhowell2.ApiLib.utils.ParameterStringChecks;
 
 import java.util.List;
 import java.util.Map;
 
-import static io.bhowell2.ApiLib.extensions.map.MapRequestParameterRetrievalFunctions.*;
+import static io.bhowell2.ApiLib.extensions.map.MapParameterRetrievalFunctions.*;
 
 /**
  * Various parameters to use in tests.
@@ -46,7 +46,7 @@ public final class ApiParametersForTests {
 
     public static final ApiObjectParameter<Map<String, Object>, Map<String, Object>> INNER_OBJ_PARAM =
         ApiObjectParameterBuilder.builder("NestedParameter",
-                                          MapRequestParameterRetrievalFunctions.INNER_MAP_FROM_MAP)
+                                          MapParameterRetrievalFunctions.INNER_MAP_FROM_MAP)
                                  .addRequiredParameter(INTEGER1)
                                  .addOptionalParameter(INTEGER2)
                                  .build();

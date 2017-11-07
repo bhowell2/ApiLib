@@ -1,6 +1,6 @@
 package io.bhowell2.ApiLib;
 
-import io.bhowell2.ApiLib.extensions.map.MapRequestParameterRetrievalFunctions;
+import io.bhowell2.ApiLib.extensions.map.MapParameterRetrievalFunctions;
 import org.junit.Test;
 
 import java.util.ArrayList;
@@ -19,7 +19,7 @@ public class ApiObjectParameterTests {
     @Test
     public void shouldFailFromMissingParameter() {
         ApiObjectParameter<Map<String, Object>, Map<String, Object>> objectParam =
-            ApiObjectParameterBuilder.builder(MapRequestParameterRetrievalFunctions.RETURN_SELF_MAP)
+            ApiObjectParameterBuilder.builder(MapParameterRetrievalFunctions.RETURN_SELF_MAP)
                                      .addRequiredParameter(INTEGER1)
                                      .addRequiredParameter(INTEGER2)
                                      .build();
@@ -35,7 +35,7 @@ public class ApiObjectParameterTests {
     @Test
     public void shouldFailFromMissingInnerObjectParameter() {
         ApiObjectParameter<Map<String, Object>, Map<String, Object>> objectParam
-            = ApiObjectParameterBuilder.builder(MapRequestParameterRetrievalFunctions.RETURN_SELF_MAP)
+            = ApiObjectParameterBuilder.builder(MapParameterRetrievalFunctions.RETURN_SELF_MAP)
                                        .addRequiredParameter(INTEGER1)
                                        .addRequiredParameter(INTEGER2)
                                        .addRequiredObjectParameter(INNER_OBJ_PARAM)
@@ -58,7 +58,7 @@ public class ApiObjectParameterTests {
     @Test
     public void shouldFailFromFailingArrayCheck() {
         ApiObjectParameter<Map<String, Object>, Map<String, Object>> requestParams =
-            ApiObjectParameterBuilder.builder(MapRequestParameterRetrievalFunctions.RETURN_SELF_MAP)
+            ApiObjectParameterBuilder.builder(MapParameterRetrievalFunctions.RETURN_SELF_MAP)
                                      .addRequiredCustomParameters(CUSTOM_ARRAY1)
                                      .build();
 

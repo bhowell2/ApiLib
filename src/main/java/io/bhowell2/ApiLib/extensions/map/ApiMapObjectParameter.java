@@ -1,6 +1,5 @@
 package io.bhowell2.ApiLib.extensions.map;
 
-import io.bhowell2.ApiLib.ApiCustomParameters;
 import io.bhowell2.ApiLib.ApiObjectParameter;
 import io.bhowell2.ApiLib.ParameterRetrievalFunction;
 

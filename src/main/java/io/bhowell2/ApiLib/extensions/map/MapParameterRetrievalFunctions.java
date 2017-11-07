@@ -7,7 +7,7 @@ import java.util.Map;
 /**
  * @author Blake Howell
  */
-public class MapRequestParameterRetrievalFunctions {
+public class MapParameterRetrievalFunctions {
 
     public static <T> ParameterRetrievalFunction<T, Map<String, Object>> typeFromMap(Class<T> type) {
         return (s, m) -> type.cast(m.get(s));

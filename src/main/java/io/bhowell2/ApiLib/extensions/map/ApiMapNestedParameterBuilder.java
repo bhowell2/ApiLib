@@ -10,7 +10,7 @@ import java.util.Map;
 public class ApiMapNestedParameterBuilder {
 
     public static ApiObjectParameterBuilder<Map<String,Object>, Map<String,Object>> builder(String nestedMapName) {
-        return new ApiObjectParameterBuilder<>(nestedMapName, MapRequestParameterRetrievalFunctions.INNER_MAP_FROM_MAP);
+        return new ApiObjectParameterBuilder<>(nestedMapName, MapParameterRetrievalFunctions.INNER_MAP_FROM_MAP);
     }
 
 }

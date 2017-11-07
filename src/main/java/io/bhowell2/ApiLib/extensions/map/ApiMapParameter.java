@@ -17,7 +17,7 @@ public class ApiMapParameter<ParamType> extends ApiParameter<ParamType, Map<Stri
     }
 
     public ApiMapParameter(String parameterName,  Class<ParamType> paramTypeClass, CheckFunction<ParamType>[] checkFunction) {
-        super(parameterName, MapRequestParameterRetrievalFunctions.typeFromMap(paramTypeClass), checkFunction);
+        super(parameterName, MapParameterRetrievalFunctions.typeFromMap(paramTypeClass), checkFunction);
     }
-    
+
 }
