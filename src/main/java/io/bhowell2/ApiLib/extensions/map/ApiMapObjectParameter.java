@@ -1,7 +1,7 @@
 package io.bhowell2.ApiLib.extensions.map;
 
-import io.bhowell2.ApiLib.ApiObjectParameter;
 import io.bhowell2.ApiLib.ParameterRetrievalFunction;
+import io.bhowell2.ApiLib.ApiObjectParameter;
 
 import java.util.Map;
 

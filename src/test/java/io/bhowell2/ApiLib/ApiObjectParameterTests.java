@@ -82,10 +82,10 @@ public class ApiObjectParameterTests {
         assertTrue(passingCheckTuple.successful());
         assertNull(passingCheckTuple.parameterName);
         assertEquals(passingCheckTuple.providedParamNames.size(), 1);
-        assertEquals(passingCheckTuple.providedParamNames.get(0), "Array1");
+        assertTrue(passingCheckTuple.providedParamNames.contains("Array1"));
         assertEquals(passingCheckTuple.providedCustomParams.size(), 1);
         assertEquals(passingCheckTuple.providedCustomParams.get(0).providedParamNames.size(), 1);
-        assertEquals(passingCheckTuple.providedCustomParams.get(0).providedParamNames.get(0), "Array1");
+        assertTrue(passingCheckTuple.providedCustomParams.get(0).providedParamNames.contains("Array1"));
     }
 
 }

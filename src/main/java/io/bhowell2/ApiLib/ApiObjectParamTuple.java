@@ -1,7 +1,11 @@
 package io.bhowell2.ApiLib;
 
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 /**
  * If there is an error in a nested parameter then it will bubble up to the topmost NestedParameter and return there. Therefore, the user will
@@ -12,34 +16,34 @@ import java.util.Map;
 public final class ApiObjectParamTuple {
 
     public final String parameterName;                              // only has parameter name if it is an object nested within another object
-    public final List<String> providedParamNames;                   // name of parameters successfully checked/provided
+    public final Set<String> providedParamNames;                   // name of parameters successfully checked/provided
     public final List<ApiCustomParamsTuple> providedCustomParams;   //
     public final Map<String, ApiObjectParamTuple> providedObjParams;       // if objects are nested within this object
     public final ErrorTuple errorTuple;                             //
 
-    public ApiObjectParamTuple(List<String> providedParamNames,
+    public ApiObjectParamTuple(Set<String> providedParamNames,
                                Map<String, ApiObjectParamTuple> providedObjParams,
                                List<ApiCustomParamsTuple> providedCustomParams) {
         this(null, providedParamNames, providedObjParams, providedCustomParams);
     }
 
     public ApiObjectParamTuple(String parameterName,
-                               List<String> providedParamNames,
+                               Set<String> providedParamNames,
                                Map<String, ApiObjectParamTuple> providedObjParams,
                                List<ApiCustomParamsTuple> providedCustomParams) {
         this.parameterName = parameterName;
-        if (providedParamNames == null || providedParamNames.size() == 0) {
-            this.providedParamNames = null;
+        if (providedParamNames == null) {
+            this.providedParamNames = new HashSet<>();
         } else {
             this.providedParamNames = providedParamNames;
         }
-        if (providedObjParams == null || providedObjParams.size() == 0) {
-            this.providedObjParams = null;
+        if (providedObjParams == null) {
+            this.providedObjParams = new HashMap<>();
         } else {
             this.providedObjParams = providedObjParams;
         }
-        if (providedCustomParams == null || providedCustomParams.size() == 0) {
-            this.providedCustomParams = null;
+        if (providedCustomParams == null) {
+            this.providedCustomParams = new ArrayList<>();
         } else {
             this.providedCustomParams = providedCustomParams;
         }
@@ -63,26 +67,12 @@ public final class ApiObjectParamTuple {
         return errorTuple == null;
     }
 
-    public boolean hasParamNames() {
-        return providedParamNames != null;
-    }
-
-    public boolean hasInnerObjectParams() {
-        return providedObjParams != null;
-    }
-
-    /**
-     *
-     * @param parameterName
-     * @return
-     */
     public boolean containsParameter(String parameterName) {
-        for (String s : providedParamNames) {
-            if (s.equals(parameterName)) {
-                return true;
-            }
-        }
-        return false;
+        return providedParamNames.contains(parameterName);
+    }
+
+    public List<String> getProvidedParamsAsList() {
+        return new ArrayList<>(this.providedParamNames);
     }
 
     /**
@@ -98,7 +88,7 @@ public final class ApiObjectParamTuple {
     /* Static creation methods */
 
     public static ApiObjectParamTuple success(String parameterName,
-                                              List<String> providedParamNames,
+                                              Set<String> providedParamNames,
                                               Map<String, ApiObjectParamTuple> providedObjParams,
                                               List<ApiCustomParamsTuple> providedCustomParams) {
         return new ApiObjectParamTuple(parameterName, providedParamNames, providedObjParams, providedCustomParams);

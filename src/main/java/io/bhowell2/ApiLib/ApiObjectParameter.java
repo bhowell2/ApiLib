@@ -2,8 +2,10 @@ package io.bhowell2.ApiLib;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 /**
  * Use {@code parameterRetrievalFunction} to retrieve nested parameters and pass them into the check.
@@ -118,7 +120,7 @@ public class ApiObjectParameter<ObjectParamType, ParentParamType> {
 
         // TODO: Write code to dynamically chose best array sizes
         // do not need to create objects for nothing here
-        List<String> providedParamNames = new ArrayList<>(this.requiredParams.length);
+        Set<String> providedParamNames = new HashSet<>(this.requiredParams.length);
         List<ApiCustomParamsTuple> providedCustomParams = null;
         Map<String, ApiObjectParamTuple> providedObjParams = null;
         if (requiredCustomParams.length > 0 || optionalCustomParams.length > 0)
