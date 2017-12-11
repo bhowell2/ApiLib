@@ -82,7 +82,8 @@ public class ApiMapObjectParameterBuilder extends ApiObjectParameterBuilder<Map<
         ApiMapCustomParameters[] optionalCustomParamsAry = this.optionalCustomParams
             .toArray((ApiMapCustomParameters[])new ApiMapCustomParameters[this.optionalCustomParams.size()]);
 
-        return new ApiMapObjectParameter(this.continueOnOptionalFailure,
+        return new ApiMapObjectParameter(this.objectParameterName,
+                                         this.continueOnOptionalFailure,
                                          this.retrievalFunction,
                                          requiredApiParamsAry,
                                          optionalApiParamsAry,

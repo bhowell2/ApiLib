@@ -73,18 +73,18 @@ public final class ParameterStringChecks {
     public static CheckFunction<String> mustContainAtLeastNChars(int n, String mustContainChars) {
         return s -> {
             int counter = 0;
-          for (int i = 0; i < mustContainChars.length(); i++) {
-              char c = mustContainChars.charAt(i);
-              for (int k = 0; k < s.length(); k++) {
-                  if (s.charAt(k) == c) {
-                      counter++;
-                  }
-                  if (counter >= n) {
-                      break;
-                  }
-              }
-          }
-          return counter >= n ? CheckFunctionTuple.success() : CheckFunctionTuple.failure("String must contain at least " + n + " of the following chars; '" + mustContainChars + "'.");
+            for (int i = 0; i < mustContainChars.length(); i++) {
+                char c = mustContainChars.charAt(i);
+                for (int k = 0; k < s.length(); k++) {
+                    if (s.charAt(k) == c) {
+                        counter++;
+                    }
+                    if (counter >= n) {
+                        break;
+                    }
+                }
+            }
+            return counter >= n ? CheckFunctionTuple.success() : CheckFunctionTuple.failure("String must contain at least " + n + " of the following chars; '" + mustContainChars + "'.");
         };
     }
 
@@ -105,6 +105,23 @@ public final class ParameterStringChecks {
                     }
                 }
             }
+            return CheckFunctionTuple.success();
+        };
+    }
+
+    public static CheckFunction<String> emptyOrMeetsChecks(CheckFunction<String>... checkFunctions) {
+        return s -> {
+            if (s.length() == 0) {
+                return CheckFunctionTuple.success();
+            } else {
+                for (CheckFunction<String> checkFunction : checkFunctions) {
+                    CheckFunctionTuple tuple = checkFunction.check(s);
+                    if (!tuple.successful) {
+                        return tuple;
+                    }
+                }
+            }
+            // all checks passed
             return CheckFunctionTuple.success();
         };
     }

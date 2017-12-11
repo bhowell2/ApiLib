@@ -28,11 +28,11 @@ public final class CheckFunctionTuple {
         this.failureMessage = failureMessage;
     }
 
-    boolean failed() {
+    public boolean failed() {
         return !successful;
     }
 
-    boolean hasFailureMessage() {
+    public boolean hasFailureMessage() {
         return failureMessage != null;
     }
 
