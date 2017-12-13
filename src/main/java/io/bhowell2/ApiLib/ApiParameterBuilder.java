@@ -26,10 +26,6 @@ public class ApiParameterBuilder<ParamType, ParamsObj> {
 
     @SuppressWarnings("unchecked")
     public ApiParameter<ParamType, ParamsObj> build() {
-        // do not want the user to accidentally create a parameter that always passes. therefore, a runtime exception will be thrown
-        if (this.checkFunctions.size() == 0) {
-            throw new NoFunctionChecksProvidedException(this.parameterName);
-        }
         return new ApiParameter<>(parameterName,
                                   retrievalFunction,
                                   checkFunctions.toArray((CheckFunction<ParamType>[]) new CheckFunction[checkFunctions.size()]));
@@ -41,13 +37,6 @@ public class ApiParameterBuilder<ParamType, ParamsObj> {
         return this;
     }
 
-    protected static class NoFunctionChecksProvidedException extends RuntimeException {
-        public NoFunctionChecksProvidedException(String parameterName) {
-            super("No function checks were provided for the parameter " + "'" + parameterName + "'. If this is intentional, just provide a function" +
-                      "check that returns success (e.g., FunctionCheckReturnTuple.success()) if you want it to always pass, or failure if it should " +
-                      "always fail or is a placeholder that has not yet been implemented.");
-        }
-    }
 
 
 }

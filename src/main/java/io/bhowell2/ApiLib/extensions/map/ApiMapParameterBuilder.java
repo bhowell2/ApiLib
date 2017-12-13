@@ -17,17 +17,32 @@ public class ApiMapParameterBuilder<ParamType> extends ApiParameterBuilder<Param
         return new ApiMapParameterBuilder<>(parameterName, paramType);
     }
 
+    /**
+     * Provides a builder for the parameter retrieved from a Map<String, Object>.
+     * @param parameterName name of the parameter
+     * @param paramType the type of the parameter to retrieve (e.g., Double.class, String.class)
+     * @param attemptStringRetrieval attempts to retrieve the parameter from a string if it is provided as such
+     * @param <ParamType> type
+     * @return a ApiMapParameter
+     */
+    public static <ParamType> ApiMapParameterBuilder<ParamType> builder(String parameterName, Class<ParamType> paramType, boolean
+        attemptStringRetrieval) {
+        return new ApiMapParameterBuilder<ParamType>(parameterName, paramType, attemptStringRetrieval);
+    }
+
     // must have
     public static <ParamType> ApiMapParameterBuilder<ParamType> mapBuilderWithRetrieval(String parameterName,
                                                                         ParameterRetrievalFunction<ParamType, Map<String, Object>> retrievalFunction) {
-
         return new ApiMapParameterBuilder<>(parameterName, retrievalFunction);
     }
 
     public ApiMapParameterBuilder(String parameterName, Class<ParamType> paramType) {
-        super(parameterName, typeFromMap(paramType));
+        this(parameterName, paramType, false);
     }
 
+    public ApiMapParameterBuilder(String parameterName, Class<ParamType> paramType, boolean attemptStringRetrieval) {
+        super(parameterName, typeFromMap(paramType, attemptStringRetrieval));
+    }
 
     public ApiMapParameterBuilder(String parameterName, ParameterRetrievalFunction<ParamType, Map<String, Object>> retrievalFunction) {
         super(parameterName, retrievalFunction);
@@ -41,9 +56,6 @@ public class ApiMapParameterBuilder<ParamType> extends ApiParameterBuilder<Param
     @SuppressWarnings("unchecked")
     @Override
     public ApiMapParameter<ParamType> build() {
-        if (this.checkFunctions.size() == 0) {
-            throw new NoFunctionChecksProvidedException(this.parameterName);
-        }
         return new ApiMapParameter<>(this.parameterName,
                                      this.retrievalFunction,
                                      this.checkFunctions.toArray((CheckFunction<ParamType>[])new CheckFunction[this.checkFunctions.size()]));

@@ -15,7 +15,8 @@ public class ApiObjectParameterBuilder<ObjectType, ParentParamType> {
         return new ApiObjectParameterBuilder<>(null, retrievalFunction);
     }
 
-    public static <ObjectType, ParentParamType> ApiObjectParameterBuilder<ObjectType, ParentParamType> builder(String objectParameterName, ParameterRetrievalFunction<ObjectType, ParentParamType> retrievalFunction) {
+    public static <ObjectType, ParentParamType> ApiObjectParameterBuilder<ObjectType, ParentParamType> builder(
+        String objectParameterName, ParameterRetrievalFunction<ObjectType, ParentParamType> retrievalFunction) {
         return new ApiObjectParameterBuilder<>(objectParameterName, retrievalFunction);
     }
 

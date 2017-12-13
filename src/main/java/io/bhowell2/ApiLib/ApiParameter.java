@@ -14,6 +14,9 @@ public class ApiParameter<ParamType, ParamsObj> {
     public ApiParameter(String parameterName,
                         ParameterRetrievalFunction<ParamType, ParamsObj> parameterRetrievalFunction,
                         CheckFunction<ParamType>... paramCheckFunctions) {
+        if (paramCheckFunctions.length == 0) {
+            throw new NoFunctionChecksProvidedException(parameterName);
+        }
         this.parameterName = parameterName;
         this.paramCheckFunctions = paramCheckFunctions;
         this.parameterRetrievalFunction = parameterRetrievalFunction;
@@ -45,6 +48,14 @@ public class ApiParameter<ParamType, ParamsObj> {
 
         } catch (ClassCastException e) {
             return ApiParamTuple.parameterCastException(this.parameterName, e.getMessage());
+        }
+    }
+
+    protected static class NoFunctionChecksProvidedException extends RuntimeException {
+        public NoFunctionChecksProvidedException(String parameterName) {
+            super("No function checks were provided for the parameter " + "'" + parameterName + "'. If this is intentional, just provide a function" +
+                      "check that returns success (e.g., FunctionCheckReturnTuple.success()) if you want it to always pass, or failure if it should " +
+                      "always fail or is a placeholder that has not yet been implemented.");
         }
     }
 
