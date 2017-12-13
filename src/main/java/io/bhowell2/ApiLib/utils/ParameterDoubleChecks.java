@@ -8,7 +8,7 @@ import io.bhowell2.ApiLib.CheckFunctionTuple;
  */
 public class ParameterDoubleChecks {
 
-    public static CheckFunction<Double> valueGreaterThan(Double d) {
+    public static final CheckFunction<Double> valueGreaterThan(Double d) {
         return dub -> {
             if (dub > d) {
                 return CheckFunctionTuple.success();
@@ -18,7 +18,7 @@ public class ParameterDoubleChecks {
         };
     }
 
-    public static CheckFunction<Double> valueGreaterThanOrEqualTo(Double d) {
+    public static final CheckFunction<Double> valueGreaterThanOrEqualTo(Double d) {
         return dub -> {
             if (dub >= d) {
                 return CheckFunctionTuple.success();
@@ -28,7 +28,7 @@ public class ParameterDoubleChecks {
         };
     }
 
-    public static CheckFunction<Double> valueLessThan(Double d) {
+    public static final CheckFunction<Double> valueLessThan(Double d) {
         return dub -> {
             if (dub < d) {
                 return CheckFunctionTuple.success();
@@ -38,7 +38,7 @@ public class ParameterDoubleChecks {
         };
     }
 
-    public static CheckFunction<Double> valueLessThanOrEqualTo(Double d) {
+    public static final CheckFunction<Double> valueLessThanOrEqualTo(Double d) {
         return dub -> {
             if (dub <= d) {
                 return CheckFunctionTuple.success();
@@ -48,7 +48,7 @@ public class ParameterDoubleChecks {
         };
     }
 
-    public static CheckFunction<Double> valueEqualTo(Double d) {
+    public static final CheckFunction<Double> valueEqualTo(Double d) {
         return dub -> {
             // have to use .equals so not to compare two objects rather than double value
             if (dub.equals(d)) {

@@ -21,13 +21,13 @@ public class ApiMapParameterBuilder<ParamType> extends ApiParameterBuilder<Param
      * Provides a builder for the parameter retrieved from a Map<String, Object>.
      * @param parameterName name of the parameter
      * @param paramType the type of the parameter to retrieve (e.g., Double.class, String.class)
-     * @param attemptStringRetrieval attempts to retrieve the parameter from a string if it is provided as such
+     * @param attemptParseFromString attempts to retrieve the parameter from a string if it is provided as such
      * @param <ParamType> type
      * @return a ApiMapParameter
      */
     public static <ParamType> ApiMapParameterBuilder<ParamType> builder(String parameterName, Class<ParamType> paramType, boolean
-        attemptStringRetrieval) {
-        return new ApiMapParameterBuilder<ParamType>(parameterName, paramType, attemptStringRetrieval);
+        attemptParseFromString) {
+        return new ApiMapParameterBuilder<ParamType>(parameterName, paramType, attemptParseFromString);
     }
 
     // must have
@@ -40,8 +40,8 @@ public class ApiMapParameterBuilder<ParamType> extends ApiParameterBuilder<Param
         this(parameterName, paramType, false);
     }
 
-    public ApiMapParameterBuilder(String parameterName, Class<ParamType> paramType, boolean attemptStringRetrieval) {
-        super(parameterName, typeFromMap(paramType, attemptStringRetrieval));
+    public ApiMapParameterBuilder(String parameterName, Class<ParamType> paramType, boolean attemptParseFromString) {
+        super(parameterName, typeFromMap(paramType, attemptParseFromString));
     }
 
     public ApiMapParameterBuilder(String parameterName, ParameterRetrievalFunction<ParamType, Map<String, Object>> retrievalFunction) {

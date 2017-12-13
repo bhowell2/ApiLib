@@ -12,11 +12,11 @@ import java.util.Objects;
 public class MapParameterRetrievalFunctions {
 
     @SuppressWarnings("unchecked")
-    public static <T> ParameterRetrievalFunction<T, Map<String, Object>> typeFromMap(Class<T> type, boolean attemptStringRetrieval) {
+    public static <T> ParameterRetrievalFunction<T, Map<String, Object>> typeFromMap(Class<T> type, boolean attemptParseFromString) {
         if (type.equals(Double.class)) {
-            return (ParameterRetrievalFunction<T, Map<String, Object>>)getDoubleFromMap(attemptStringRetrieval);
+            return (ParameterRetrievalFunction<T, Map<String, Object>>)getDoubleFromMap(attemptParseFromString);
         } else if (type.equals(Integer.class)) {
-            return (ParameterRetrievalFunction<T, Map<String, Object>>)getIntegerFromMap(attemptStringRetrieval);
+            return (ParameterRetrievalFunction<T, Map<String, Object>>)getIntegerFromMap(attemptParseFromString);
         } else if (type.equals(String.class)) {
             return (ParameterRetrievalFunction<T, Map<String, Object>>)STRING_FROM_MAP;
         } else {
@@ -24,13 +24,13 @@ public class MapParameterRetrievalFunctions {
         }
     }
 
-    public static ParameterRetrievalFunction<Integer, Map<String, Object>> getIntegerFromMap(boolean attemptStringRetrieval) {
+    public static ParameterRetrievalFunction<Integer, Map<String, Object>> getIntegerFromMap(boolean attemptParseFromString) {
         return (key, map) -> {
             Objects.requireNonNull(key);
             Object o = map.get(key);
             if (o == null) {
                 return null;
-            } else if (o instanceof String && attemptStringRetrieval) {
+            } else if (o instanceof String && attemptParseFromString) {
                 return Integer.parseInt((String)o);
             } else if (o instanceof Integer) {
                 return (Integer)o;
@@ -41,13 +41,13 @@ public class MapParameterRetrievalFunctions {
         };
     }
 
-    public static ParameterRetrievalFunction<Double, Map<String, Object>> getDoubleFromMap(boolean attemptStringRetrieval) {
+    public static ParameterRetrievalFunction<Double, Map<String, Object>> getDoubleFromMap(boolean attemptParseFromString) {
         return (key, map) -> {
             Objects.requireNonNull(key);
             Object o = map.get(key);
             if (o == null) {
                 return null;
-            } else if (o instanceof String && attemptStringRetrieval) {
+            } else if (o instanceof String && attemptParseFromString) {
                 return Double.parseDouble((String)o);
             } else if (o instanceof Double) {
                 return (Double)o;

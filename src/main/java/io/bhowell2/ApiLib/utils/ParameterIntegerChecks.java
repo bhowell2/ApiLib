@@ -8,7 +8,7 @@ import io.bhowell2.ApiLib.CheckFunctionTuple;
  */
 public class ParameterIntegerChecks {
 
-    public static CheckFunction<Integer> valueGreaterThan(Integer i) {
+    public static final CheckFunction<Integer> valueGreaterThan(Integer i) {
         return n -> {
             if (n > i) {
                 return CheckFunctionTuple.success();
@@ -18,7 +18,7 @@ public class ParameterIntegerChecks {
         };
     }
 
-    public static CheckFunction<Integer> valueGreaterThanOrEqualTo(Integer i) {
+    public static final CheckFunction<Integer> valueGreaterThanOrEqualTo(Integer i) {
         return n -> {
             if (n >= i) {
                 return CheckFunctionTuple.success();
@@ -28,7 +28,7 @@ public class ParameterIntegerChecks {
         };
     }
 
-    public static CheckFunction<Integer> valueLessThan(Integer i) {
+    public static final CheckFunction<Integer> valueLessThan(Integer i) {
         return n -> {
             if (n < i) {
                 return CheckFunctionTuple.success();
@@ -38,7 +38,7 @@ public class ParameterIntegerChecks {
         };
     }
 
-    public static CheckFunction<Integer> valueLessThanOrEqualTo(Integer i) {
+    public static final CheckFunction<Integer> valueLessThanOrEqualTo(Integer i) {
         return n -> {
             if (n <= i) {
                 return CheckFunctionTuple.success();
@@ -48,7 +48,7 @@ public class ParameterIntegerChecks {
         };
     }
 
-    public static CheckFunction<Integer> valueEqualTo(Integer i) {
+    public static final CheckFunction<Integer> valueEqualTo(Integer i) {
         return n -> {
             if (n.equals(i)) {
                 return CheckFunctionTuple.success();
