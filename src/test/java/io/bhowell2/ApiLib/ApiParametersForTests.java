@@ -35,12 +35,12 @@ public final class ApiParametersForTests {
 
 
     public static final ApiParameter<Integer, Map<String, Object>> INTEGER1 =
-        ApiParameterBuilder.builder("Integer1", INTEGER_FROM_MAP)
+        ApiParameterBuilder.builder("Integer1", getIntegerFromMap(false))
                            .addCheckFunction(ParameterIntegerChecks.valueLessThan(100))
                            .build();
 
     public static final ApiParameter<Integer, Map<String, Object>> INTEGER2 =
-        ApiParameterBuilder.builder("Integer2", INTEGER_FROM_MAP)
+        ApiParameterBuilder.builder("Integer2", getIntegerFromMap(false))
                            .addCheckFunction(ParameterIntegerChecks.valueGreaterThan(100))
                            .build();
 
@@ -52,12 +52,13 @@ public final class ApiParametersForTests {
                                  .build();
 
     @SuppressWarnings("unchecked")
-    public static final ApiCustomParameters<Map<String, Object>> CUSTOM_ARRAY1 = map -> {
+    public static final ApiCustomParameter<Map<String, Object>> CUSTOM_ARRAY1 = map -> {
         for (Integer i : (List<Integer>)map.get("Array1")) {
             if (i < 10)
-                return ApiCustomParamsTuple.failure(new ErrorTuple(ErrorType.INVALID_PARAMETER, "Integers in list must be greater than or equal to 10", "Array1"));
+                return ApiCustomParamTuple
+                    .failure(new ErrorTuple(ErrorType.INVALID_PARAMETER, "Integers in list must be greater than or equal to 10", "Array1"));
         }
-        return ApiCustomParamsTuple.success("Array1");
+        return ApiCustomParamTuple.success("Array1", "Array1");
     };
 
 }

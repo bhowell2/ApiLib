@@ -1,9 +1,7 @@
 package io.bhowell2.ApiLib;
 
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -31,8 +29,8 @@ public class ApiObjectParameter<ObjectParamType, ParentParamType> {
     final ApiParameter<?, ObjectParamType>[] optionalParams;
     final ApiObjectParameter<?, ObjectParamType>[] requiredObjParams;
     final ApiObjectParameter<?, ObjectParamType>[] optionalObjParams;
-    final ApiCustomParameters<ObjectParamType>[] requiredCustomParams;
-    final ApiCustomParameters<ObjectParamType>[] optionalCustomParams;
+    final ApiCustomParameter<ObjectParamType>[] requiredCustomParams;
+    final ApiCustomParameter<ObjectParamType>[] optionalCustomParams;
 
     /**
      * Used for top level objects (i.e., objects without a parameter name to retrieve them -- this could either be the root object or objects in an
@@ -52,8 +50,8 @@ public class ApiObjectParameter<ObjectParamType, ParentParamType> {
                               ApiParameter<?, ObjectParamType>[] optionalParams,
                               ApiObjectParameter<?, ObjectParamType>[] requiredObjParams,
                               ApiObjectParameter<?, ObjectParamType>[] optionalObjParams,
-                              ApiCustomParameters<ObjectParamType>[] requiredCustomParams,
-                              ApiCustomParameters<ObjectParamType>[] optionalCustomParams) {
+                              ApiCustomParameter<ObjectParamType>[] requiredCustomParams,
+                              ApiCustomParameter<ObjectParamType>[] optionalCustomParams) {
         this(null,
              continueOnOptionalFailure,
              retrievalFunction,
@@ -73,8 +71,8 @@ public class ApiObjectParameter<ObjectParamType, ParentParamType> {
                               ApiParameter<?, ObjectParamType>[] optionalParams,
                               ApiObjectParameter<?, ObjectParamType>[] requiredObjParams,
                               ApiObjectParameter<?, ObjectParamType>[] optionalObjParams,
-                              ApiCustomParameters<ObjectParamType>[] requiredCustomParams,
-                              ApiCustomParameters<ObjectParamType>[] optionalCustomParams) {
+                              ApiCustomParameter<ObjectParamType>[] requiredCustomParams,
+                              ApiCustomParameter<ObjectParamType>[] optionalCustomParams) {
         this.parameterName = parameterName;
         this.continueOnOptionalFailure = continueOnOptionalFailure;
         this.retrievalFunction = retrievalFunction;
@@ -104,12 +102,12 @@ public class ApiObjectParameter<ObjectParamType, ParentParamType> {
 
         // custom
         if (requiredCustomParams == null)
-            this.requiredCustomParams = new ApiCustomParameters[0];
+            this.requiredCustomParams = new ApiCustomParameter[0];
         else
             this.requiredCustomParams = requiredCustomParams;
 
         if (optionalCustomParams == null)
-            this.optionalCustomParams = new ApiCustomParameters[0];
+            this.optionalCustomParams = new ApiCustomParameter[0];
         else
             this.optionalCustomParams = optionalCustomParams;
     }
@@ -121,10 +119,10 @@ public class ApiObjectParameter<ObjectParamType, ParentParamType> {
         // TODO: Write code to dynamically chose best array sizes
         // do not need to create objects for nothing here
         Set<String> providedParamNames = new HashSet<>(this.requiredParams.length);
-        List<ApiCustomParamsTuple> providedCustomParams = null;
+        Map<String, ApiCustomParamTuple> providedCustomParams = null;
         Map<String, ApiObjectParamTuple> providedObjParams = null;
         if (requiredCustomParams.length > 0 || optionalCustomParams.length > 0)
-            providedCustomParams = new ArrayList<>(this.requiredCustomParams.length);
+            providedCustomParams = new HashMap<>(this.requiredCustomParams.length);
         if (requiredObjParams.length > 0 || optionalObjParams.length > 0)
             providedObjParams = new HashMap<>(this.requiredObjParams.length);
 
@@ -138,13 +136,13 @@ public class ApiObjectParameter<ObjectParamType, ParentParamType> {
             providedParamNames.add(checkTuple.parameterName);
         }
 
-        for (ApiCustomParameters<ObjectParamType> apiCustomParameters : requiredCustomParams) {
+        for (ApiCustomParameter<ObjectParamType> apiCustomParameter : requiredCustomParams) {
             try {
-                ApiCustomParamsTuple checkTuple = apiCustomParameters.check(objParamsToCheck);
+                ApiCustomParamTuple checkTuple = apiCustomParameter.check(objParamsToCheck);
                 if (checkTuple.failed()) {
                     return ApiObjectParamTuple.failed(wrapErrorTupleForObject(checkTuple.errorTuple));
                 }
-                providedCustomParams.add(checkTuple);
+                providedCustomParams.put(checkTuple.customParameterName, checkTuple);
                 providedParamNames.addAll(checkTuple.providedParamNames);
             } catch (ClassCastException e) {
                 return ApiObjectParamTuple
@@ -180,8 +178,8 @@ public class ApiObjectParameter<ObjectParamType, ParentParamType> {
             providedParamNames.add(checkTuple.parameterName);
         }
 
-        for (ApiCustomParameters<ObjectParamType> apiCustomParameters : optionalCustomParams) {
-            ApiCustomParamsTuple checkTuple = apiCustomParameters.check(objParamsToCheck);
+        for (ApiCustomParameter<ObjectParamType> apiCustomParameter : optionalCustomParams) {
+            ApiCustomParamTuple checkTuple = apiCustomParameter.check(objParamsToCheck);
             if (checkTuple.failed()) {
                 if (checkTuple.errorTuple.errorType == ErrorType.MISSING_PARAMETER || continueOnOptionalFailure) {
                     continue;
@@ -189,7 +187,7 @@ public class ApiObjectParameter<ObjectParamType, ParentParamType> {
                     return ApiObjectParamTuple.failed(wrapErrorTupleForObject(checkTuple.errorTuple));
                 }
             }
-            providedCustomParams.add(checkTuple);
+            providedCustomParams.put(checkTuple.customParameterName, checkTuple);
             providedParamNames.addAll(checkTuple.providedParamNames);
         }
 

@@ -8,52 +8,52 @@ import io.bhowell2.ApiLib.CheckFunctionTuple;
  */
 public class ParameterIntegerChecks {
 
-    public static final CheckFunction<Integer> valueGreaterThan(Integer i) {
+    public static CheckFunction<Integer> valueGreaterThan(Integer i) {
         return n -> {
             if (n > i) {
                 return CheckFunctionTuple.success();
             } else {
-                return CheckFunctionTuple.failure("Value not greater than " + i);
+                return CheckFunctionTuple.failure("must be greater than " + i);
             }
         };
     }
 
-    public static final CheckFunction<Integer> valueGreaterThanOrEqualTo(Integer i) {
+    public static CheckFunction<Integer> valueGreaterThanOrEqualTo(Integer i) {
         return n -> {
             if (n >= i) {
                 return CheckFunctionTuple.success();
             } else {
-                return CheckFunctionTuple.failure("Value not greater than or equal to " + i);
+                return CheckFunctionTuple.failure("must be greater than or equal to " + i);
             }
         };
     }
 
-    public static final CheckFunction<Integer> valueLessThan(Integer i) {
+    public static CheckFunction<Integer> valueLessThan(Integer i) {
         return n -> {
             if (n < i) {
                 return CheckFunctionTuple.success();
             } else {
-                return CheckFunctionTuple.failure("Value not less than " + i);
+                return CheckFunctionTuple.failure("must be less than " + i);
             }
         };
     }
 
-    public static final CheckFunction<Integer> valueLessThanOrEqualTo(Integer i) {
+    public static CheckFunction<Integer> valueLessThanOrEqualTo(Integer i) {
         return n -> {
             if (n <= i) {
                 return CheckFunctionTuple.success();
             } else {
-                return CheckFunctionTuple.failure("Value not less than or equal to " + i);
+                return CheckFunctionTuple.failure("must be less than or equal to " + i);
             }
         };
     }
 
-    public static final CheckFunction<Integer> valueEqualTo(Integer i) {
+    public static CheckFunction<Integer> valueEqualTo(Integer i) {
         return n -> {
             if (n.equals(i)) {
                 return CheckFunctionTuple.success();
             } else {
-                return CheckFunctionTuple.failure("Value not equal to " + i);
+                return CheckFunctionTuple.failure("must be equal to " + i);
             }
         };
     }

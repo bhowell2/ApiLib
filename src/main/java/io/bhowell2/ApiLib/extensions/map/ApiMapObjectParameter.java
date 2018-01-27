@@ -16,8 +16,8 @@ public class ApiMapObjectParameter extends ApiObjectParameter<Map<String, Object
                                  ApiMapParameter<?>[] optionalParameters,
                                  ApiMapObjectParameter[] requiredObjParameters,
                                  ApiMapObjectParameter[] optionalObjParameters,
-                                 ApiMapCustomParameters[] requiredCustomParameters,
-                                 ApiMapCustomParameters[] optionalCustomParameters) {
+                                 ApiMapCustomParameter[] requiredCustomParameters,
+                                 ApiMapCustomParameter[] optionalCustomParameters) {
         super(continueOnOptionalFailure,
               retrievalFunction,
               requiredParameters,
@@ -35,8 +35,8 @@ public class ApiMapObjectParameter extends ApiObjectParameter<Map<String, Object
                                  ApiMapParameter<?>[] optionalParameters,
                                  ApiMapObjectParameter[] requiredObjParameters,
                                  ApiMapObjectParameter[] optionalObjParameters,
-                                 ApiMapCustomParameters[] requiredCustomParameters,
-                                 ApiMapCustomParameters[] optionalCustomParameters) {
+                                 ApiMapCustomParameter[] requiredCustomParameters,
+                                 ApiMapCustomParameter[] optionalCustomParameters) {
         super(parameterName,
               continueOnOptionalFailure,
               retrievalFunction,

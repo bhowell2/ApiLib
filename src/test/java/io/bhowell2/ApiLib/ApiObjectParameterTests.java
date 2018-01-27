@@ -56,7 +56,7 @@ public class ApiObjectParameterTests {
     }
 
     @Test
-    public void shouldFailFromFailingArrayCheck() {
+    public void shouldFailFromFailingCustomParameterCheck() {
         ApiObjectParameter<Map<String, Object>, Map<String, Object>> requestParams =
             ApiObjectParameterBuilder.builder(MapParameterRetrievalFunctions.RETURN_SELF_MAP)
                                      .addRequiredCustomParameters(CUSTOM_ARRAY1)
@@ -65,9 +65,6 @@ public class ApiObjectParameterTests {
         List<Integer> failingList = new ArrayList<>();
         failingList.add(5);
         failingList.add(6);
-        List<Integer> passingList = new ArrayList<>();
-        passingList.add(11);
-        passingList.add(10);
 
         Map<String, Object> failingArrayObject = new HashMap<>();
         failingArrayObject.put("Array1", failingList);
@@ -75,6 +72,18 @@ public class ApiObjectParameterTests {
         assertTrue(failedCheckTuple.failed());
         assertEquals(failedCheckTuple.errorTuple.errorType, ErrorType.INVALID_PARAMETER);
         assertEquals(failedCheckTuple.errorTuple.parameterName, "Array1");
+    }
+
+    @Test
+    public void shouldPassFromPassingCustomParameterCheck() {
+        ApiObjectParameter<Map<String, Object>, Map<String, Object>> requestParams =
+            ApiObjectParameterBuilder.builder(MapParameterRetrievalFunctions.RETURN_SELF_MAP)
+                                     .addRequiredCustomParameters(CUSTOM_ARRAY1)
+                                     .build();
+
+        List<Integer> passingList = new ArrayList<>();
+        passingList.add(11);
+        passingList.add(10);
 
         Map<String, Object> passingArrayObject = new HashMap<>();
         passingArrayObject.put("Array1", passingList);

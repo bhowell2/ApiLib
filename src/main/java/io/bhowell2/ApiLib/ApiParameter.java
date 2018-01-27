@@ -39,7 +39,7 @@ public class ApiParameter<ParamType, ParamsObj> {
                 // short circuit checks and return (if one check fails, it all fails)
                 if (checkTuple.failed()) {
                     return checkTuple.hasFailureMessage() ? ApiParamTuple.invalidParameterFailure(this.parameterName, checkTuple.failureMessage):
-                        ApiParamTuple.invalidParameterFailure(this.parameterName, "Failed to pass parameter check.");
+                        ApiParamTuple.invalidParameterFailure(this.parameterName, "Parameter does not meet requirements.");
                 }
 
             }

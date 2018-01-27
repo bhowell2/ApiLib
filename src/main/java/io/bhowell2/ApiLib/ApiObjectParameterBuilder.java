@@ -26,8 +26,8 @@ public class ApiObjectParameterBuilder<ObjectType, ParentParamType> {
     protected List<ApiParameter<?, ObjectType>> optionalParams;
     protected List<ApiObjectParameter<?, ObjectType>> requiredObjParams;
     protected List<ApiObjectParameter<?, ObjectType>> optionalObjParams;
-    protected List<ApiCustomParameters<ObjectType>> requiredCustomParams;
-    protected List<ApiCustomParameters<ObjectType>> optionalCustomParams;
+    protected List<ApiCustomParameter<ObjectType>> requiredCustomParams;
+    protected List<ApiCustomParameter<ObjectType>> optionalCustomParams;
     protected boolean continueOnOptionalFailure = false;
 
     public ApiObjectParameterBuilder(String objectParameterName, ParameterRetrievalFunction<ObjectType, ParentParamType> retrievalFunction) {
@@ -66,12 +66,12 @@ public class ApiObjectParameterBuilder<ObjectType, ParentParamType> {
         return this;
     }
 
-    public ApiObjectParameterBuilder<ObjectType, ParentParamType> addRequiredCustomParameters(ApiCustomParameters<ObjectType> customParameters) {
+    public ApiObjectParameterBuilder<ObjectType, ParentParamType> addRequiredCustomParameters(ApiCustomParameter<ObjectType> customParameters) {
         this.requiredCustomParams.add(customParameters);
         return this;
     }
 
-    public ApiObjectParameterBuilder<ObjectType, ParentParamType> addOptionalCustomParameters(ApiCustomParameters<ObjectType> customParameters) {
+    public ApiObjectParameterBuilder<ObjectType, ParentParamType> addOptionalCustomParameters(ApiCustomParameter<ObjectType> customParameters) {
         this.optionalCustomParams.add(customParameters);
         return this;
     }
@@ -90,11 +90,11 @@ public class ApiObjectParameterBuilder<ObjectType, ParentParamType> {
         ApiObjectParameter<?, ObjectType>[] optionalApiObjectParamsAry =   this.optionalObjParams
             .toArray((ApiObjectParameter<?, ObjectType>[])new ApiObjectParameter[this.optionalObjParams.size()]);
 
-        ApiCustomParameters<ObjectType>[] requiredCustomParamsAry = this.requiredCustomParams
-            .toArray((ApiCustomParameters<ObjectType>[])new ApiCustomParameters[this.requiredCustomParams.size()]);
+        ApiCustomParameter<ObjectType>[] requiredCustomParamsAry = this.requiredCustomParams
+            .toArray((ApiCustomParameter<ObjectType>[])new ApiCustomParameter[this.requiredCustomParams.size()]);
 
-        ApiCustomParameters<ObjectType>[] optionalCustomParamsAry = this.optionalCustomParams
-            .toArray((ApiCustomParameters<ObjectType>[])new ApiCustomParameters[this.optionalCustomParams.size()]);
+        ApiCustomParameter<ObjectType>[] optionalCustomParamsAry = this.optionalCustomParams
+            .toArray((ApiCustomParameter<ObjectType>[])new ApiCustomParameter[this.optionalCustomParams.size()]);
 
         return new ApiObjectParameter<>(this.objectParameterName,
                                         this.continueOnOptionalFailure,

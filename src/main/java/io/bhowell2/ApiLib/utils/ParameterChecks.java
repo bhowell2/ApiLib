@@ -7,10 +7,14 @@ import io.bhowell2.ApiLib.CheckFunctionTuple;
  * Generic parameter checks.
  * @author Blake Howell
  */
-public final class ParameterChecks {
+public class ParameterChecks {
 
-    public static final CheckFunction<?> ALWAYS_PASS = (any) -> CheckFunctionTuple.success();
+    public static <T> CheckFunction<T> alwaysPass() {
+        return (T t) -> CheckFunctionTuple.success();
+    }
 
-    public static final CheckFunction<?> ALWAYS_FAIL = (any) -> CheckFunctionTuple.failure();
+    public static <T> CheckFunction<T> alwaysFail() {
+        return (T t) -> CheckFunctionTuple.failure();
+    }
 
 }

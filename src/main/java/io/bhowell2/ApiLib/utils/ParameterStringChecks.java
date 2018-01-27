@@ -3,74 +3,76 @@ package io.bhowell2.ApiLib.utils;
 import io.bhowell2.ApiLib.CheckFunction;
 import io.bhowell2.ApiLib.CheckFunctionTuple;
 
+import java.util.Set;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 /**
  * @author Blake Howell
  */
-public final class ParameterStringChecks {
+public class ParameterStringChecks {
 
-    public static final CheckFunction<String> lengthGreaterThan(int minLength) {
+    public static CheckFunction<String> lengthGreaterThan(int minLength) {
         return s -> {
             if (s.length() > minLength) {
                 return CheckFunctionTuple.success();
             } else {
-                return CheckFunctionTuple.failure("parameter length must be greater than " + minLength);
+                return CheckFunctionTuple.failure("length must be greater than " + minLength);
             }
         };
     }
 
-    public static final CheckFunction<String> lengthGreaterThanOrEqual(int minLength) {
+    public static CheckFunction<String> lengthGreaterThanOrEqual(int minLength) {
         return s -> {
             if (s.length() >= minLength) {
                 return CheckFunctionTuple.success();
             } else {
-                return CheckFunctionTuple.failure("parameter length must be greater than or equal to " + minLength);
+                return CheckFunctionTuple.failure("length must be greater than or equal to " + minLength);
             }
         };
     }
 
-    public static final CheckFunction<String> lengthLessThan(int maxLength) {
+    public static CheckFunction<String> lengthLessThan(int maxLength) {
         return s -> {
             if (s.length() < maxLength) {
                 return CheckFunctionTuple.success();
             } else {
-                return CheckFunctionTuple.failure("parameter length must be less than " + maxLength);
+                return CheckFunctionTuple.failure("length must be less than " + maxLength);
             }
         };
     }
 
-    public static final CheckFunction<String> lengthLessThanOrEqual(int maxLength) {
+    public static CheckFunction<String> lengthLessThanOrEqual(int maxLength) {
         return s -> {
             if (s.length() <= maxLength) {
                 return CheckFunctionTuple.success();
             } else {
-                return CheckFunctionTuple.failure("parameter length must be less than of equal to " + maxLength);
+                return CheckFunctionTuple.failure("length must be less than of equal to " + maxLength);
             }
         };
     }
 
-    public static final CheckFunction<String> lengthEqualTo(int length) {
+    public static CheckFunction<String> lengthEqualTo(int length) {
         return s -> {
             if (s.length() == length) {
                 return CheckFunctionTuple.success();
             } else {
-                return CheckFunctionTuple.failure("parameter length must be equal to " + length);
+                return CheckFunctionTuple.failure("length must be equal to " + length);
             }
         };
     }
 
-    public static final CheckFunction<String> matchesRegex(Pattern pattern) {
+    public static CheckFunction<String> matchesRegex(Pattern pattern) {
         return s -> {
             if (pattern.matcher(s).matches()) {
                 return CheckFunctionTuple.success();
             } else {
-                return CheckFunctionTuple.failure("string parameter is not of correct form.");
+                return CheckFunctionTuple.failure("is not of correct form.");
             }
         };
     }
 
-    public static final CheckFunction<String> mustContainAtLeastNChars(int n, String mustContainChars) {
+    public static CheckFunction<String> mustContainAtLeastNChars(int n, String mustContainChars) {
         return s -> {
             int counter = 0;
             for (int i = 0; i < mustContainChars.length(); i++) {
@@ -80,15 +82,31 @@ public final class ParameterStringChecks {
                         counter++;
                     }
                     if (counter >= n) {
-                        break;
+                        return CheckFunctionTuple.success();
                     }
                 }
             }
-            return counter >= n ? CheckFunctionTuple.success() : CheckFunctionTuple.failure("String must contain at least " + n + " of the following chars; '" + mustContainChars + "'.");
+            return CheckFunctionTuple.failure("must contain at least " + n + " of the following chars: '" + mustContainChars + "'.");
         };
     }
 
-    public static final CheckFunction<String> lessThanNRepeatedChars(int n) {
+    public static CheckFunction<String> mustContainAtLeastNChars(int n, Set<Character> mustContainChars) {
+        return s -> {
+            int counter = 0;
+            for (int i = 0; i < s.length(); i++) {
+                if (mustContainChars.contains(s.charAt(i))) {
+                    counter++;
+                }
+                if (counter >= n) {
+                    return CheckFunctionTuple.success();
+                }
+            }
+            String errorMsgChars = mustContainChars.stream().map(c -> c.toString()).collect(Collectors.joining());
+            return CheckFunctionTuple.failure("must contain at least " + n + " of the following chars: '" + errorMsgChars + "'.");
+        };
+    }
+
+    public static CheckFunction<String> lessThanNRepeatedChars(int n) {
         return s -> {
             if (s.length() > 0) {
                 Character consecutiveChar = s.charAt(0);
@@ -97,7 +115,7 @@ public final class ParameterStringChecks {
                     if (s.charAt(i) == consecutiveChar) {
                         consecutiveCounter++;
                         if (consecutiveCounter >= n) {
-                            return CheckFunctionTuple.failure("string cannot contain a character that repeats more than " + n + " times.");
+                            return CheckFunctionTuple.failure("cannot contain a character that repeats more than " + n + " times.");
                         }
                     } else {
                         consecutiveChar = s.charAt(i);
@@ -109,7 +127,7 @@ public final class ParameterStringChecks {
         };
     }
 
-    public static final CheckFunction<String> emptyOrMeetsChecks(CheckFunction<String>... checkFunctions) {
+    public static CheckFunction<String> emptyOrMeetsChecks(CheckFunction<String>... checkFunctions) {
         return s -> {
             if (s.length() == 0) {
                 return CheckFunctionTuple.success();
@@ -117,7 +135,29 @@ public final class ParameterStringChecks {
                 for (CheckFunction<String> checkFunction : checkFunctions) {
                     CheckFunctionTuple tuple = checkFunction.check(s);
                     if (!tuple.successful) {
-                        return tuple;
+                        return tuple;   // return tuple with error
+                    }
+                }
+            }
+            // all checks passed
+            return CheckFunctionTuple.success();
+        };
+    }
+
+    /**
+     * Similar to empty, but length can be 0 or all white space characters.
+     * @param checkFunctions
+     * @return
+     */
+    public static CheckFunction<String> emptyWhitespaceOrMeetsChecks(CheckFunction<String>... checkFunctions) {
+        return s -> {
+            if (s.length() == 0 || s.matches("\\s+")) {
+                return CheckFunctionTuple.success();
+            } else {
+                for (CheckFunction<String> checkFunction : checkFunctions) {
+                    CheckFunctionTuple tuple = checkFunction.check(s);
+                    if (!tuple.successful) {
+                        return tuple;   // return tuple with error
                     }
                 }
             }

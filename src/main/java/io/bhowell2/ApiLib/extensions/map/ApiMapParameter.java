@@ -20,8 +20,13 @@ public class ApiMapParameter<ParamType> extends ApiParameter<ParamType, Map<Stri
         this(parameterName, paramTypeClass, false, checkFunction);
     }
 
-    public ApiMapParameter(String parameterName,  Class<ParamType> paramTypeClass, boolean attemptStringRetrieval, CheckFunction<ParamType>[]
-        checkFunction) {
-        super(parameterName, MapParameterRetrievalFunctions.typeFromMap(paramTypeClass, attemptStringRetrieval), checkFunction);
+    public ApiMapParameter(String parameterName,  Class<ParamType> paramTypeClass, boolean attemptParseFromString, CheckFunction<ParamType>[]
+        checkFunctions) {
+        this(parameterName, paramTypeClass, attemptParseFromString, false, checkFunctions);
+    }
+
+    public ApiMapParameter(String parameterName, Class<ParamType> paramTypeClass, boolean attemptStringRetrieval, boolean replaceInMap,
+                           CheckFunction<ParamType>[] checkFunctions) {
+        super(parameterName, MapParameterRetrievalFunctions.typeFromMap(paramTypeClass, attemptStringRetrieval, replaceInMap), checkFunctions);
     }
 }

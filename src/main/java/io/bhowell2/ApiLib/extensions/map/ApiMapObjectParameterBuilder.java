@@ -51,12 +51,12 @@ public class ApiMapObjectParameterBuilder extends ApiObjectParameterBuilder<Map<
         return this;
     }
 
-    public ApiMapObjectParameterBuilder addRequiredCustomParameters(ApiMapCustomParameters customParameters) {
+    public ApiMapObjectParameterBuilder addRequiredCustomParameters(ApiMapCustomParameter customParameters) {
         this.requiredCustomParams.add(customParameters);
         return this;
     }
 
-    public ApiMapObjectParameterBuilder addOptionalCustomParameters(ApiMapCustomParameters customParameters) {
+    public ApiMapObjectParameterBuilder addOptionalCustomParameters(ApiMapCustomParameter customParameters) {
         this.optionalCustomParams.add(customParameters);
         return this;
     }
@@ -76,11 +76,11 @@ public class ApiMapObjectParameterBuilder extends ApiObjectParameterBuilder<Map<
         ApiMapObjectParameter[] optionalApiMapObjParamsAry =   this.optionalObjParams
             .toArray((ApiMapObjectParameter[])new ApiMapObjectParameter[this.optionalObjParams.size()]);
 
-        ApiMapCustomParameters[] requiredCustomParamsAry = this.requiredCustomParams
-            .toArray((ApiMapCustomParameters[])new ApiMapCustomParameters[this.requiredCustomParams.size()]);
+        ApiMapCustomParameter[] requiredCustomParamsAry = this.requiredCustomParams
+            .toArray((ApiMapCustomParameter[])new ApiMapCustomParameter[this.requiredCustomParams.size()]);
 
-        ApiMapCustomParameters[] optionalCustomParamsAry = this.optionalCustomParams
-            .toArray((ApiMapCustomParameters[])new ApiMapCustomParameters[this.optionalCustomParams.size()]);
+        ApiMapCustomParameter[] optionalCustomParamsAry = this.optionalCustomParams
+            .toArray((ApiMapCustomParameter[])new ApiMapCustomParameter[this.optionalCustomParams.size()]);
 
         return new ApiMapObjectParameter(this.objectParameterName,
                                          this.continueOnOptionalFailure,

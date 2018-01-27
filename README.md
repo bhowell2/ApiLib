@@ -1,21 +1,25 @@
 # API Parameter Library
-A library to facilitate the creation and checking of parameters for an API.  This library takes some setup to use in your application, but once this has been taken care of your API can be very quickly built.  An extension to the library has been created for `Map<String, Object> requestParameters` -- this further reduces some boilerplate for the user and/or can be used as an example for the user to create a framework specific extension.
+A library to facilitate the creation and checking of parameters for an API.  This library takes some setup to use in your application, but once this
+has been taken care of your API can be very quickly built. An extension to the library has been created for `Map<String, Object> requestParameters`
+-- this further reduces some boilerplate for the user and/or can be used as an example for the user to create a framework specific extension.
 
 ## Return Objects
-"Tuple" classes (or data classes) have been created to return objects from each layer of the library. These, generally, return the successfully checked parameter name,
-or an error tuple (which contains the parameter name and the error type). This was done to avoid having to throw errors since it is quite possible
-that an API checking library could throw a lot of errors (and thus have a non-trivial impact on performance).
+"Tuple" classes (or, data classes) have been created to return objects from each layer of the library. These, generally, return the successfully
+checked parameter name, or an error tuple (which contains the parameter name and the error type). This was done to avoid having to throw errors since
+it is quite possible that an API checking library could throw a lot of errors (and thus have a non-trivial impact on performance).
 
 ## Errors
 To keep the return objects as simple as possible, an error will only return what the [error type](./src/main/java/io/bhowell2/ApiLib/ErrorType.java)
-is, the parameter that failed (for nested parameters, the parameter name will be of the form 'ParameterName of (nested) NestedParameterName'), and possibly an error message with
- the [ErrorTuple](./src/main/java/io/bhowell2/ApiLib/ErrorTuple.java).
+is, the parameter that failed (for nested parameters, the parameter name will be of the form 'ParameterName of (nested) NestedParameterName'), and
+possibly an error message with the [ErrorTuple](./src/main/java/io/bhowell2/ApiLib/ErrorTuple.java), which can be conditionally tested for.
+
+
 
 ## Api Version
-An API Version needs to be created for each version available (this could be done by implementing [ApiVersion]
+An API Version needs to be created for each version available. This could be done by implementing [ApiVersion]
 (./src/main/java/io/bhowell2/ApiLib/ApiVersion.java) in an Enum (preferable) or creating a class for Api Versions and
 implementing the interface. If the latter interface approach is used, then it is advisable to create a singleton that holds all of the possible API
-Versions and retrieve them as necessary to keep from recreating them all the time.
+Versions and retrieve them as necessary to keep from recreating them all the time. The API version is only used for paths.
 
 ## [CheckFunction](./src/main/java/io/bhowell2/ApiLib/CheckFunction.java)
 Used to check whether a parameter meets certain conditions. Some common check functionality has already been provided for Strings, Doubles, and Integers in [utils](./src/main/java/io/bhowell2/ApiLib/utils). This returns [CheckFunctionTuple](./src/main/java/io/bhowell2/ApiLib/CheckFunctionTuple.java), which returns whether the parameter passed the check or if it failed (as well as a reason for failure).

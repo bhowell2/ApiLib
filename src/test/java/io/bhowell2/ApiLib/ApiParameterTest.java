@@ -18,7 +18,7 @@ public class ApiParameterTest {
 
     @Test
     public void shouldFailParameterCheck() {
-        ApiParameter<Integer, Map<String, Object>> failingIntegerApiParameter = ApiParameterBuilder.builder("TestInteger", INTEGER_FROM_MAP)
+        ApiParameter<Integer, Map<String, Object>> failingIntegerApiParameter = ApiParameterBuilder.builder("TestInteger", getIntegerFromMap())
                                                                               .addCheckFunction(ParameterIntegerChecks.valueGreaterThanOrEqualTo(0))
                                                                               .addCheckFunction(i -> CheckFunctionTuple.failure("Failed!"))
                                                                               .build();
@@ -31,7 +31,7 @@ public class ApiParameterTest {
 
     @Test
     public void shouldFailWithMissingParameter() {
-        ApiParameter<Integer, Map<String, Object>> failingIntegerApiParameter = ApiParameterBuilder.builder("TestInteger", INTEGER_FROM_MAP)
+        ApiParameter<Integer, Map<String, Object>> failingIntegerApiParameter = ApiParameterBuilder.builder("TestInteger", getIntegerFromMap())
                                                                               .addCheckFunction(ParameterIntegerChecks.valueGreaterThanOrEqualTo(0))
                                                                               .addCheckFunction(i -> CheckFunctionTuple.failure("Failed!"))
                                                                               .build();
@@ -43,7 +43,7 @@ public class ApiParameterTest {
 
     @Test
     public void shouldSuccessfullyCheckParameter() {
-        ApiParameter<Integer, Map<String, Object>> passingIntegerApiParameter = ApiParameterBuilder.builder("TestInteger", INTEGER_FROM_MAP)
+        ApiParameter<Integer, Map<String, Object>> passingIntegerApiParameter = ApiParameterBuilder.builder("TestInteger", getIntegerFromMap())
                                                                               .addCheckFunction(ParameterIntegerChecks.valueLessThan(100))
                                                                               .addCheckFunction(ParameterIntegerChecks.valueGreaterThan(5))
                                                                               .build();
@@ -56,10 +56,13 @@ public class ApiParameterTest {
 
     @Test
     public void shouldSuccessfullyCastParameterAndCheck() {
-        ApiParameter<Integer, Map<String, Object>> passingIntegerApiParameter = ApiParameterBuilder.builder("TestInteger", CAST_AND_REPLACE_STRING_TO_INT_FROM_MAP)
-                                                                              .addCheckFunction(ParameterIntegerChecks.valueLessThan(100))
-                                                                              .addCheckFunction(ParameterIntegerChecks.valueGreaterThan(5))
-                                                                              .build();
+        ApiParameter<Integer, Map<String, Object>> passingIntegerApiParameter = ApiParameterBuilder.builder("TestInteger", getIntegerFromMap(true,
+                                                                                                                                             true))
+                                                                                                   .addCheckFunction(ParameterIntegerChecks
+                                                                                                                         .valueLessThan(100))
+                                                                                                   .addCheckFunction(ParameterIntegerChecks
+                                                                                                                         .valueGreaterThan(5))
+                                                                                                   .build();
         Map<String, Object> stringObjectMap = new HashMap<>(1);
         stringObjectMap.put("TestInteger", "55");
         assertTrue(stringObjectMap.get("TestInteger") instanceof String);
