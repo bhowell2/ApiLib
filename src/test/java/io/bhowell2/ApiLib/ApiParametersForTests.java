@@ -4,6 +4,8 @@ import io.bhowell2.ApiLib.extensions.map.MapParameterRetrievalFunctions;
 import io.bhowell2.ApiLib.utils.ParameterIntegerChecks;
 import io.bhowell2.ApiLib.utils.ParameterStringChecks;
 
+import java.util.Arrays;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 
@@ -58,7 +60,7 @@ public final class ApiParametersForTests {
                 return ApiCustomParamTuple
                     .failure(new ErrorTuple(ErrorType.INVALID_PARAMETER, "Integers in list must be greater than or equal to 10", "Array1"));
         }
-        return ApiCustomParamTuple.success("Array1", "Array1");
+        return ApiCustomParamTuple.success("Array1", new HashSet<>(Arrays.asList("Array1")), null, null);
     };
 
 }

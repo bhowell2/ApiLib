@@ -121,9 +121,12 @@ public class ApiObjectParameter<ObjectParamType, ParentParamType> {
         Set<String> providedParamNames = new HashSet<>(this.requiredParams.length);
         Map<String, ApiCustomParamTuple> providedCustomParams = null;
         Map<String, ApiObjectParamTuple> providedObjParams = null;
-        if (requiredCustomParams.length > 0 || optionalCustomParams.length > 0)
+        if (requiredCustomParams.length > 0 || optionalCustomParams.length > 0) {
             providedCustomParams = new HashMap<>(this.requiredCustomParams.length);
-        if (requiredObjParams.length > 0 || optionalObjParams.length > 0)
+            providedObjParams = new HashMap<>(0);
+        }
+        // providedObjParams may also receive values from custom params, so it will have already been created above if custom parameters are supplied
+        if (providedObjParams == null && requiredObjParams.length > 0 || optionalObjParams.length > 0)
             providedObjParams = new HashMap<>(this.requiredObjParams.length);
 
         // check REQUIRED params first so failure will short-circuit
@@ -144,9 +147,12 @@ public class ApiObjectParameter<ObjectParamType, ParentParamType> {
                 }
                 providedCustomParams.put(checkTuple.customParameterName, checkTuple);
                 providedParamNames.addAll(checkTuple.providedParamNames);
+                providedObjParams.putAll(checkTuple.providedObjParams);
             } catch (ClassCastException e) {
                 return ApiObjectParamTuple
-                    .failed(new ErrorTuple(ErrorType.PARAMETER_CAST, "Failed to case parameter in ApiCustomParameters check. " + e.getMessage()));
+                    .failed(new ErrorTuple(ErrorType.PARAMETER_CAST,
+                                           "Failed to case parameter in ApiCustomParameters check. " + e.getMessage(),
+                                           "Custom Parameter Error."));
             }
         }
 
@@ -162,7 +168,9 @@ public class ApiObjectParameter<ObjectParamType, ParentParamType> {
                 providedParamNames.add(checkTuple.parameterName);
             } catch (ClassCastException e) {
                 return ApiObjectParamTuple
-                    .failed(new ErrorTuple(ErrorType.PARAMETER_CAST, "Failed to cast parameter to correct type. " + e.getMessage()));
+                    .failed(new ErrorTuple(ErrorType.PARAMETER_CAST,
+                                           "Failed to cast parameter to correct type. " + e.getMessage(),
+                                           objectParameter.parameterName));
             }
         }
 
@@ -189,6 +197,7 @@ public class ApiObjectParameter<ObjectParamType, ParentParamType> {
             }
             providedCustomParams.put(checkTuple.customParameterName, checkTuple);
             providedParamNames.addAll(checkTuple.providedParamNames);
+            providedObjParams.putAll(checkTuple.providedObjParams);
         }
 
         for (ApiObjectParameter<?, ObjectParamType> nestedParameter : optionalObjParams) {

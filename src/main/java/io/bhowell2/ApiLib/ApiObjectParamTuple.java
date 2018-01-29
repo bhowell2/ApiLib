@@ -18,9 +18,9 @@ public final class ApiObjectParamTuple {
     public final String parameterName;                                      // only has parameter name if it is an object nested within another object
                                                                             // (not objects in an array though)
     public final Set<String> providedParamNames;                            // name of parameters successfully checked/provided
-    public final Map<String, ApiCustomParamTuple> providedCustomParams;    // custom parameters must have a name, so they can be retrieved
-    public final Map<String, ApiObjectParamTuple> providedObjParams;        // if objects are nested within this object
-    public final ErrorTuple errorTuple;                                     //
+    public final Map<String, ApiCustomParamTuple> providedCustomParams;     // custom parameters must have a name, so they can be retrieved
+    public final Map<String, ApiObjectParamTuple> providedObjParams;        // if objects are nested within this object they should be added here so that their ApiObjectParamTuple may be obtained to see what parameters were provided
+    public final ErrorTuple errorTuple;                                     // if an error occurred will be non-null (all others, besides, potentially, parameterName will be null)
 
     public ApiObjectParamTuple(Set<String> providedParamNames,
                                Map<String, ApiObjectParamTuple> providedObjParams,

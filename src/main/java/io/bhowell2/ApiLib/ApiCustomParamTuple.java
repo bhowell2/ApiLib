@@ -1,42 +1,63 @@
 package io.bhowell2.ApiLib;
 
 import java.util.ArrayList;
-import java.util.Arrays;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 /**
- * Return for {@link ApiCustomParameter#check(Object)}. Usually will have providedParameterNames, but it's possible (especially for case of an
- * array) that there are no actually returned parameter names.
+ *
  * @author Blake Howell
  */
 public class ApiCustomParamTuple {
 
-    public final String customParameterName;                        // name of custom parameter (at least to put in ObjectParameterT)
+    public final String customParameterName;                        // name of custom parameter to put in the ApiObjectParamTuple#providedCustomParams map
     public final Set<String> providedParamNames;                    // name of parameters successfully checked/provided
-    public final List<ApiObjectParamTuple> providedObjParams;       // if objects are nested within this object
+    public final Map<String, ApiObjectParamTuple> providedObjParams;
+    public final List<ApiObjectParamTuple> arrayObjParams;       // if objects are nested within this object
     public final ErrorTuple errorTuple;
 
-    public ApiCustomParamTuple(String customParameterName) {
-        this(customParameterName, null, null, null);
-    }
+//    public ApiCustomParamTuple(String customParameterName, List<String> providedParamNames,
+//                               Map<String, ApiObjectParamTuple> providedParamObjects, List<ApiObjectParamTuple> arrayParamObjects) {
+//        this.customParameterName = customParameterName;
+//        if (providedParamNames == null) {
+//            this.providedParamNames = new HashSet<>(0);
+//        } else {
+//            this.providedParamNames = new HashSet<>(providedParamNames);
+//        }
+//        if (providedParamObjects == null) {
+//            this.providedParamObjects = new HashMap<>(0);
+//        } else {
+//            this.providedParamObjects = providedParamObjects;
+//        }
+//        if (arrayParamObjects == null) {
+//            this.arrayParamObjects = new ArrayList<>(0);
+//        } else {
+//            this.arrayParamObjects = arrayParamObjects;
+//        }
+//        this.errorTuple = null;
+//    }
 
-    public ApiCustomParamTuple(String customParameterName, String... providedParamNames) {
-        this(customParameterName, new ArrayList<>(Arrays.asList(providedParamNames)), null);
-    }
-
-    public ApiCustomParamTuple(String customParameterName, List<String> providedParamNames, List<ApiObjectParamTuple> providedObjParams) {
+    public ApiCustomParamTuple(String customParameterName, Set<String> providedParamNames,
+                               Map<String, ApiObjectParamTuple> providedObjParams, List<ApiObjectParamTuple> arrayObjParams) {
         this.customParameterName = customParameterName;
-        this.providedParamNames = new HashSet<>(providedParamNames);
-        this.providedObjParams = providedObjParams;
-        this.errorTuple = null;
-    }
-
-    public ApiCustomParamTuple(String customParameterName, Set<String> providedParamNames, List<ApiObjectParamTuple> providedObjParams) {
-        this.customParameterName = customParameterName;
-        this.providedParamNames = providedParamNames;
-        this.providedObjParams = providedObjParams;
+        if (providedParamNames == null) {
+            this.providedParamNames = new HashSet<>(0);
+        } else {
+            this.providedParamNames = providedParamNames;
+        }
+        if (providedObjParams == null) {
+            this.providedObjParams = new HashMap<>(0);
+        } else {
+            this.providedObjParams = providedObjParams;
+        }
+        if (arrayObjParams == null) {
+            this.arrayObjParams = new ArrayList<>(0);
+        } else {
+            this.arrayObjParams = arrayObjParams;
+        }
         this.errorTuple = null;
     }
 
@@ -44,8 +65,9 @@ public class ApiCustomParamTuple {
     public ApiCustomParamTuple(ErrorTuple errorTuple) {
         this.errorTuple = errorTuple;
         this.customParameterName = null;
-        this.providedObjParams = null;
+        this.arrayObjParams = null;
         this.providedParamNames = null;
+        this.providedObjParams = null;
     }
 
     public boolean failed() {
@@ -55,6 +77,8 @@ public class ApiCustomParamTuple {
     public boolean successful() {
         return errorTuple == null;
     }
+
+
 
     /* Static creation methods */
 
@@ -67,17 +91,21 @@ public class ApiCustomParamTuple {
      * @return
      */
     public static ApiCustomParamTuple success(String customParameterName) {
-        return new ApiCustomParamTuple(customParameterName);
+        return new ApiCustomParamTuple(customParameterName, null, null, null);
     }
 
+    /**
+     *
+     * @param customParameterName
+     * @param providedParamNames
+     * @param arrayParamObjects
+     * @return
+     */
     public static ApiCustomParamTuple success(String customParameterName,
-                                              List<String> providedParamNames,
-                                              List<ApiObjectParamTuple> providedObjParams) {
-        return new ApiCustomParamTuple(customParameterName, providedParamNames, providedObjParams);
-    }
-
-    public static ApiCustomParamTuple success(String customParameterName, String... parameterNames) {
-        return new ApiCustomParamTuple(customParameterName, parameterNames);
+                                              Set<String> providedParamNames,
+                                              Map<String, ApiObjectParamTuple> providedParamObjects,
+                                              List<ApiObjectParamTuple> arrayParamObjects) {
+        return new ApiCustomParamTuple(customParameterName, providedParamNames, providedParamObjects, arrayParamObjects);
     }
 
     public static ApiCustomParamTuple failure(ErrorTuple errorTuple) {

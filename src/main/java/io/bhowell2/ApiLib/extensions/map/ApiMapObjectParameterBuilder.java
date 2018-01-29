@@ -11,13 +11,14 @@ import java.util.Map;
 public class ApiMapObjectParameterBuilder extends ApiObjectParameterBuilder<Map<String, Object>, Map<String, Object>> {
 
     /**
-     * With no parameter name then the retrieval function should just return the object passed in
+     * With no parameter name then the retrieval function should just return the object passed in (i.e., the map).
      * @return
      */
     public static ApiMapObjectParameterBuilder builder() {
         return new ApiMapObjectParameterBuilder(null, (s, m) -> m);
     }
 
+    @SuppressWarnings("unchecked")
     public static ApiMapObjectParameterBuilder builder(String innerObjParamName) {
         return new ApiMapObjectParameterBuilder(innerObjParamName, (innerObjName, m) -> (Map<String, Object>) m.get(innerObjName));
     }
@@ -60,7 +61,6 @@ public class ApiMapObjectParameterBuilder extends ApiObjectParameterBuilder<Map<
         this.optionalCustomParams.add(customParameters);
         return this;
     }
-
 
     @SuppressWarnings("unchecked")
     public ApiMapObjectParameter build() {

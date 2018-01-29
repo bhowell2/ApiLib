@@ -13,57 +13,155 @@ To keep the return objects as simple as possible, an error will only return what
 is, the parameter that failed (for nested parameters, the parameter name will be of the form 'ParameterName of (nested) NestedParameterName'), and
 possibly an error message with the [ErrorTuple](./src/main/java/io/bhowell2/ApiLib/ErrorTuple.java), which can be conditionally tested for.
 
-
-
-## Api Version
-An API Version needs to be created for each version available. This could be done by implementing [ApiVersion]
-(./src/main/java/io/bhowell2/ApiLib/ApiVersion.java) in an Enum (preferable) or creating a class for Api Versions and
-implementing the interface. If the latter interface approach is used, then it is advisable to create a singleton that holds all of the possible API
-Versions and retrieve them as necessary to keep from recreating them all the time. The API version is only used for paths.
-
 ## [CheckFunction](./src/main/java/io/bhowell2/ApiLib/CheckFunction.java)
-Used to check whether a parameter meets certain conditions. Some common check functionality has already been provided for Strings, Doubles, and Integers in [utils](./src/main/java/io/bhowell2/ApiLib/utils). This returns [CheckFunctionTuple](./src/main/java/io/bhowell2/ApiLib/CheckFunctionTuple.java), which returns whether the parameter passed the check or if it failed (as well as a reason for failure).
+Used to check whether a parameter meets certain conditions. ApiParameter may use one or multiple of these to check its parameter.
+Some common check functionality has already been provided for Strings, Doubles, and Integers in [utils](./src/main/java/io/bhowell2/ApiLib/utils).
+This returns [CheckFunctionTuple](./src/main/java/io/bhowell2/ApiLib/CheckFunctionTuple.java), which returns whether the parameter passed the check
+or if it failed (as well as a reason for failure).
 
 ## [ParameterRetrievalFunction](./src/main/java/io/bhowell2/ApiLib/ParameterRetrievalFunction.java)
-Used to retrieve the parameter to check from the object (e.g., Map<String, Object>) that holds the parameters. This is generic so that the user can provide their own retrieval function specific to their needs (it's recommended that the user write some constants and reuse them throughout, or extend the library like it has been extended for `Map<String, Object>`).
+Used to retrieve the parameter to check from the object (e.g., Map<String, Object>) that holds the parameters. ApiParameter uses this to retrieve the
+parameter to check from the map. This is generic so that the user can provide their own retrieval function specific to their needs (it's recommended
+that the user write some constants and reuse them throughout, or extend the library like it has been extended for `Map<String, Object>`). As just
+noted, the library provides an extension for this for parameters that are stored in a Map<String, Object>.
 
 ## [ApiParameter](./src/main/java/io/bhowell2/ApiLib/ApiParameter.java)
-This is really the base of the library; everything is built on top of ApiParameters. A [builder](./src/main/java/io/bhowell2/ApiLib/ApiParameterBuilder.java) is provided to more cleanly and descriptively create a
-parameter. The `ApiParameter` requires a name (string), `CheckFunction`s, and a `ParameterRetrievalFunction`. The name will be sent to the `ParameterRetrievalFunction` so that it can be used to grab the parameter if necessary.
+The base of the library. Everything is built on top of ApiParameters. A [builder](./src/main/java/io/bhowell2/ApiLib/ApiParameterBuilder.java)
+is provided to more cleanly and descriptively create a parameter. The `ApiParameter` requires a name (string), `CheckFunction`s, and a
+`ParameterRetrievalFunction`. The name will be sent to the `ParameterRetrievalFunction` so that it can be used to retrieve the parameter from the
+object that stores the parameter (e.g., Map).
 
-### [ApiParameterCheckTuple](./src/main/java/io/bhowell2/ApiLib/ApiParameterCheckTuple.java)
+### [ApiParamTuple](./src/main/java/io/bhowell2/ApiLib/ApiParamTuple.java)
 The return value of `ApiParameter.check()`. Returns the name of the parameter that was successfully checked or an `ErrorTuple`.
 
-## [ApiCustomParameters](./src/main/java/io/bhowell2/ApiLib/ApiCustomParameters.java)
-These have been provided so that the user can implement their own checks for some parameters.
+#### Example
+```java
+  // Using Java 8 lambdas
+  // The parameter type to be checked is String
+  // The object to retrieve the parameter from is of type Map<String, Object>
+  ApiParameter<String, Map<String, Object>> apiParameter = ApiParameterBuilder.builder("ParameterName1", (paramName, map) -> {
+    return (String)map.get(paramName);
+  })
+    .addCheckFunction(ParameterStringChecks.lengthGreaterThan(5))
+    .addCheckFunction(s -> s.length < 1000) // create your own check function (this one is already provided, but just an example on how to do your own)
+    .build();
 
-### [ApiCustomParamsCheckTuple](./src/main/java/io/bhowell2/ApiLib/ApiCustomParamsCheckTuple.java)
-Returns a list of the successfully checked and provided parameters or an `ErrorTuple`.
+  // Using map extension
+  // The parameter type to be checked is String
+  // The object to retrieve the parameter from is of type Map<String, Object>
+  ApiMapParameter<String> apiMapParameter = ApiMapParameterBuilder.builder("ParameterName1", String.class)
+    .addCheckFunction(ParameterStringChecks.lengthGreaterThan(5))
+    .build();
 
-## [ApiNestedParameter](./src/main/java/io/bhowell2/ApiLib/ApiNestedParameter.java)
-A nested parameter is a parameter that contains other parameters (e.g., a `JsonObject` within a `JsonObject`). The library has been created so that an arbitrary depth of nested parameters could be created if so desired; however, if you have a depth greater than 2 or 3 nested parameters, there might be something wrong with your design. Sooner or later, an `ApiNestedParameter` will be made up exclusively of `ApiParameter`s.  The nested parameter can have REQUIRED parameters and OPTIONAL parameters. If a required parameter is not provided, or fails to check, an error is returned. If an optional parameter is provided, it will be checked and fail by default (this can be changed by setting `continueOnOptionalFailure` to true) or return the name of the optional parameter if it passes. **Note: If the optional parameter fails to check and `continueOnOptionalFailure=true` the name of the failed parameter will NOT be returned -- this is to make it more likely the user will not use the bad parameter. And generally it is recommended to keep `continueOnOptionalFailure` to false.**  The nested parameter will check all "sub-parameters" (required and optional) and if any sub-parameter fails, the whole nested parameter will fail to check (withstanding what was just stated about optional parameters), otherwise the list of provided parameters is returned. A [builder](./src/main/java/io/bhowell2/ApiLib/ApiNestedParameterBuilder.java) has been provided to facilitate the creation of a nested parameter.
+  Map<String, Object> paramsToCheck = new HashMap();
+  paramsToCheck.put("ParameterName1", "long enough");
 
-```javascript
-{
-  param1: value1,
-  param2: value2,
-  nestedParam: {
-    nested1: nestedval1,
-    nested2: nestedval2
-  }
-}
+  ApiParamTuple checkTuple = apiMapParameter.check(paramsToCheck);
+  checkTuple.successful();  // true
+
+  Map<String, Object> badParamsToCheck = new HashMap();
+  badParamsToCheck.put("ParameterName1", "short");
+
+  // If you wanted to check the parameter individually yourself, could do this,
+  // but the ApiObjectParameter will do all of this for you and you can get the
+  // final result from all of the parameters being checked.
+
+  ApiParamTuple failedCheckTuple = apiMapParameter.check(badParamsToCheck);
+  failedCheckTuple.successful();      // false
+  faiedCheckTuple.getErrorTuple();    // gives name of parameter and why it is invalid
 ```
 
-### [ApiNestedParamCheckTuple](./src/main/java/io/bhowell2/ApiLib/ApiNestedParamCheckTuple.java)
-The nested check tuple is a bit different than the other check tuples. It needs to specify the name of the nested parameter (`nestedParameterName`), all of the provided parameter names (`providedParameterNames`), and whether or not that nested parameter has inner nested parameters (`innerNestedParameters`). If there is an error, the aforementioned values will be null and the `ErrorTuple` will contain the name of the failed parameter in the form of "ParameterName of NestedParameterName of NestedParameterName ... ad infinitum".
+## [ApiCustomParameter](./src/main/java/io/bhowell2/ApiLib/ApiCustomParameter.java)
+Allows the user to create their own parameter check(s). This can be used for uncommon conditional checks (e.g., `(P1 &&
+P2) || P3)`) or to check the indices of an array and just about any other use you can think of, but it really should only be used in extenuating circumstances or for an array. If you need to use this outside of checking an array, your API is likely getting too complicated. A name is required for the custom parameter to differentiate it from other potential custom parameters in the final returning object.
 
-## [ApiPathRequestParameters](./src/main/java/io/bhowell2/ApiLib/ApiPathRequestParameters.java)
-Contains all of the the parameters (required and optional) for a given version for a given path. A builder ([ApiPathRequestParametersBuilder](
-./src/main/java/io/bhowell2/ApiLib/ApiPathRequestParametersBuilder.java) is provided to more cleanly and descriptively create this object. This allows the
-user to define which parameters MUST be provided (required) and which parameters are not necessarily required (optional). The ApiPathParameters will fail by default if an optional parameter is provided and fails, unless specified otherwise (this default failure is to ensure that the optional parameter is not accidentally used later on in the application with bad values -- see above in the ApiNestedParameter section). This class is VERY similar to the ApiNestedParameter class.
+### [ApiCustomParamCheckTuple](./src/main/java/io/bhowell2/ApiLib/ApiCustomParamCheckTuple.java)
+Provides the name of the custom parameter check (the reason
 
-### [ApiPathRequestParamsCheckTuple](./src/main/java/io/bhowell2/ApiLib/ApiPathRequestParamsCheckTuple.java)
-Returns the names of all parameters that were provided and passed their checks. Also including a list of the nested parameters (which themselves may contain a list of nested parameters.. and so on..). Or an `ErrorTuple` is returned.
+#### Example
+```java
+  // Should have both ParameterName1 && ParameterName2 || ParameterName3
 
-## [ApiPath](./src/main/java/io/bhowell2/ApiLib/ApiPath.java)
-Contains all (all versions) of the ApiPathRequestParameters for a given path. This class will make sure that the correct ApiPathRequestParameters is chosen for the correct API version. Optionally, a path name and a path matcher may be provided to the ApiPath. This whole versioning scheme has not been well tested yet, but the general assumption right now is that the request version will be checked against the `ApiPathRequestParameters` for a version less than or equal to itself (they are sorted in ascending order, so it will check against the newest version first).
+  ApiMapParameter<String> apiMapParameter1 = ApiMapParameterBuilder.builder("ParameterName1", String.class)
+      .addCheckFunction(ParameterStringChecks.lengthGreaterThan(5))
+      .build();
+
+  ApiMapParameter<String> apiMapParameter2 = ApiMapParameterBuilder.builder("ParameterName2", String.class)
+      .addCheckFunction(ParameterStringChecks.lengthGreaterThan(5))
+      .build();
+
+  ApiMapParameter<String> apiMapParameter3 = ApiMapParameterBuilder.builder("ParameterName3", String.class)
+      .addCheckFunction(ParameterStringChecks.lengthGreaterThan(5))
+      .build();
+
+
+  ApiCustomParameter<Map<String, Object>> conditionalCheck = (map) -> {
+
+    ApiParamTuple tuple1 = apiMapParameter1.check(map);
+    ApiParamTuple tuple2 = apiMapParameter2.check(map);
+
+    if (tuple1.successful() && tuple2.successful()) {
+      Set<String> providedParamNames = new HashSet<>(Arrays.asList(tuple1.parameterName, tuple2.parameterName));
+      return ApiCustomParamTuple.success("ConditionalCheck", providedParamNames, null, null);
+    }
+    ApiParamTuple tuple3 = apiMapParameter3.check(map);
+    if (tuple3.successful()) {
+      Set<String> providedParamNames = new HashSet<>(Arrays.asList(tuple3.parameterName));
+      return ApiCustomParamTuple.success("ConditionalCheck", providedParamNames, null, null);
+    }
+
+    // check to see if it just wasnt provided or if they just failed to pass the parameter checks
+    if (tuple1.errorTuple.errorType == ErrorType.MISSING_PARAMETER && tuple2.errorTuple.errorType == ErrorType.MISSING_PARAMETER
+        && tuple3.errorTuple.errorType == ErrorType.MISSING_PARAMETER) {
+      return ApiCustomParamTuple.failure(new ErrorTuple(ErrorType.MISSING_PARAMETER, "ParameterName1 AND ParameterName2 OR ParameterName3 were missing."));
+    }
+    return ApiCustomParamTuple.failure(new ErrorTuple(ErrorType.INVALID_PARAMETER, "ParameterName1 AND ParameterName2 OR ParameterName3 failed to meet API requirements."));
+  };
+
+```
+
+## [ApiObjectParameter](./src/main/java/io/bhowell2/ApiLib/ApiObjectParameter.java)
+The outermost element of the library. The ApiObjectParameter is made up of ApiParameters, ApiCustomParameters, and other ApiObjectParameters. The top level ApiObjectParameter does not have a name as it is not actually a parameter, but an object that holds all of the requests parameters (i.e, it is the Map<String, Object> that may contain child maps). Some parameters are required and some parameters are optional. [ApiObjectParameterBuilder](./src/main/java/io/bhowell2/ApiLib/ApiObjectParameterBuilder.java) has been provided to facilitate the creation of these parameters. If all required parameters are supplied and pass their checks then the ApiObjectParameter will return as successfully checked. The ApiObjectParameter allows the specification of whether or not to fail on optional parameter check failure. The default is false - this is to help prevent the user from accidentally using a provided, but invalid, parameter in their application code.
+
+### [ApiObjectParamTuple](./src/main/java/io/bhowell2/ApiLib/ApiObjectParamTuple.java)
+The return object from checking the ApiObjectParameter. Provides the list of successfully checked parameter names, the ApiCustomParamTuple for successfully checked custom parameters, and the ApiObjectParamTuple for successfully checked inner objects. If the check fails, an ErrorTuple is returned (all other properties are null) that gives the ErrorType, a failure message, and possible the parametername
+
+** NOTE: In your application code, you should only use the returned list of providedParameterNames. This is to ensure that you are only using parameters that have passed the API checks. **
+
+#### Example
+```java
+
+  ApiMapParameter<String> apiMapParameter1 = ApiMapParameterBuilder.builder("ParameterName1", String.class)
+      .addCheckFunction(ParameterStringChecks.lengthGreaterThan(5))
+      .build();
+
+  ApiMapParameter<String> apiMapParameter2 = ApiMapParameterBuilder.builder("ParameterName2", String.class)
+      .addCheckFunction(ParameterStringChecks.lengthGreaterThan(5))
+      .build();
+
+  ApiMapParameter<String> apiMapParameter3 = ApiMapParameterBuilder.builder("ParameterName3", String.class)
+      .addCheckFunction(ParameterStringChecks.lengthGreaterThan(5))
+      .build();
+
+  ApiMapObjectParameter requestApi = ApiMapObjectParameterBuilder.builder()
+  .addRequiredParameter(apiMapParameter1)
+  .addRequiredParameter(apiMapParameter2)
+  .addOptionalParameter(apiMapParameter3)
+  .build();
+
+  Map<String, Object> requestParameters = new HashMap<>();
+  requestParameters.add("ParameterName1", "some value") // value will pass
+                   .add("ParameterName2", "long enough"); // value will pass
+
+  ApiObjectParamTuple checkTuple = requestParameters.check(requestParameters);
+
+  checkTuple.successful(); // true
+  checkTuple.providedParamNames;  // Set containing ParameterName1, ParameterName2
+
+  ApiObjectParamTuple failedCheckTuple = requestParameters.check(new HashMap());
+  failedCheckTuple.successful();    // false
+  failedCheckTuple.errorTuple       // ErrorType == MISSING_PARAMETER, parameterName = ParameterName1 (always returns name of first failure)
+
+```
+
+** See tests for more examples. **

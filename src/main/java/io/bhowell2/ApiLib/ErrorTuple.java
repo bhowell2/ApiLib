@@ -12,9 +12,9 @@ public final class ErrorTuple {
     public final String errorMessage;
 
 
-    public ErrorTuple(ErrorType type, String errorMessage) {
-        this(type, errorMessage, null);
-    }
+//    public ErrorTuple(ErrorType type, String errorMessage) {
+//        this(type, errorMessage, null);
+//    }
 
     public ErrorTuple(ErrorType type, String errorMessage, String parameterName) {
         this.errorType = type;
