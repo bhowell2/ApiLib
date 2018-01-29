@@ -19,27 +19,6 @@ public class ApiCustomParamTuple {
     public final List<ApiObjectParamTuple> arrayObjParams;       // if objects are nested within this object
     public final ErrorTuple errorTuple;
 
-//    public ApiCustomParamTuple(String customParameterName, List<String> providedParamNames,
-//                               Map<String, ApiObjectParamTuple> providedParamObjects, List<ApiObjectParamTuple> arrayParamObjects) {
-//        this.customParameterName = customParameterName;
-//        if (providedParamNames == null) {
-//            this.providedParamNames = new HashSet<>(0);
-//        } else {
-//            this.providedParamNames = new HashSet<>(providedParamNames);
-//        }
-//        if (providedParamObjects == null) {
-//            this.providedParamObjects = new HashMap<>(0);
-//        } else {
-//            this.providedParamObjects = providedParamObjects;
-//        }
-//        if (arrayParamObjects == null) {
-//            this.arrayParamObjects = new ArrayList<>(0);
-//        } else {
-//            this.arrayParamObjects = arrayParamObjects;
-//        }
-//        this.errorTuple = null;
-//    }
-
     public ApiCustomParamTuple(String customParameterName, Set<String> providedParamNames,
                                Map<String, ApiObjectParamTuple> providedObjParams, List<ApiObjectParamTuple> arrayObjParams) {
         this.customParameterName = customParameterName;
@@ -94,18 +73,33 @@ public class ApiCustomParamTuple {
         return new ApiCustomParamTuple(customParameterName, null, null, null);
     }
 
+    public static ApiCustomParamTuple success(String customParameterName,
+                                              Set<String> providedParamNames) {
+        return success(customParameterName, providedParamNames, null, null);
+    }
+
+    public static ApiCustomParamTuple success(String customParameterName,
+                                              Map<String, ApiObjectParamTuple> providedObjParams) {
+        return success(customParameterName, null, providedObjParams, null);
+    }
+
+    public static ApiCustomParamTuple success(String customParameterName,
+                                              List<ApiObjectParamTuple> arrayObjParams) {
+        return success(customParameterName, null, null, arrayObjParams);
+    }
+
     /**
      *
      * @param customParameterName
      * @param providedParamNames
-     * @param arrayParamObjects
+     * @param arrayObjParams
      * @return
      */
     public static ApiCustomParamTuple success(String customParameterName,
                                               Set<String> providedParamNames,
-                                              Map<String, ApiObjectParamTuple> providedParamObjects,
-                                              List<ApiObjectParamTuple> arrayParamObjects) {
-        return new ApiCustomParamTuple(customParameterName, providedParamNames, providedParamObjects, arrayParamObjects);
+                                              Map<String, ApiObjectParamTuple> providedObjParams,
+                                              List<ApiObjectParamTuple> arrayObjParams) {
+        return new ApiCustomParamTuple(customParameterName, providedParamNames, providedObjParams, arrayObjParams);
     }
 
     public static ApiCustomParamTuple failure(ErrorTuple errorTuple) {
@@ -113,7 +107,7 @@ public class ApiCustomParamTuple {
     }
 
     public static ApiCustomParamTuple failure(ErrorType errorType, String parameterName) {
-        return failure(errorType, parameterName, null);
+        return failure(errorType, parameterName, "Custom parameter failed to check.");
     }
 
     public static ApiCustomParamTuple failure(ErrorType errorType, String parameterName, String failureMessage) {
