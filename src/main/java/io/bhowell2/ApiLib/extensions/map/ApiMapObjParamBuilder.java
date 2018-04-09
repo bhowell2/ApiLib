@@ -38,11 +38,11 @@ public class ApiMapObjParamBuilder extends ApiObjParamBuilder<Map<String, Object
         return this;
     }
 
-    public ApiMapObjParamBuilder addRequiredParameter(ApiMapParam<?> requiredApiParameter) {
+    public ApiMapObjParamBuilder addParameter(ApiMapParam<?> requiredApiParameter) {
         return (ApiMapObjParamBuilder) super.addParameter(requiredApiParameter);
     }
 
-    public ApiMapObjParamBuilder addRequiredParameters(ApiMapParam<?>... requiredApiParameters) {
+    public ApiMapObjParamBuilder addParameters(ApiMapParam<?>... requiredApiParameters) {
         return (ApiMapObjParamBuilder) super.addParameters(requiredApiParameters);
     }
 
