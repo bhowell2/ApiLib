@@ -6,7 +6,7 @@ package io.bhowell2.ApiLib.extensions.map;
  */
 public class ApiMapParametersForTests {
 
-    ApiMapParameter<String> MAP_STRING1 = ApiMapParameterBuilder.builder("MAP_STRING1", String.class)
-                                                                .build();
+    ApiMapParam<String> MAP_STRING1 = ApiMapParamBuilder.builder("MAP_STRING1", false, String.class)
+                                                        .build();
 
 }

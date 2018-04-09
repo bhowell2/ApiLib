@@ -1,15 +1,15 @@
 package io.bhowell2.ApiLib;
 
-import io.bhowell2.ApiLib.extensions.map.MapParameterRetrievalFunctions;
-import io.bhowell2.ApiLib.utils.ParameterIntegerChecks;
-import io.bhowell2.ApiLib.utils.ParameterStringChecks;
+import io.bhowell2.ApiLib.extensions.map.ApiMapParamRetrievalFunc;
+import io.bhowell2.ApiLib.utils.IntegerParamChecks;
+import io.bhowell2.ApiLib.utils.StringParamChecks;
 
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 
-import static io.bhowell2.ApiLib.extensions.map.MapParameterRetrievalFunctions.*;
+import static io.bhowell2.ApiLib.extensions.map.ApiMapParamRetrievalFunc.*;
 
 /**
  * Various parameters to use in tests.
@@ -17,50 +17,51 @@ import static io.bhowell2.ApiLib.extensions.map.MapParameterRetrievalFunctions.*
  */
 public final class ApiParametersForTests {
 
-    public static final ApiParameter<String, Map<String, Object>> STRING1 =
-        ApiParameterBuilder.builder("String1", STRING_FROM_MAP)
-                           .addCheckFunction(ParameterStringChecks.lengthGreaterThanOrEqual(1))
-                           .addCheckFunction(ParameterStringChecks.lengthLessThan(100))
-                           .build();
+    public static final ApiParam<String, Map<String, Object>> STRING1 =
+        ApiParamBuilder.builder("String1", false, STRING_FROM_MAP)
+                       .addCheckFunction(StringParamChecks.lengthGreaterThanOrEqual(1))
+                       .addCheckFunction(StringParamChecks.lengthLessThan(100))
+                       .build();
 
-    public static final ApiParameter<String, Map<String, Object>> STRING2 =
-        ApiParameterBuilder.builder("String2", STRING_FROM_MAP)
-                           .addCheckFunction(ParameterStringChecks.lessThanNRepeatedChars(3))
-                           .addCheckFunction(ParameterStringChecks
+    public static final ApiParam<String, Map<String, Object>> STRING2 =
+        ApiParamBuilder.builder("String2", false, STRING_FROM_MAP)
+                       .addCheckFunction(StringParamChecks.lessThanNRepeatedChars(3))
+                       .addCheckFunction(StringParamChecks
                                                  .lengthGreaterThanOrEqual(1))
-                           .build();
-    public static final ApiParameter<String, Map<String, Object>>  STRING3 =
-        ApiParameterBuilder.builder("String3", STRING_FROM_MAP)
-                           .addCheckFunction(ParameterStringChecks.lengthGreaterThanOrEqual(1))
-                           .addCheckFunction(ParameterStringChecks.lengthLessThan(100))
-                           .build();
+                       .build();
+    public static final ApiParam<String, Map<String, Object>> STRING3 =
+        ApiParamBuilder.builder("String3", false, STRING_FROM_MAP)
+                       .addCheckFunction(StringParamChecks.lengthGreaterThanOrEqual(1))
+                       .addCheckFunction(StringParamChecks.lengthLessThan(100))
+                       .build();
 
 
-    public static final ApiParameter<Integer, Map<String, Object>> INTEGER1 =
-        ApiParameterBuilder.builder("Integer1", getIntegerFromMap(false))
-                           .addCheckFunction(ParameterIntegerChecks.valueLessThan(100))
-                           .build();
+    public static final ApiParam<Integer, Map<String, Object>> INTEGER1 =
+        ApiParamBuilder.builder("Integer1", false, getIntegerFromMap(false))
+                       .addCheckFunction(IntegerParamChecks.valueLessThan(100))
+                       .build();
 
-    public static final ApiParameter<Integer, Map<String, Object>> INTEGER2 =
-        ApiParameterBuilder.builder("Integer2", getIntegerFromMap(false))
-                           .addCheckFunction(ParameterIntegerChecks.valueGreaterThan(100))
-                           .build();
+    public static final ApiParam<Integer, Map<String, Object>> INTEGER2 =
+        ApiParamBuilder.builder("Integer2", false, getIntegerFromMap(false))
+                       .addCheckFunction(IntegerParamChecks.valueGreaterThan(100))
+                       .build();
 
-    public static final ApiObjectParameter<Map<String, Object>, Map<String, Object>> INNER_OBJ_PARAM =
-        ApiObjectParameterBuilder.builder("NestedParameter",
-                                          MapParameterRetrievalFunctions.INNER_MAP_FROM_MAP)
-                                 .addRequiredParameter(INTEGER1)
-                                 .addOptionalParameter(INTEGER2)
-                                 .build();
+    public static final ApiObjParam<Map<String, Object>, Map<String, Object>> INNER_OBJ_PARAM =
+        ApiObjParamBuilder.builder("NestedParameter",
+                                   false,
+                                   ApiMapParamRetrievalFunc.INNER_MAP_FROM_MAP)
+                          .addParameter(INTEGER1)
+                          .addParameter(INTEGER2)
+                          .build();
 
     @SuppressWarnings("unchecked")
-    public static final ApiCustomParameter<Map<String, Object>> CUSTOM_ARRAY1 = map -> {
+    public static final ApiCustomParam<Map<String, Object>> CUSTOM_ARRAY1 = map -> {
         for (Integer i : (List<Integer>)map.get("Array1")) {
             if (i < 10)
-                return ApiCustomParamTuple
-                    .failure(new ErrorTuple(ErrorType.INVALID_PARAMETER, "Integers in list must be greater than or equal to 10", "Array1"));
+                return ApiCustomParamCheck
+                    .failure(new ParamError(ErrorType.INVALID_PARAMETER, "Integers in list must be greater than or equal to 10", "Array1"));
         }
-        return ApiCustomParamTuple.success("Array1", new HashSet<>(Arrays.asList("Array1")), null, null);
+        return ApiCustomParamCheck.success("Array1", new HashSet<>(Arrays.asList("Array1")), null, null);
     };
 
 }
