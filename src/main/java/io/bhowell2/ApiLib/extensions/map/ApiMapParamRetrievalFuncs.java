@@ -9,7 +9,7 @@ import java.util.Objects;
  * Most of these are based on Vertx's JsonObject.
  * @author Blake Howell
  */
-public class ApiMapParamRetrievalFunc {
+public class ApiMapParamRetrievalFuncs {
 
     public static <T> ParamRetrievalFunc<T, Map<String, Object>> typeFromMap(Class<T> type) {
         return typeFromMap(type, false, false);
@@ -100,17 +100,6 @@ public class ApiMapParamRetrievalFunc {
     }
 
     public static ParamRetrievalFunc<String, Map<String, Object>> STRING_FROM_MAP = (key, map) -> (String) map.get(key);
-
-    public static ParamRetrievalFunc<Integer, Map<String, Object>> CAST_STRING_TO_INT_FROM_MAP = (key, map) -> Integer.parseInt((String)map
-        .get(key));
-
-    public static ParamRetrievalFunc<Integer, Map<String, Object>> CAST_AND_REPLACE_STRING_TO_INT_FROM_MAP = (key, map) -> {
-        Integer i = Integer.parseInt((String) map.get(key));
-        map.put(key, i);
-        return i;
-    };
-
-//    public static ParameterRetrievalFunction<Double, Map<String, Object>> DOUBLE_FROM_MAP = (key, map) -> (Double) map.get(s);
 
     @SuppressWarnings("unchecked")
     public static ParamRetrievalFunc<Map<String, Object>, Map<String, Object>> INNER_MAP_FROM_MAP = (key, map) -> (Map<String, Object>) map

@@ -11,65 +11,105 @@ import java.util.Map;
 public class ApiMapObjParamBuilder extends ApiObjParamBuilder<Map<String, Object>, Map<String, Object>> {
 
     /**
-     * With no parameter name then the retrieval function should just return the object passed in (i.e., the map). And there is no notion of required.
-     * @return
+     * With no parameter name the retrieval function will just return the object passed in (i.e., the map). This should be used for root obj
+     * parameters or indices of an array.
+     * @return builder
      */
-    public static ApiMapObjParamBuilder builder() {
-        return builder(false);
+    public static ApiMapObjParamBuilder rootMapObjBuilder() {
+        return new ApiMapObjParamBuilder(null, (n, m) -> m);
     }
 
-    public static ApiMapObjParamBuilder builder(boolean isRequired) {
-        return new ApiMapObjParamBuilder(null, isRequired, (s, m) -> m);
-    }
-
+    /**
+     * Use when the map object parameter is nested within another map object and can be retrieved by the parameter name supplied.
+     * @param innerObjParamName string used to retrieve map from within map
+     * @return builder
+     */
     @SuppressWarnings("unchecked")
-    public static ApiMapObjParamBuilder builder(String innerObjParamName, boolean isRequired) {
-        return new ApiMapObjParamBuilder(innerObjParamName, isRequired, (innerObjName, m) -> (Map<String, Object>) m.get(innerObjName));
+    public static ApiMapObjParamBuilder innerMapObjBuilder(String innerObjParamName) {
+        return new ApiMapObjParamBuilder(innerObjParamName, (innerObjName, m) -> (Map<String, Object>) m.get(innerObjName));
     }
 
-    public ApiMapObjParamBuilder(String objectParameterName,
-                                 boolean isRequired,
+    public static ApiMapObjParamBuilder copyFrom(ApiMapObjParam mapObjParam) {
+        return copyFrom(mapObjParam.paramName, mapObjParam);
+    }
+
+    public static ApiMapObjParamBuilder copyFrom(String paramName, ApiMapObjParam mapObjParam) {
+        return new ApiMapObjParamBuilder(paramName, mapObjParam);
+    }
+
+    public ApiMapObjParamBuilder(String paramName,
                                  ParamRetrievalFunc<Map<String, Object>, Map<String, Object>> retrievalFunction) {
-        super(objectParameterName, isRequired, retrievalFunction);
+        super(paramName, retrievalFunction);
+    }
+
+    public ApiMapObjParamBuilder(String paramName, ApiMapObjParam mapObjParam) {
+        super(paramName, mapObjParam);
     }
 
     public ApiMapObjParamBuilder setContinueOnOptionalFailure(boolean continueOnOptionalFailure) {
-        this.continueOnOptionalFailure = continueOnOptionalFailure;
+        super.setContinueOnOptionalFailure(continueOnOptionalFailure);
         return this;
     }
 
-    public ApiMapObjParamBuilder addParameter(ApiMapParam<?> requiredApiParameter) {
-        return (ApiMapObjParamBuilder) super.addParameter(requiredApiParameter);
+    public ApiMapObjParamBuilder addRequiredParam(ApiMapParam<?> mapParam) {
+        super.addRequiredParam(mapParam);
+        return this;
     }
 
-    public ApiMapObjParamBuilder addParameters(ApiMapParam<?>... requiredApiParameters) {
-        return (ApiMapObjParamBuilder) super.addParameters(requiredApiParameters);
+    public ApiMapObjParamBuilder addRequiredParams(ApiMapParam<?>... mapParam) {
+        super.addRequiredParams(mapParam);
+        return this;
     }
 
-    public ApiMapObjParamBuilder addObjectParameter(ApiMapObjParam objectParameter) {
-        return (ApiMapObjParamBuilder)super.addObjectParameter(objectParameter);
+    public ApiMapObjParamBuilder addOptionalParam(ApiMapParam<?> mapParam) {
+        super.addOptionalParam(mapParam);
+        return this;
     }
 
-    public ApiMapObjParamBuilder addObjectParameters(ApiMapObjParam... objectParameters) {
-        return (ApiMapObjParamBuilder)super.addObjectParameters(objectParameters);
+    public ApiMapObjParamBuilder addOptionalParams(ApiMapParam<?>... mapParam) {
+        super.addOptionalParams(mapParam);
+        return this;
     }
 
-    public ApiMapObjParamBuilder addCustomParameter(ApiMapCustomParam customParameter) {
-        return (ApiMapObjParamBuilder) super.addCustomParameter(customParameter);
+    public ApiMapObjParamBuilder addRequiredObjParam(ApiMapObjParam mapObjParam) {
+        super.addRequiredObjParam(mapObjParam);
+        return this;
     }
 
-    public ApiMapObjParamBuilder addCustomParameters(ApiMapCustomParam... customParameters) {
-        return (ApiMapObjParamBuilder) super.addCustomParameters(customParameters);
+    public ApiMapObjParamBuilder addRequiredObjParams(ApiMapObjParam... mapObjParams) {
+        super.addRequiredObjParams(mapObjParams);
+        return this;
+    }
+
+    public ApiMapObjParamBuilder addOptionalObjParam(ApiMapObjParam mapObjParam) {
+        super.addOptionalObjParam(mapObjParam);
+        return this;
+    }
+
+    public ApiMapObjParamBuilder addOptionalObjParams(ApiMapObjParam... mapObjParams) {
+        super.addOptionalObjParams(mapObjParams);
+        return this;
+    }
+
+    public ApiMapObjParamBuilder addCustomParam(ApiMapCustomParam customParam) {
+        super.addCustomParam(customParam);
+        return this;
+    }
+
+    public ApiMapObjParamBuilder addCustomParams(ApiMapCustomParam... customParams) {
+        super.addCustomParams(customParams);
+        return this;
     }
 
     @SuppressWarnings("unchecked")
     public ApiMapObjParam build() {
-        return new ApiMapObjParam(this.objectParameterName,
+        return new ApiMapObjParam(this.paramName,
                                   this.continueOnOptionalFailure,
-                                  this.isRequired,
                                   this.retrievalFunction,
-                                  this.parameters.toArray(new ApiMapParam[0]),
-                                  this.objectParameters.toArray(new ApiMapObjParam[0]),
-                                  this.customParameters.toArray(new ApiMapCustomParam[0]));
+                                  this.requiredParams.toArray(new ApiMapParam[0]),
+                                  this.optionalParams.toArray(new ApiMapParam[0]),
+                                  this.requiredObjParams.toArray(new ApiMapObjParam[0]),
+                                  this.optionalObjParams.toArray(new ApiMapObjParam[0]),
+                                  this.customParams.toArray(new ApiMapCustomParam[0]));
     }
 }

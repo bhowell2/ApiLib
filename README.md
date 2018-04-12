@@ -4,8 +4,6 @@ has been taken care of your API can be very quickly built. An extension to the l
 ([ApiMapParam](./src/main/java/io/bhowell2/ApiLib/extensions/map/ApiMapParam.java) -- this further reduces some boilerplate for the user and can be
  used as an example for the user to create an extension specific to their needs/framework. 
 
-##
-
 ## Return Objects
 Data classes have been created to return objects from each layer of the library. These, generally, return the successfully
 checked parameter name, or a [ParamError](./src/main/java/io/bhowell2/ApiLib/ParamError.java) (which contains the parameter name and the error type). 

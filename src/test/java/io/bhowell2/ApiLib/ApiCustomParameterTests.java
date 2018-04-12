@@ -1,6 +1,6 @@
 package io.bhowell2.ApiLib;
 
-import io.bhowell2.ApiLib.extensions.map.ApiMapParamRetrievalFunc;
+import io.bhowell2.ApiLib.extensions.map.ApiMapParamRetrievalFuncs;
 import io.bhowell2.ApiLib.utils.IntegerParamChecks;
 import io.bhowell2.ApiLib.utils.ParamChecks;
 import io.bhowell2.ApiLib.utils.StringParamChecks;
@@ -72,25 +72,25 @@ public class ApiCustomParameterTests {
         String param2Name = "param2";
         String param3Name = "param3";
 
-        ApiParam<String, Map<String, Object>> param1 = ApiParamBuilder.builder(param1Name, true,
+        ApiParam<String, Map<String, Object>> param1 = ApiParamBuilder.builder(param1Name,
                                                                                (String name, Map<String, Object> map) -> (String) map.get(name))
                                                                       .addCheckFunction(ParamChecks.alwaysPass())
                                                                       .build();
 
-        ApiParam<String, Map<String, Object>> param2 = ApiParamBuilder.builder(param2Name, true,
+        ApiParam<String, Map<String, Object>> param2 = ApiParamBuilder.builder(param2Name,
                                                                                (String name, Map<String, Object> map) -> (String) map.get(name))
                                                                       .addCheckFunction(StringParamChecks.lengthGreaterThanOrEqual(2))
                                                                       .build();
 
-        ApiParam<Integer, Map<String, Object>> param3 = ApiParamBuilder.builder(param3Name, true, ApiMapParamRetrievalFunc.getIntegerFromMap())
+        ApiParam<Integer, Map<String, Object>> param3 = ApiParamBuilder.builder(param3Name, ApiMapParamRetrievalFuncs.getIntegerFromMap())
                                                                        .addCheckFunction(IntegerParamChecks.valueGreaterThan(3))
                                                                        .build();
 
         ParamRetrievalFunc<Map<String, Object>, Map<String, Object>> mapParamRetrievalFunc = (name, map) -> map;
 
         ApiObjParam<Map<String, Object>, Map<String, Object>> expectedInnerObject =
-            ApiObjParamBuilder.builder(false, mapParamRetrievalFunc)
-                              .addParameters(param1, param2, param3)
+            ApiObjParamBuilder.rootObjBuilder(mapParamRetrievalFunc)
+                              .addRequiredParams(param1, param2, param3)
                               .build();
 
         ApiCustomParam<Map<String, Object>> mapApiCustomParam = (requestParameters -> {

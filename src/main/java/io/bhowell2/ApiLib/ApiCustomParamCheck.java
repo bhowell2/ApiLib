@@ -22,21 +22,9 @@ public final class ApiCustomParamCheck {
     public ApiCustomParamCheck(String customParameterName, Set<String> providedParamNames,
                                Map<String, ApiObjParamCheck> providedObjParams, List<ApiObjParamCheck> arrayObjParams) {
         this.customParameterName = customParameterName;
-        if (providedParamNames == null) {
-            this.providedParamNames = new HashSet<>(0);
-        } else {
-            this.providedParamNames = providedParamNames;
-        }
-        if (providedObjParams == null) {
-            this.providedObjParams = new HashMap<>(0);
-        } else {
-            this.providedObjParams = providedObjParams;
-        }
-        if (arrayObjParams == null) {
-            this.arrayObjParams = new ArrayList<>(0);
-        } else {
-            this.arrayObjParams = arrayObjParams;
-        }
+        this.providedParamNames = providedParamNames != null ? providedParamNames : new HashSet<>(0);
+        this.providedObjParams = providedObjParams != null ? providedObjParams : new HashMap<>(0);
+        this.arrayObjParams = arrayObjParams != null ? arrayObjParams : new ArrayList<>(0);
         this.paramError = null;
     }
 
@@ -55,7 +43,6 @@ public final class ApiCustomParamCheck {
     public boolean successful() {
         return paramError == null;
     }
-
 
     /* Static creation methods */
 

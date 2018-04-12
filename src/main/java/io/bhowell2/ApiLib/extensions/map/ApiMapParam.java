@@ -13,44 +13,43 @@ import java.util.Map;
  */
 public class ApiMapParam<ParamType> extends ApiParam<ParamType, Map<String, Object>> {
 
-    public ApiMapParam(String parameterName, boolean isRequired, ParamRetrievalFunc<ParamType,
-            Map<String, Object>> retrievalFunction, CheckFunc<ParamType>... checkFunc) {
-        super(parameterName, isRequired, retrievalFunction, checkFunc);
+    public ApiMapParam(String parameterName, ParamRetrievalFunc<ParamType,
+        Map<String, Object>> retrievalFunction, CheckFunc<ParamType>[] checkFunc) {
+        super(parameterName, retrievalFunction, checkFunc);
     }
 
-    public ApiMapParam(String parameterName, boolean isRequired,
+    public ApiMapParam(String parameterName,
                        Class<ParamType> paramTypeClass, CheckFunc<ParamType>[] checkFunc) {
-        this(parameterName, isRequired, paramTypeClass, false, false, checkFunc);
+        this(parameterName, paramTypeClass, false, false, checkFunc);
     }
 
-    public ApiMapParam(String parameterName, boolean isRequired,
+    public ApiMapParam(String parameterName,
                        Class<ParamType> paramTypeClass, boolean parseIfString,
                        boolean replaceCastInMap, CheckFunc<ParamType>[] checkFuncs) {
-        super(parameterName, isRequired, ApiMapParamRetrievalFunc
-            .typeFromMap(paramTypeClass, parseIfString, replaceCastInMap), checkFuncs);
+        super(parameterName,
+              ApiMapParamRetrievalFuncs.typeFromMap(paramTypeClass, parseIfString, replaceCastInMap),
+              checkFuncs);
     }
 
-    public ApiMapParam(String parameterName, boolean isRequired,
+    public ApiMapParam(String parameterName,
                        ParamRetrievalFunc<ParamType, Map<String, Object>> retrievalFunction,
                        FormatFunc<ParamType>[] formatFuncs,
                        FormatInsertFunc<ParamType, Map<String, Object>> formatInsertFunc,
                        CheckFunc<ParamType>[] checkFuncs) {
         super(parameterName,
-              isRequired,
               retrievalFunction,
               formatFuncs,
               formatInsertFunc,
               checkFuncs);
     }
 
-    public ApiMapParam(String parameterName, boolean isRequired,
+    public ApiMapParam(String parameterName,
                        Class<ParamType> paramTypeClass, boolean parseIfString, boolean replaceCastInMap,
                        FormatFunc<ParamType>[] formatFuncs,
                        FormatInsertFunc<ParamType, Map<String, Object>> formatInsertFunc,
                        CheckFunc<ParamType>[] checkFuncs) {
         this(parameterName,
-             isRequired,
-             ApiMapParamRetrievalFunc.typeFromMap(paramTypeClass, parseIfString, replaceCastInMap),
+             ApiMapParamRetrievalFuncs.typeFromMap(paramTypeClass, parseIfString, replaceCastInMap),
              formatFuncs,
              formatInsertFunc,
              checkFuncs);

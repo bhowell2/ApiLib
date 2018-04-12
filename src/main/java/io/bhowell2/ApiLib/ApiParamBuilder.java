@@ -1,7 +1,6 @@
 package io.bhowell2.ApiLib;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 /**
@@ -10,74 +9,66 @@ import java.util.List;
  */
 public class ApiParamBuilder<ParamType, ParamsObj> {
 
-    public static <ParamType, ParamsObj> ApiParamBuilder<ParamType, ParamsObj> builder(String parameterName,
-                                                                                       boolean isRequired,
-                                                                                       ParamRetrievalFunc<ParamType, ParamsObj> retrievalFunction) {
-        return new ApiParamBuilder<>(parameterName, isRequired, retrievalFunction);
+    public static <ParamType, ParamsObj> ApiParamBuilder<ParamType, ParamsObj> builder(String paramName,
+                                                                                       ParamRetrievalFunc<ParamType, ParamsObj> retrievalFunc) {
+        return new ApiParamBuilder<>(paramName, retrievalFunc);
     }
 
     /**
      * Allows the copying of a previously created ApiParameter. There will likely be cases where the user wants to have all of the same
      * information, except for possibly whether the parameter is required or not.
-     * @param parameter
-     * @param isRequired
+     * @param apiParam
      * @param <ParamType>
      * @param <ParamsObj>
      * @return
      */
-    public static <ParamType, ParamsObj> ApiParamBuilder<ParamType, ParamsObj> copyFrom(boolean isRequired,
-                                                                                        ApiParam<ParamType, ParamsObj> parameter) {
-        return copyFrom(parameter.parameterName, isRequired, parameter);
+    public static <ParamType, ParamsObj> ApiParamBuilder<ParamType, ParamsObj> copyFrom(ApiParam<ParamType, ParamsObj> apiParam) {
+        return copyFrom(apiParam.parameterName, apiParam);
     }
 
     /**
      * Allows the copying of a previously created ApiParameter. There will likely be cases where the user wants to have all of the same
-     * information, except for possibly whether the parameter is required or not.
-     * @param parameterName name of new parameter
-     * @param isRequired w
-     * @param parameter the parameter whose values to copy
+     * information/checks, but possibly wants to change the name and add more checks.
+     * @param paramName name of new parameter
+     * @param param the parameter whose values to copy
      * @param <ParamType> type of parameter (e.g., String)
      * @param <ParamsObj> type of request parameters object (e.g., Map<String, Object>)
      * @return
      */
-    public static <ParamType, ParamsObj> ApiParamBuilder<ParamType, ParamsObj> copyFrom(String parameterName,
-                                                                                        boolean isRequired,
-                                                                                        ApiParam<ParamType, ParamsObj> parameter) {
-        ApiParamBuilder<ParamType, ParamsObj> builder = new ApiParamBuilder<>(parameterName,
-                                                                              isRequired,
-                                                                              parameter.paramRetrievalFunc);
-        builder.formatFuncs = new ArrayList<>(Arrays.asList(parameter.formatFuncs));
-        builder.formatInsertFunc = parameter.formatInsertFunc;
-        builder.checkFuncs = new ArrayList<>(Arrays.asList(parameter.paramCheckFuncs));
-        return builder;
+    public static <ParamType, ParamsObj> ApiParamBuilder<ParamType, ParamsObj> copyFrom(String paramName,
+                                                                                        ApiParam<ParamType, ParamsObj> param) {
+        return new ApiParamBuilder<ParamType, ParamsObj>(paramName, param);
     }
 
-    protected String parameterName;
-    protected boolean isRequired;
+    protected String paramName;
     protected List<CheckFunc<ParamType>> checkFuncs;
-    protected ParamRetrievalFunc<ParamType, ParamsObj> retrievalFunction;
+    protected ParamRetrievalFunc<ParamType, ParamsObj> retrievalFunc;
     protected List<FormatFunc<ParamType>> formatFuncs;
     protected FormatInsertFunc<ParamType, ParamsObj> formatInsertFunc;
 
     /**
      *
-     * @param parameterName the name of the parameter
-     * @param isRequired whether or not parameter is required
-     * @param retrievalFunction a function that will accept the
+     * @param paramName the name of the parameter
+     * @param retrievalFunc a function that will accept the
      */
-    public ApiParamBuilder(String parameterName, boolean isRequired, ParamRetrievalFunc<ParamType, ParamsObj> retrievalFunction) {
-        this.parameterName = parameterName;
-        this.isRequired = isRequired;
-        this.retrievalFunction = retrievalFunction;
-        this.checkFuncs = new ArrayList<>(1);       // must have at last 1
+    public ApiParamBuilder(String paramName, ParamRetrievalFunc<ParamType, ParamsObj> retrievalFunc) {
+        this.paramName = paramName;
+        this.retrievalFunc = retrievalFunc;
+        this.checkFuncs = new ArrayList<>(1);       // must have at least 1
         this.formatFuncs = new ArrayList<>(0);
+    }
+
+    public ApiParamBuilder(String paramName, ApiParam<ParamType, ParamsObj> apiParam) {
+        this(paramName, apiParam.paramRetrievalFunc);
+        addCheckFunctions(apiParam.checkFuncs.clone());
+        addFormatFunctions(apiParam.formatFuncs.clone());
+        this.formatInsertFunc = apiParam.formatInsertFunc;  // may be null
     }
 
     @SuppressWarnings("unchecked")
     public ApiParam<ParamType, ParamsObj> build() {
-        return new ApiParam(parameterName,
-                            isRequired,
-                            retrievalFunction,
+        return new ApiParam(paramName,
+                            retrievalFunc,
                             formatFuncs.toArray(new FormatFunc[0]),
                             formatInsertFunc,
                             checkFuncs.toArray(new CheckFunc[0]));

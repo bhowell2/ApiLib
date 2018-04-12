@@ -12,29 +12,35 @@ public class ApiMapObjParam extends ApiObjParam<Map<String, Object>, Map<String,
 
     public ApiMapObjParam(boolean continueOnOptionalFailure,
                           ParamRetrievalFunc<Map<String, Object>, Map<String, Object>> retrievalFunction,
-                          ApiMapParam<?>[] mapParameters,
-                          ApiMapObjParam[] objectParameters,
+                          ApiMapParam<?>[] requiredMapParams,
+                          ApiMapParam<?>[] optionalMapParams,
+                          ApiMapObjParam[] requiredMapObjParams,
+                          ApiMapObjParam[] optionalMapObjParams,
                           ApiMapCustomParam[] customParameters) {
         super(continueOnOptionalFailure,
               retrievalFunction,
-              mapParameters,
-              objectParameters,
+              requiredMapParams,
+              optionalMapParams,
+              requiredMapObjParams,
+              optionalMapObjParams,
               customParameters);
     }
 
     public ApiMapObjParam(String parameterName,
                           boolean continueOnOptionalFailure,
-                          boolean isRequired,
                           ParamRetrievalFunc<Map<String, Object>, Map<String, Object>> retrievalFunction,
-                          ApiMapParam<?>[] mapParameters,
-                          ApiMapObjParam[] objectParameters,
+                          ApiMapParam<?>[] requiredMapParams,
+                          ApiMapParam<?>[] optionalMapParams,
+                          ApiMapObjParam[] requiredMapObjParams,
+                          ApiMapObjParam[] optionalMapObjParams,
                           ApiMapCustomParam[] customParameters) {
         super(parameterName,
               continueOnOptionalFailure,
-              isRequired,
               retrievalFunction,
-              mapParameters,
-              objectParameters,
+              requiredMapParams,
+              optionalMapParams,
+              requiredMapObjParams,
+              optionalMapObjParams,
               customParameters);
     }
 

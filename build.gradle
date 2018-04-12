@@ -33,7 +33,7 @@ install {
     repositories.mavenInstaller {
         pom.groupId = 'io.bhowell2'
         pom.artifactId = 'api-lib'
-        pom.version = '0.3.0'
+        pom.version = '0.2.0'
     }
 }
 

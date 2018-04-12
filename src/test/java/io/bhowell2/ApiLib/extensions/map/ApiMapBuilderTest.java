@@ -11,7 +11,7 @@ public class ApiMapBuilderTest {
 
     @Test
     public void testBuildMapParam() {
-        ApiMapParamBuilder.builder("test", true, String.class)
+        ApiMapParamBuilder.builder("test", String.class)
                           .addCheckFunction(ParamChecks.alwaysPass())
                           .build();
     }

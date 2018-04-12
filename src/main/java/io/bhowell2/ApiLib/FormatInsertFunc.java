@@ -8,10 +8,10 @@ public interface FormatInsertFunc<ParamType, ParamsObj> {
 
     /**
      * Use to put formatted values back into requestParams.
-     * @param parameterName name of parameter being formatted
+     * @param paramName name of parameter being formatted
      * @param requestParams object to put formatted parameter back into
-     * @param formattedParam the parameter that was formatted
+     * @param formattedParam the parameter that was formatted and should be put back into requestParams
      */
-    void injectIntoRequestParameters(String parameterName, ParamsObj requestParams, ParamType formattedParam);
+    void insertIntoRequestParams(String paramName, ParamsObj requestParams, ParamType formattedParam);
 
 }

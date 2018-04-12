@@ -35,21 +35,9 @@ public final class ApiObjParamCheck {
                             Map<String, ApiObjParamCheck> providedObjParams,
                             Map<String, ApiCustomParamCheck> providedCustomParams) {
         this.parameterName = parameterName;
-        if (providedParamNames == null) {
-            this.providedParamNames = new HashSet<>(0);
-        } else {
-            this.providedParamNames = providedParamNames;
-        }
-        if (providedObjParams == null) {
-            this.providedObjParams = new HashMap<>(0);
-        } else {
-            this.providedObjParams = providedObjParams;
-        }
-        if (providedCustomParams == null) {
-            this.providedCustomParams = new HashMap<>(0);
-        } else {
-            this.providedCustomParams = providedCustomParams;
-        }
+        this.providedParamNames = providedParamNames != null ? providedParamNames : new HashSet<>(0);
+        this.providedObjParams = providedObjParams != null ? providedObjParams : new HashMap<>(0);
+        this.providedCustomParams = providedCustomParams != null ? providedCustomParams : new HashMap<>(0);
         this.paramError = null;
     }
 
