@@ -68,7 +68,8 @@ public class ApiObjParamBuilder<ObjectType, ParentParamType> {
     protected List<ApiParam<?, ObjectType>> optionalParams;
     protected List<ApiObjParam<?, ObjectType>> requiredObjParams;
     protected List<ApiObjParam<?, ObjectType>> optionalObjParams;
-    protected List<ApiCustomParam<ObjectType>> customParams;
+    protected List<ApiCustomParam<ObjectType>> requiredCustomParams;
+    protected List<ApiCustomParam<ObjectType>> optionalCustomParams;
     protected boolean continueOnOptionalFailure = false;
 
     protected Set<String> paramsSet = new HashSet<>();
@@ -86,7 +87,8 @@ public class ApiObjParamBuilder<ObjectType, ParentParamType> {
         this.optionalParams = new ArrayList<>();
         this.requiredObjParams = new ArrayList<>();
         this.optionalObjParams = new ArrayList<>();
-        this.customParams = new ArrayList<>();
+        this.requiredCustomParams = new ArrayList<>();
+        this.optionalCustomParams = new ArrayList<>();
     }
 
     /**
@@ -100,7 +102,8 @@ public class ApiObjParamBuilder<ObjectType, ParentParamType> {
         addOptionalParams(objParamToCopy.optionalParams.clone());
         addRequiredObjParams(objParamToCopy.requiredObjParams.clone());
         addOptionalObjParams(objParamToCopy.optionalObjParams.clone());
-        addCustomParams(objParamToCopy.customParams.clone());
+        addRequiredCustomParams(objParamToCopy.requiredCustomParams.clone());
+        addOptionalCustomParams(objParamToCopy.optionalCustomParams.clone());
         setContinueOnOptionalFailure(objParamToCopy.continueOnOptionalFailure);
     }
 
@@ -195,20 +198,36 @@ public class ApiObjParamBuilder<ObjectType, ParentParamType> {
         return this;
     }
 
-    public ApiObjParamBuilder<ObjectType, ParentParamType> addCustomParam(ApiCustomParam<ObjectType> customParam) {
+    public ApiObjParamBuilder<ObjectType, ParentParamType> addRequiredCustomParam(ApiCustomParam<ObjectType> customParam) {
         if (customParam == null) {
-            throw new RuntimeException("Cannot add null custom parameters.");
+            throw new RuntimeException("Cannot add null custom parameter.");
         }
-        this.customParams.add(customParam);
+        this.requiredCustomParams.add(customParam);
         return this;
     }
 
-    public ApiObjParamBuilder<ObjectType, ParentParamType> addCustomParams(ApiCustomParam<ObjectType>... customParams) {
+    public ApiObjParamBuilder<ObjectType, ParentParamType> addRequiredCustomParams(ApiCustomParam<ObjectType>... customParams) {
         for (ApiCustomParam<ObjectType> customParameter : customParams) {
-            this.addCustomParam(customParameter);
+            this.addRequiredCustomParam(customParameter);
         }
         return this;
     }
+
+    public ApiObjParamBuilder<ObjectType, ParentParamType> addOptionalCustomParam(ApiCustomParam<ObjectType> customParam) {
+        if (customParam == null) {
+            throw new RuntimeException("Cannot add null custom parameter.");
+        }
+        this.optionalCustomParams.add(customParam);
+        return this;
+    }
+
+    public ApiObjParamBuilder<ObjectType, ParentParamType> addOptionalCustomParams(ApiCustomParam<ObjectType>... customParams) {
+        for (ApiCustomParam<ObjectType> customParam : customParams) {
+            this.addOptionalCustomParam(customParam);
+        }
+        return this;
+    }
+
 
     @SuppressWarnings("unchecked")
     public ApiObjParam<ObjectType, ParentParamType> build() {
@@ -219,7 +238,8 @@ public class ApiObjParamBuilder<ObjectType, ParentParamType> {
                                  this.optionalParams.toArray(new ApiParam[0]),
                                  this.requiredObjParams.toArray(new ApiObjParam[0]),
                                  this.optionalObjParams.toArray(new ApiObjParam[0]),
-                                 this.customParams.toArray(new ApiCustomParam[0]));
+                                 this.requiredCustomParams.toArray(new ApiCustomParam[0]),
+                                 this.optionalCustomParams.toArray(new ApiCustomParam[0]));
     }
 
 }

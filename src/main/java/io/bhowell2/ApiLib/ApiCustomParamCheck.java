@@ -8,7 +8,15 @@ import java.util.Map;
 import java.util.Set;
 
 /**
- * Custom parameters
+ * Custom parameters need to at least return the name of the custom parameter. This does not actually have to be the name of a parameter in the
+ * object, but it is required so that the user may retrieve the check (or know that the custom parameter was provided and passed). HOWEVER, it is
+ * recommended that the the name of the provided parameters is returned if they were provided (as providedParamNames).
+ *
+ * arrayObjParams should contain the successfully checked ApiObjParamCheck if the custom parameter is checking the elements of an array and they
+ * are objects.
+ *
+ * providedObjParams should contain the name and ApiObjParamCheck of any object parameters that the custom parameter checks.
+ *
  * @author Blake Howell
  */
 public final class ApiCustomParamCheck {

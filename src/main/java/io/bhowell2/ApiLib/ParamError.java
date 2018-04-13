@@ -2,18 +2,19 @@ package io.bhowell2.ApiLib;
 
 
 /**
- *
+ * If an error occurs, the error type should be specified, an error message (can just be empty string), and the name of the parameter where the
+ * error occurred.
  * @author Blake Howell
  */
 public final class ParamError {
 
-    public final String parameterName;
+    public final String paramName;
     public final ErrorType errorType;
     public final String errorMessage;
 
-    public ParamError(ErrorType type, String errorMessage, String parameterName) {
+    public ParamError(ErrorType type, String errorMessage, String paramName) {
         this.errorType = type;
-        this.parameterName = parameterName;
+        this.paramName = paramName;
         this.errorMessage = errorMessage;
     }
 

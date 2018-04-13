@@ -28,6 +28,10 @@ public final class CheckFuncResult {
         this.failureMessage = failureMessage;
     }
 
+    public boolean successful() {
+        return successful;
+    }
+
     public boolean failed() {
         return !successful;
     }

@@ -16,7 +16,7 @@ import java.util.Set;
 public final class ApiObjParamCheck {
 
     // only has parameter name if it is an object nested within another object
-    public final String parameterName;
+    public final String paramName;
 
     // Name of successfully checked parameters. This includes inner object params as well as custom params that return a list of params
     public final Set<String> providedParamNames;                            // name of parameters successfully checked/provided
@@ -30,11 +30,11 @@ public final class ApiObjParamCheck {
         this(null, providedParamNames, providedObjParams, providedCustomParams);
     }
 
-    public ApiObjParamCheck(String parameterName,
+    public ApiObjParamCheck(String paramName,
                             Set<String> providedParamNames,
                             Map<String, ApiObjParamCheck> providedObjParams,
                             Map<String, ApiCustomParamCheck> providedCustomParams) {
-        this.parameterName = parameterName;
+        this.paramName = paramName;
         this.providedParamNames = providedParamNames != null ? providedParamNames : new HashSet<>(0);
         this.providedObjParams = providedObjParams != null ? providedObjParams : new HashMap<>(0);
         this.providedCustomParams = providedCustomParams != null ? providedCustomParams : new HashMap<>(0);
@@ -43,7 +43,7 @@ public final class ApiObjParamCheck {
 
     public ApiObjParamCheck(ParamError paramError) {
         this.paramError = paramError;
-        this.parameterName = null;
+        this.paramName = null;
         this.providedParamNames = null;
         this.providedObjParams = null;
         this.providedCustomParams = null;

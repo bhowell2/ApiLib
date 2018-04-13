@@ -60,7 +60,7 @@ public class ApiCustomParameterTests {
         ApiCustomParamCheck failedCheck = mapApiCustomParam.check(failingRequestParams);
         assertTrue(failedCheck.failed());
         assertEquals(failedCheck.paramError.errorType, ErrorType.INVALID_PARAMETER);
-        assertEquals(failedCheck.paramError.parameterName, arrayParamName);
+        assertEquals(failedCheck.paramError.paramName, arrayParamName);
     }
 
     // show/test case of checking an array with objects as parameters
@@ -140,13 +140,13 @@ public class ApiCustomParameterTests {
         assertTrue(failingCheck.failed());
         assertEquals(ErrorType.MISSING_PARAMETER, failingCheck.paramError.errorType, "Parameter should have been invalid. (none were provided)");
         // they are checked in the order they are provided, so
-        assertEquals(failingCheck.paramError.parameterName, param1Name);
+        assertEquals(failingCheck.paramError.paramName, param1Name);
 
         Map<String, Object> missingArrayReqParams = new HashMap<>();
         ApiCustomParamCheck failingCheck2 = mapApiCustomParam.check(missingArrayReqParams);
         assertTrue(failingCheck2.failed());
         assertEquals(ErrorType.MISSING_PARAMETER, failingCheck2.paramError.errorType, "Should be missing array param");
-        assertEquals(arrayParamName, failingCheck2.paramError.parameterName);
+        assertEquals(arrayParamName, failingCheck2.paramError.paramName);
     }
 
     @Test

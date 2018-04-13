@@ -21,7 +21,8 @@ public class ApiObjParam<ObjectParamType, ParentParamType> {
     final ApiParam<?, ObjectParamType>[] optionalParams;
     final ApiObjParam<?, ObjectParamType>[] requiredObjParams;
     final ApiObjParam<?, ObjectParamType>[] optionalObjParams;
-    final ApiCustomParam<ObjectParamType>[] customParams;
+    final ApiCustomParam<ObjectParamType>[] requiredCustomParams;
+    final ApiCustomParam<ObjectParamType>[] optionalCustomParams;
 
     /**
      * Used for top level objects (i.e., objects without a parameter name to retrieve them -- this could either be the root object or objects in an
@@ -32,7 +33,7 @@ public class ApiObjParam<ObjectParamType, ParentParamType> {
      * @param optionalParams
      * @param requiredObjParams
      * @param optionalObjParams
-     * @param customParams
+     * @param requiredCustomParams
      */
     public ApiObjParam(boolean continueOnOptionalFailure,
                        ParamRetrievalFunc<ObjectParamType, ParentParamType> retrievalFunction,
@@ -40,7 +41,8 @@ public class ApiObjParam<ObjectParamType, ParentParamType> {
                        ApiParam<?, ObjectParamType>[] optionalParams,
                        ApiObjParam<?, ObjectParamType>[] requiredObjParams,
                        ApiObjParam<?, ObjectParamType>[] optionalObjParams,
-                       ApiCustomParam<ObjectParamType>[] customParams) {
+                       ApiCustomParam<ObjectParamType>[] requiredCustomParams,
+                       ApiCustomParam<ObjectParamType>[] optionalCustomParams) {
         this(null,
              continueOnOptionalFailure,
              retrievalFunction,
@@ -48,7 +50,8 @@ public class ApiObjParam<ObjectParamType, ParentParamType> {
              optionalParams,
              requiredObjParams,
              optionalObjParams,
-             customParams);
+             requiredCustomParams,
+             optionalCustomParams);
     }
 
     @SuppressWarnings("unchecked")
@@ -59,7 +62,8 @@ public class ApiObjParam<ObjectParamType, ParentParamType> {
                        ApiParam<?, ObjectParamType>[] optionalParams,
                        ApiObjParam<?, ObjectParamType>[] requiredObjParams,
                        ApiObjParam<?, ObjectParamType>[] optionalObjParams,
-                       ApiCustomParam<ObjectParamType>[] customParams) {
+                       ApiCustomParam<ObjectParamType>[] requiredCustomParams,
+                       ApiCustomParam<ObjectParamType>[] optionalCustomParams) {
         this.paramName = paramName;
         this.continueOnOptionalFailure = continueOnOptionalFailure;
         this.retrievalFunction = retrievalFunction;
@@ -67,7 +71,8 @@ public class ApiObjParam<ObjectParamType, ParentParamType> {
         this.optionalParams = optionalParams;
         this.requiredObjParams = requiredObjParams;
         this.optionalObjParams = optionalObjParams;
-        this.customParams = customParams;
+        this.requiredCustomParams = requiredCustomParams;
+        this.optionalCustomParams = optionalCustomParams;
     }
 
     /**
@@ -78,30 +83,6 @@ public class ApiObjParam<ObjectParamType, ParentParamType> {
         return continueOnOptionalFailure;
     }
 
-//    public ParamRetrievalFunc<ObjectParamType, ParentParamType> getRetrievalFunction() {
-//        return retrievalFunction;
-//    }
-//
-//    public ApiParam<?, ObjectParamType>[] getRequiredParams() {
-//        return requiredParams.clone();
-//    }
-//
-//    public ApiParam<?, ObjectParamType>[] getOptionalParams() {
-//        return optionalParams.clone();
-//    }
-//
-//    public ApiCustomParam<ObjectParamType>[] getCustomParams() {
-//        return customParams.clone();
-//    }
-//
-//    public ApiObjParam<?, ObjectParamType>[] getRequiredObjParams() {
-//        return requiredObjParams.clone();
-//    }
-//
-//    public ApiObjParam<?, ObjectParamType>[] getOptionalObjParams() {
-//        return optionalObjParams.clone();
-//    }
-
     @SuppressWarnings({"unchecked", "null"})
     public ApiObjParamCheck check(ParentParamType requestParameters) {
         ObjectParamType objParamsToCheck = this.retrievalFunction.retrieveParameter(this.paramName, requestParameters);
@@ -109,7 +90,7 @@ public class ApiObjParam<ObjectParamType, ParentParamType> {
         // TODO: Write code to dynamically choose best array sizes -- may have thread safety issues, so prob need sync
         // do not need to create objects for nothing here
         Set<String> providedParamNames = new HashSet<>(this.requiredParams.length + this.optionalObjParams.length / 2);
-        Map<String, ApiCustomParamCheck> providedCustomParams = new HashMap<>(this.customParams.length);
+        Map<String, ApiCustomParamCheck> providedCustomParams = new HashMap<>(this.requiredCustomParams.length);
         Map<String, ApiObjParamCheck> providedObjParams = new HashMap<>(this.requiredObjParams.length + this.optionalObjParams.length / 2);
 
         for (ApiParam<?, ObjectParamType> apiParam : requiredParams) {
@@ -121,7 +102,7 @@ public class ApiObjParam<ObjectParamType, ParentParamType> {
             providedParamNames.add(paramCheck.parameterName);
         }
 
-        for (ApiCustomParam<ObjectParamType> customParam : customParams) {
+        for (ApiCustomParam<ObjectParamType> customParam : requiredCustomParams) {
             try {
                 ApiCustomParamCheck customParamCheck = customParam.check(objParamsToCheck);
                 if (customParamCheck.failed()) {
@@ -145,8 +126,8 @@ public class ApiObjParam<ObjectParamType, ParentParamType> {
                     return ApiObjParamCheck.failed(wrapObjParamCheckError(objParamCheck.paramError));
                 }
                 // all objects checked here will have an object name (the only time that an object will not have an object name is when it is an array value (and, technically the root object))
-                providedObjParams.put(objParamCheck.parameterName, objParamCheck);
-                providedParamNames.add(objParamCheck.parameterName);
+                providedObjParams.put(objParamCheck.paramName, objParamCheck);
+                providedParamNames.add(objParamCheck.paramName);
             } catch (ClassCastException e) {
                 return ApiObjParamCheck
                     .failed(wrapObjParamCheckError(new ParamError(ErrorType.PARAMETER_CAST,
@@ -166,6 +147,26 @@ public class ApiObjParam<ObjectParamType, ParentParamType> {
             providedParamNames.add(paramCheck.parameterName);
         }
 
+        for (ApiCustomParam<ObjectParamType> customParam : optionalCustomParams) {
+            try {
+                ApiCustomParamCheck customParamCheck = customParam.check(objParamsToCheck);
+                if (customParamCheck.failed()) {
+                    if (this.continueOnOptionalFailure || customParamCheck.paramError.errorType == ErrorType.MISSING_PARAMETER) {
+                        continue;
+                    }
+                    return ApiObjParamCheck.failed(wrapObjParamCheckError(customParamCheck.paramError));
+                }
+                providedCustomParams.put(customParamCheck.customParameterName, customParamCheck);
+                providedParamNames.addAll(customParamCheck.providedParamNames);
+                providedObjParams.putAll(customParamCheck.providedObjParams);
+            } catch (ClassCastException e) {
+                return ApiObjParamCheck
+                    .failed(wrapObjParamCheckError(new ParamError(ErrorType.PARAMETER_CAST,
+                                                                  "Failed to case parameter in ApiCustomParameters check. " + e.getMessage(),
+                                                                  "Custom Parameter Error.")));
+            }
+        }
+
         for (ApiObjParam<?, ObjectParamType> objParam : optionalObjParams) {
             try {
                 ApiObjParamCheck objParamCheck = objParam.check(objParamsToCheck);
@@ -175,8 +176,8 @@ public class ApiObjParam<ObjectParamType, ParentParamType> {
                     }
                     return ApiObjParamCheck.failed(wrapObjParamCheckError(objParamCheck.paramError));
                 }
-                providedObjParams.put(objParamCheck.parameterName, objParamCheck);
-                providedParamNames.add(objParamCheck.parameterName);
+                providedObjParams.put(objParamCheck.paramName, objParamCheck);
+                providedParamNames.add(objParamCheck.paramName);
             } catch (ClassCastException e) {
                 return ApiObjParamCheck
                     .failed(wrapObjParamCheckError(new ParamError(ErrorType.PARAMETER_CAST,
@@ -197,7 +198,7 @@ public class ApiObjParam<ObjectParamType, ParentParamType> {
         if (this.paramName == null) {
             return paramError;
         }
-        return new ParamError(paramError.errorType, paramError.errorMessage, paramError.parameterName + " of " + this.paramName);
+        return new ParamError(paramError.errorType, paramError.errorMessage, paramError.paramName + " of " + this.paramName);
 
     }
 

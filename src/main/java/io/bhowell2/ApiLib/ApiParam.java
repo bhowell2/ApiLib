@@ -50,22 +50,6 @@ public class ApiParam<ParamType, ParamsObj> {
         this.checkFuncs = checkFuncs;
     }
 
-//    public CheckFunc<ParamType>[] getCheckFuncs() {
-//        return checkFuncs.clone();
-//    }
-//
-//    public FormatFunc<ParamType>[] getFormatFuncs() {
-//        return formatFuncs.clone();
-//    }
-//
-//    public FormatInsertFunc<ParamType, ParamsObj> getFormatInsertFunc() {
-//        return formatInsertFunc;
-//    }
-//
-//    public ParamRetrievalFunc<ParamType, ParamsObj> getParamRetrievalFunc() {
-//        return paramRetrievalFunc;
-//    }
-
     /**
      * Some web frameworks/platforms automatically wrap the parameters for the user in a Map. This will pull the parameter from the map, with
      * the {@link #parameterName} provided in the constructor and check that it meets the requirements specified by the provided check functions.
