@@ -91,13 +91,23 @@ public class ApiMapObjParamBuilder extends ApiObjParamBuilder<Map<String, Object
         return this;
     }
 
-    public ApiMapObjParamBuilder addCustomParam(ApiMapCustomParam customParam) {
+    public ApiMapObjParamBuilder addRequiredCustomParam(ApiMapCustomParam customParam) {
         super.addRequiredCustomParam(customParam);
         return this;
     }
 
-    public ApiMapObjParamBuilder addCustomParams(ApiMapCustomParam... customParams) {
+    public ApiMapObjParamBuilder addRequiredCustomParams(ApiMapCustomParam... customParams) {
         super.addRequiredCustomParams(customParams);
+        return this;
+    }
+
+    public ApiMapObjParamBuilder addOptionalCustomParam(ApiMapCustomParam customParam) {
+        super.addOptionalCustomParam(customParam);
+        return this;
+    }
+
+    public ApiMapObjParamBuilder addOptionalCustomParams(ApiMapCustomParam... customParams) {
+        super.addOptionalCustomParams(customParams);
         return this;
     }
 
