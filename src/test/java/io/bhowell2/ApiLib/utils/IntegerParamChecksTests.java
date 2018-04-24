@@ -15,126 +15,146 @@ public class IntegerParamChecksTests {
 
     @Test
     public void shouldOnlyPassWithValueGreater() {
-        CheckFunc<Integer> checkTupleFunction = valueGreaterThan(0);
+        CheckFunc<Integer> checkFunction = valueGreaterThan(0);
 
         // failing
 
-        CheckFuncResult checkTuple = checkTupleFunction.check(-1);
-        assertFalse(checkTuple.successful);
+        CheckFuncResult check = checkFunction.check(-1);
+        assertFalse(check.successful);
 
-        CheckFuncResult checkTuple1 = checkTupleFunction.check(Integer.MIN_VALUE);
-        assertFalse(checkTuple1.successful);
+        CheckFuncResult check1 = checkFunction.check(Integer.MIN_VALUE);
+        assertFalse(check1.successful);
 
-        CheckFuncResult checkTuple2 = checkTupleFunction.check(0);
-        assertFalse(checkTuple2.successful);
+        CheckFuncResult check2 = checkFunction.check(0);
+        assertFalse(check2.successful);
 
         // passing
 
-        CheckFuncResult checkTuple3 = checkTupleFunction.check(Integer.MAX_VALUE);
-        assertTrue(checkTuple3.successful);
+        CheckFuncResult check3 = checkFunction.check(Integer.MAX_VALUE);
+        assertTrue(check3.successful);
 
-        CheckFuncResult checkTuple4 = checkTupleFunction.check(1);
-        assertTrue(checkTuple4.successful);
+        CheckFuncResult check4 = checkFunction.check(1);
+        assertTrue(check4.successful);
     }
 
     @Test
     public void shouldPassWithValueGreaterOrEqual() {
-        CheckFunc<Integer> checkTupleFunction = valueGreaterThanOrEqualTo(0);
+        CheckFunc<Integer> checkFunction = valueGreaterThanOrEqualTo(0);
 
         // failing
 
-        CheckFuncResult checkTuple = checkTupleFunction.check(-1);
-        assertFalse(checkTuple.successful);
+        CheckFuncResult check = checkFunction.check(-1);
+        assertFalse(check.successful);
 
-        CheckFuncResult checkTuple1 = checkTupleFunction.check(Integer.MIN_VALUE);
-        assertFalse(checkTuple1.successful);
+        CheckFuncResult check1 = checkFunction.check(Integer.MIN_VALUE);
+        assertFalse(check1.successful);
 
         // passing
 
-        CheckFuncResult checkTuple2 = checkTupleFunction.check(0);
-        assertTrue(checkTuple2.successful);
+        CheckFuncResult check2 = checkFunction.check(0);
+        assertTrue(check2.successful);
 
-        CheckFuncResult checkTuple3 = checkTupleFunction.check(Integer.MAX_VALUE);
-        assertTrue(checkTuple3.successful);
+        CheckFuncResult check3 = checkFunction.check(Integer.MAX_VALUE);
+        assertTrue(check3.successful);
 
-        CheckFuncResult checkTuple4 = checkTupleFunction.check(1);
-        assertTrue(checkTuple4.successful);
+        CheckFuncResult check4 = checkFunction.check(1);
+        assertTrue(check4.successful);
     }
 
     @Test
     public void shouldOnlyPassWithValuesLessThan() {
-        CheckFunc<Integer> checkTupleFunction = valueLessThan(0);
+        CheckFunc<Integer> checkFunction = valueLessThan(0);
 
         // passing
 
-        CheckFuncResult checkTuple = checkTupleFunction.check(-1);
-        assertTrue(checkTuple.successful);
+        CheckFuncResult check = checkFunction.check(-1);
+        assertTrue(check.successful);
 
-        CheckFuncResult checkTuple1 = checkTupleFunction.check(Integer.MIN_VALUE);
-        assertTrue(checkTuple1.successful);
+        CheckFuncResult check1 = checkFunction.check(Integer.MIN_VALUE);
+        assertTrue(check1.successful);
 
         // failing
 
-        CheckFuncResult checkTuple2 = checkTupleFunction.check(0);
-        assertFalse(checkTuple2.successful);
+        CheckFuncResult check2 = checkFunction.check(0);
+        assertFalse(check2.successful);
 
-        CheckFuncResult checkTuple3 = checkTupleFunction.check(Integer.MAX_VALUE);
-        assertFalse(checkTuple3.successful);
+        CheckFuncResult check3 = checkFunction.check(Integer.MAX_VALUE);
+        assertFalse(check3.successful);
 
-        CheckFuncResult checkTuple4 = checkTupleFunction.check(1);
-        assertFalse(checkTuple4.successful);
+        CheckFuncResult check4 = checkFunction.check(1);
+        assertFalse(check4.successful);
     }
 
     @Test
     public void shouldOnlyPassWithValuesLessThanOrEqualTo() {
-        CheckFunc<Integer> checkTupleFunction = valueLessThanOrEqualTo(0);
+        CheckFunc<Integer> checkFunction = valueLessThanOrEqualTo(0);
 
         // passing
 
-        CheckFuncResult checkTuple = checkTupleFunction.check(-1);
-        assertTrue(checkTuple.successful);
+        CheckFuncResult check = checkFunction.check(-1);
+        assertTrue(check.successful);
 
-        CheckFuncResult checkTuple1 = checkTupleFunction.check(Integer.MIN_VALUE);
-        assertTrue(checkTuple1.successful);
+        CheckFuncResult check1 = checkFunction.check(Integer.MIN_VALUE);
+        assertTrue(check1.successful);
 
-        CheckFuncResult checkTuple2 = checkTupleFunction.check(0);
-        assertTrue(checkTuple2.successful);
+        CheckFuncResult check2 = checkFunction.check(0);
+        assertTrue(check2.successful);
 
         // failing
 
-        CheckFuncResult checkTuple3 = checkTupleFunction.check(Integer.MAX_VALUE);
-        assertFalse(checkTuple3.successful);
+        CheckFuncResult check3 = checkFunction.check(Integer.MAX_VALUE);
+        assertFalse(check3.successful);
 
-        CheckFuncResult checkTuple4 = checkTupleFunction.check(1);
-        assertFalse(checkTuple4.successful);
+        CheckFuncResult check4 = checkFunction.check(1);
+        assertFalse(check4.successful);
     }
 
 
     @Test
     public void shouldPassOnlyOnEqualTo() {
-        CheckFunc<Integer> checkTupleFunction = valueEqualTo(0);
+        CheckFunc<Integer> checkFunction = valueEqualTo(0);
 
         // Failing
 
-        CheckFuncResult checkTuple = checkTupleFunction.check(1);
-        assertFalse(checkTuple.successful);
+        CheckFuncResult check = checkFunction.check(1);
+        assertFalse(check.successful);
 
-        CheckFuncResult checkTuple1 = checkTupleFunction.check(Integer.MAX_VALUE);
-        assertFalse(checkTuple1.successful);
+        CheckFuncResult check1 = checkFunction.check(Integer.MAX_VALUE);
+        assertFalse(check1.successful);
 
-        CheckFuncResult checkTuple2 = checkTupleFunction.check(Integer.MIN_VALUE);
-        assertFalse(checkTuple2.successful);
+        CheckFuncResult check2 = checkFunction.check(Integer.MIN_VALUE);
+        assertFalse(check2.successful);
 
-        CheckFuncResult checkTuple4 = checkTupleFunction.check(-1);
-        assertFalse(checkTuple4.successful);
-
-
+        CheckFuncResult check4 = checkFunction.check(-1);
+        assertFalse(check4.successful);
+        
         // Passing
 
-        CheckFuncResult checkTuple3 = checkTupleFunction.check(0);
-        assertTrue(checkTuple3.successful);
-
+        CheckFuncResult check3 = checkFunction.check(0);
+        assertTrue(check3.successful);
     }
 
+    @Test
+    public void shouldPassOnlyOnEqualToArray() {
+        CheckFunc<Integer> checkFunction = valueEqualTo(new int[]{1, 2, 3});
+
+        // passing
+        CheckFuncResult check = checkFunction.check(1);
+        assertTrue(check.successful);
+        CheckFuncResult check1 = checkFunction.check(2);
+        assertTrue(check1.successful);
+        CheckFuncResult check2 = checkFunction.check(3);
+        assertTrue(check2.successful);
+
+        CheckFuncResult failingCheck = checkFunction.check(0);
+        assertTrue(failingCheck.failed());
+        CheckFuncResult failingCheck2 = checkFunction.check(Integer.MIN_VALUE);
+        assertTrue(failingCheck2.failed());
+        CheckFuncResult failingCheck3 = checkFunction.check(Integer.MAX_VALUE);
+        assertTrue(failingCheck3.failed());
+        CheckFuncResult failingCheck4 = checkFunction.check(5);
+        assertTrue(failingCheck4.failed());
+    }
+    
 }
 

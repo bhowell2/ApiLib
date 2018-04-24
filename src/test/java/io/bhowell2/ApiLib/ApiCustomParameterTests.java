@@ -1,6 +1,6 @@
 package io.bhowell2.ApiLib;
 
-import io.bhowell2.ApiLib.extensions.map.ApiMapParamRetrievalFuncs;
+import io.bhowell2.ApiLib.extensions.map.utils.ApiMapParamRetrievalFuncs;
 import io.bhowell2.ApiLib.utils.IntegerParamChecks;
 import io.bhowell2.ApiLib.utils.ParamChecks;
 import io.bhowell2.ApiLib.utils.StringParamChecks;

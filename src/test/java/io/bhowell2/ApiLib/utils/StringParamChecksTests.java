@@ -4,6 +4,7 @@ import io.bhowell2.ApiLib.CheckFunc;
 import io.bhowell2.ApiLib.CheckFuncResult;
 import org.junit.jupiter.api.Test;
 
+import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.regex.Pattern;
@@ -278,6 +279,111 @@ public class StringParamChecksTests {
         CheckFuncResult failingCheck1 = checkFunc.check("toolonghere");
         assertTrue(failingCheck1.failed());
         CheckFuncResult failingCheck2 = checkFunc.check("\t\ttoolonghere");
+        assertTrue(failingCheck2.failed());
+    }
+
+    @Test
+    public void testCannotBeginWithCharsString() {
+        CheckFunc<String> checkFunc = cannotBeginWithChars("abc");
+
+        // passing
+        CheckFuncResult check1 = checkFunc.check("hey");
+        assertTrue(check1.successful);
+        CheckFuncResult check2 = checkFunc.check("123");
+        assertTrue(check2.successful);
+        CheckFuncResult check3 = checkFunc.check("1abc23");
+        assertTrue(check3.successful);
+
+        // failing
+        CheckFuncResult failingCheck1 = checkFunc.check("a123");
+        assertTrue(failingCheck1.failed());
+        CheckFuncResult failingCheck2 = checkFunc.check("ba123");
+        assertTrue(failingCheck2.failed());
+        CheckFuncResult failingCheck3 = checkFunc.check("ca123");
+        assertTrue(failingCheck3.failed());
+    }
+
+    @Test
+    public void testCannotBeginWithCharsSet() {
+        CheckFunc<String> checkFunc = cannotBeginWithChars(new HashSet<>(Arrays.asList('a', 'b', 'c')));
+
+        // passing
+        CheckFuncResult check1 = checkFunc.check("hey");
+        assertTrue(check1.successful);
+        CheckFuncResult check2 = checkFunc.check("123");
+        assertTrue(check2.successful);
+        CheckFuncResult check3 = checkFunc.check("1abc23");
+        assertTrue(check3.successful);
+
+        // failing
+        CheckFuncResult failingCheck1 = checkFunc.check("a123");
+        assertTrue(failingCheck1.failed());
+        CheckFuncResult failingCheck2 = checkFunc.check("ba123");
+        assertTrue(failingCheck2.failed());
+        CheckFuncResult failingCheck3 = checkFunc.check("ca123");
+        assertTrue(failingCheck3.failed());
+    }
+
+    @Test
+    public void testEqualsListOfStrings() {
+        CheckFunc<String> checkFunc = equalsStringInList(Arrays.asList("autocomplete", "search"));
+
+        // passing
+        CheckFuncResult check1 = checkFunc.check("autocomplete");
+        assertTrue(check1.successful);
+        CheckFuncResult check2 = checkFunc.check("search");
+        assertTrue(check2.successful);
+
+        // failing
+        CheckFuncResult failingCheck1 = checkFunc.check("fine");
+        assertTrue(failingCheck1.failed());
+        CheckFuncResult failingCheck2 = checkFunc.check("a");
+        assertTrue(failingCheck2.failed());
+        CheckFuncResult failingCheck3 = checkFunc.check("");
+        assertTrue(failingCheck3.failed());
+        CheckFuncResult failingCheck4 = checkFunc.check("1autocomplete");
+        assertTrue(failingCheck4.failed());
+        CheckFuncResult failingCheck5 = checkFunc.check("autocomplete1");
+        assertTrue(failingCheck5.failed());
+        CheckFuncResult failingCheck6 = checkFunc.check("autocomplete ");
+        assertTrue(failingCheck6.failed());
+        CheckFuncResult failingCheck7 = checkFunc.check(" autocomplete");
+        assertTrue(failingCheck7.failed());
+        CheckFuncResult failingCheck8 = checkFunc.check("searchh");
+        assertTrue(failingCheck8.failed());
+        CheckFuncResult failingCheck9 = checkFunc.check("1autocomplete");
+        assertTrue(failingCheck9.failed());
+
+    }
+
+    @Test
+    public void testDoesNotEqualListOfStrings() {
+        CheckFunc<String> checkFunc = doesNotEqualStringInList(Arrays.asList("autocomplete", "search"));
+
+        // passing
+        CheckFuncResult check1 = checkFunc.check("fine");
+        assertTrue(check1.successful);
+        CheckFuncResult check2 = checkFunc.check("a");
+        assertTrue(check2.successful);
+        CheckFuncResult check3 = checkFunc.check("");
+        assertTrue(check3.successful);
+        CheckFuncResult check4 = checkFunc.check("1autocomplete");
+        assertTrue(check4.successful);
+        CheckFuncResult check5 = checkFunc.check("autocomplete1");
+        assertTrue(check5.successful);
+        CheckFuncResult check6 = checkFunc.check("autocomplete ");
+        assertTrue(check6.successful);
+        CheckFuncResult check7 = checkFunc.check(" autocomplete");
+        assertTrue(check7.successful);
+        CheckFuncResult check8 = checkFunc.check("searchh");
+        assertTrue(check8.successful);
+        CheckFuncResult check9 = checkFunc.check("1autocomplete");
+        assertTrue(check9.successful);
+
+        // failing
+        CheckFuncResult failingCheck1 = checkFunc.check("autocomplete");
+        assertTrue(failingCheck1.failed());
+        CheckFuncResult failingCheck2 = checkFunc.check("search");
         assertTrue(failingCheck2.failed());
     }
 

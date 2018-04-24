@@ -3,6 +3,7 @@ package io.bhowell2.ApiLib.utils;
 import io.bhowell2.ApiLib.CheckFunc;
 import io.bhowell2.ApiLib.CheckFuncResult;
 
+import java.util.List;
 import java.util.Set;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
@@ -133,9 +134,9 @@ public class StringParamChecks {
                 return CheckFuncResult.success();
             } else {
                 for (CheckFunc<String> checkFunc : checkFuncs) {
-                    CheckFuncResult tuple = checkFunc.check(s);
-                    if (!tuple.successful) {
-                        return tuple;   // return tuple with error
+                    CheckFuncResult checkResult = checkFunc.check(s);
+                    if (!checkResult.successful) {
+                        return checkResult;   // return error
                     }
                 }
             }
@@ -155,13 +156,72 @@ public class StringParamChecks {
                 return CheckFuncResult.success();
             } else {
                 for (CheckFunc<String> checkFunc : checkFuncs) {
-                    CheckFuncResult tuple = checkFunc.check(s);
-                    if (!tuple.successful) {
-                        return tuple;   // return tuple with error
+                    CheckFuncResult checkResult = checkFunc.check(s);
+                    if (!checkResult.successful) {
+                        return checkResult;   // return error
                     }
                 }
             }
             // all checks passed
+            return CheckFuncResult.success();
+        };
+    }
+
+    /**
+     * Checks that the string does not begin with any of the provided characters.
+     * @param chars
+     * @return
+     */
+    public static CheckFunc<String> cannotBeginWithChars(Set<Character> chars) {
+        return s -> {
+            for (Character c : chars) {
+                if (s.charAt(0) == c) {
+                    return CheckFuncResult.failure("cannot begin with '" + c + "'.");
+                }
+            }
+            return CheckFuncResult.success();
+        };
+    }
+
+    /**
+     * Checks that the string does not begin with any of the provided characters in the string.
+     * @param chars
+     * @return
+     */
+    public static CheckFunc<String> cannotBeginWithChars(String chars) {
+        return s -> {
+            for (int i = 0; i < chars.length(); i++) {
+                if (s.charAt(0) == chars.charAt(i)) {
+                    return CheckFuncResult.failure("cannot begin with '" + chars.charAt(i) + "'.");
+                }
+            }
+            return CheckFuncResult.success();
+        };
+    }
+
+    public static CheckFunc<String> equalsStringInList(List<String> equalsList) {
+        return s -> {
+            for (String equals : equalsList) {
+                if (equals.equals(s)) {
+                    return CheckFuncResult.success();
+                }
+            }
+            return CheckFuncResult.failure("does not equal one of the following strings: " + equalsList.stream().collect(Collectors.joining(",")));
+        };
+    }
+
+    /**
+     * Checks to ensure that the string does not equal any strings provided in the list.
+     * @param notEqualsList
+     * @return
+     */
+    public static CheckFunc<String> doesNotEqualStringInList(List<String> notEqualsList) {
+        return s -> {
+            for (String dontEqualString : notEqualsList) {
+                if (s.equals(dontEqualString)) {
+                    return CheckFuncResult.failure("cannot be equal to '" + dontEqualString + "'.");
+                }
+            }
             return CheckFuncResult.success();
         };
     }

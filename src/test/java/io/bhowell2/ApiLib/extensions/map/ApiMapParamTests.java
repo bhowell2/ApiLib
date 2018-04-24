@@ -2,7 +2,10 @@ package io.bhowell2.ApiLib.extensions.map;
 
 import io.bhowell2.ApiLib.ApiParamCheck;
 import io.bhowell2.ApiLib.CheckFunc;
+import io.bhowell2.ApiLib.extensions.map.utils.ApiMapFormatInsertFuncs;
 import io.bhowell2.ApiLib.utils.IntegerParamChecks;
+import io.bhowell2.ApiLib.utils.ParamChecks;
+import io.bhowell2.ApiLib.utils.StringFormatFuncs;
 import org.junit.jupiter.api.Test;
 
 import java.util.HashMap;
@@ -51,6 +54,22 @@ public class ApiMapParamTests {
         assertTrue(check.successful());
         assertEquals(12, requestParams.get("int"), "Should be of integer type. Not string -- string should have been replaced.");
         assertEquals("int", check.parameterName);
+    }
+
+    @Test
+    public void shouldFormatParam() {
+        ApiMapParam<String> stringMapParam = ApiMapParamBuilder.builder("whatever", String.class)
+                                                               .addFormatFunction(StringFormatFuncs.TRIM)
+                                                               .addFormatInsertionFunction(ApiMapFormatInsertFuncs.getFormatInsertFuncForType
+                                                                   (String.class))
+                                                               .addCheckFunction(ParamChecks.alwaysPass())
+                                                               .build();
+
+        Map<String, Object> requestParams = new HashMap<>(1);
+        requestParams.put("whatever", " h ");
+        ApiParamCheck check = stringMapParam.check(requestParams);
+        assertTrue(check.successful());
+        assertEquals("h", requestParams.get("whatever"));
     }
 
 }

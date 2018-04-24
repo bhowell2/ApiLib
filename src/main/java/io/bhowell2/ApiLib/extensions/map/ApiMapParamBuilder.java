@@ -8,7 +8,7 @@ import io.bhowell2.ApiLib.ParamRetrievalFunc;
 
 import java.util.Map;
 
-import static io.bhowell2.ApiLib.extensions.map.ApiMapParamRetrievalFuncs.*;
+import static io.bhowell2.ApiLib.extensions.map.utils.ApiMapParamRetrievalFuncs.*;
 
 /**
  * @author Blake Howell
@@ -133,9 +133,8 @@ public class ApiMapParamBuilder<ParamType> extends ApiParamBuilder<ParamType, Ma
     }
 
     @Override
-    public ApiMapParamBuilder<ParamType> addFormatInjectionFunction(FormatInsertFunc<ParamType, Map<String, Object>>
-                                                                                               formatInsertFunc) {
-        super.addFormatInjectionFunction(formatInsertFunc);
+    public ApiMapParamBuilder<ParamType> addFormatInsertionFunction(FormatInsertFunc<ParamType, Map<String, Object>> formatInsertFunc) {
+        super.addFormatInsertionFunction(formatInsertFunc);
         return this;
     }
 

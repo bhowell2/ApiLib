@@ -108,7 +108,7 @@ public class ApiParamBuilder<ParamType, ParamsObj> {
         return this;
     }
 
-    public ApiParamBuilder<ParamType, ParamsObj> addFormatInjectionFunction(FormatInsertFunc<ParamType, ParamsObj> formatInsertFunc) {
+    public ApiParamBuilder<ParamType, ParamsObj> addFormatInsertionFunction(FormatInsertFunc<ParamType, ParamsObj> formatInsertFunc) {
         if (this.formatInsertFunc != null) {
             // added just to remove accidental overwrites or unintended additions
             throw new RuntimeException("Format insert function has already been added.");

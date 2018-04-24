@@ -3,6 +3,9 @@ package io.bhowell2.ApiLib.utils;
 import io.bhowell2.ApiLib.CheckFunc;
 import io.bhowell2.ApiLib.CheckFuncResult;
 
+import java.util.Arrays;
+import java.util.stream.Collectors;
+
 /**
  * @author Blake Howell
  */
@@ -58,5 +61,17 @@ public class IntegerParamChecks {
         };
     }
 
+    public static CheckFunc<Integer> valueEqualTo(int[] acceptableInts) {
+        return n -> {
+            for (int i : acceptableInts) {
+                if (n == i) {
+                    return CheckFuncResult.success();
+                }
+            }
+            return CheckFuncResult.failure("does not equal any of the acceptable integers: " + Arrays.stream(acceptableInts)
+                                                                                                     .mapToObj(i -> "" + i)
+                                                                                                     .collect(Collectors.joining(",")));
+        };
+    }
 
 }

@@ -1,8 +1,9 @@
 package io.bhowell2.ApiLib.utils;
 
 
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
+
+import static org.junit.jupiter.api.Assertions.*;
 
 /**
  * @author Blake Howell
@@ -14,18 +15,18 @@ public class StringFormatFuncsTests {
         String preTrim = "  he y   ";    // 2 leading spaces, 3 trailing
         int preLength = preTrim.length();
         String postTrim = StringFormatFuncs.TRIM.format(preTrim);
-        Assertions.assertEquals(preLength - 5, postTrim.length());
+        assertEquals(preLength - 5, postTrim.length());
 
         String preTrim2 = "\t\t\n hey \n\n";
         String postTrim2 = StringFormatFuncs.TRIM.format(preTrim2);
-        Assertions.assertEquals(3, postTrim2.length());
+        assertEquals(3, postTrim2.length());
     }
 
     @Test
     public void shouldOnlyRemoveTrailingWhiteSpace() {
         String preTrimTrailing = "\nh e y \t\t\n";
         String postTrimTrailing = StringFormatFuncs.REMOVE_TRAILING_WHITESPACE.format(preTrimTrailing);
-        Assertions.assertEquals(6, postTrimTrailing.length());
+        assertEquals(6, postTrimTrailing.length());
     }
 
     @Test
@@ -34,7 +35,15 @@ public class StringFormatFuncsTests {
         String expectedString = "this is the correct string";
         // note we're replacing 'not' AND the space before it
         String replaced = StringFormatFuncs.replaceStringPartWith(" not", "").format(preReplace);
-        Assertions.assertEquals(expectedString, replaced);
+        assertEquals(expectedString, replaced);
+    }
+
+
+    @Test
+    public void shouldUpperCaseString() {
+        String somelower = "loWERcase";
+        String uppered = StringFormatFuncs.TO_UPPER_CASE.format(somelower);
+        assertEquals("LOWERCASE", uppered);
     }
 
 }

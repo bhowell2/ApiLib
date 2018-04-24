@@ -7,7 +7,7 @@ import org.junit.jupiter.api.Test;
 import java.util.HashMap;
 import java.util.Map;
 
-import static io.bhowell2.ApiLib.extensions.map.ApiMapParamRetrievalFuncs.*;
+import static io.bhowell2.ApiLib.extensions.map.utils.ApiMapParamRetrievalFuncs.*;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -95,7 +95,7 @@ public class ApiParamTest {
         ApiParam<String, Map<String, Object>> param =
             ApiParamBuilder.builder(paramName, (String name, Map<String, Object> m) -> (String) m.get(name))
                            .addFormatFunction(s -> s.substring(0, 3))
-                           .addFormatInjectionFunction((name, map, formattedStr) -> {
+                           .addFormatInsertionFunction((name, map, formattedStr) -> {
                                map.put(name, formattedStr);
                            })
                            .addCheckFunction(ParamChecks.alwaysPass())

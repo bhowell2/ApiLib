@@ -1,6 +1,6 @@
 package io.bhowell2.ApiLib;
 
-import io.bhowell2.ApiLib.extensions.map.ApiMapParamRetrievalFuncs;
+import io.bhowell2.ApiLib.extensions.map.utils.ApiMapParamRetrievalFuncs;
 import io.bhowell2.ApiLib.utils.IntegerParamChecks;
 import io.bhowell2.ApiLib.utils.StringParamChecks;
 
@@ -9,7 +9,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 
-import static io.bhowell2.ApiLib.extensions.map.ApiMapParamRetrievalFuncs.*;
+import static io.bhowell2.ApiLib.extensions.map.utils.ApiMapParamRetrievalFuncs.*;
 
 /**
  * Various parameters to use in tests.

@@ -1,4 +1,4 @@
-package io.bhowell2.ApiLib.extensions.map;
+package io.bhowell2.ApiLib.extensions.map.utils;
 
 import io.bhowell2.ApiLib.FormatInsertFunc;
 

@@ -5,6 +5,7 @@ import io.bhowell2.ApiLib.CheckFunc;
 import io.bhowell2.ApiLib.FormatFunc;
 import io.bhowell2.ApiLib.FormatInsertFunc;
 import io.bhowell2.ApiLib.ParamRetrievalFunc;
+import io.bhowell2.ApiLib.extensions.map.utils.ApiMapParamRetrievalFuncs;
 
 import java.util.Map;
 
