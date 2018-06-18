@@ -13,7 +13,9 @@ import java.util.Set;
  * recommended that the the name of the provided parameters is returned if they were provided (as providedParamNames).
  *
  * arrayObjParams should contain the successfully checked ApiObjParamCheck if the custom parameter is checking the elements of an array and they
- * are objects.
+ * are objects. The array might look like this: [{a: "a param", b: "2nd param"}, {a: "aaaa"}], and then it is necessary to know the parameters of
+ * each object (hence, the ApiObjcParamCheck). Otherwise, if an array is to be checked, it could just be set in providedParamNames if the object
+ * checks out correctly (e.g., array parameters are numbers that are all greater than X)
  *
  * providedObjParams should contain the name and ApiObjParamCheck of any object parameters that the custom parameter checks.
  *
@@ -50,6 +52,15 @@ public final class ApiCustomParamCheck {
 
     public boolean successful() {
         return paramError == null;
+    }
+
+    /**
+     *
+     * @param objName
+     * @return the ApiObjParamCheck or null
+     */
+    public ApiObjParamCheck getObjParamCheck(String objName) {
+        return this.providedObjParams.get(objName);
     }
 
     /* Static creation methods */

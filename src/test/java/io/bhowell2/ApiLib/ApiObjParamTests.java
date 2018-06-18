@@ -256,7 +256,7 @@ public class ApiObjParamTests {
                                       return s.length() > 5 ? ApiCustomParamCheck.success("CustomParam") :
                                           ApiCustomParamCheck.failure(ErrorType.INVALID_PARAMETER, "CustomParam");
                                   }
-                                  })
+                              })
                               .setContinueOnOptionalFailure(true)
                               .build();
         Map<String, Object> requestParams = new HashMap<>(1);
@@ -284,8 +284,8 @@ public class ApiObjParamTests {
                                                                       .build();
 
         ApiParam<String, Map<String, Object>> innerParam1 = ApiParamBuilder.builder("innerParam1", stringRetrievalFunc)
-                                                                      .addCheckFunction(ParamChecks.alwaysPass()) // doesnt matter what it is,
-                                                                      .build();
+                                                                           .addCheckFunction(ParamChecks.alwaysPass()) // doesnt matter what it is,
+                                                                           .build();
 
         ApiObjParam<Map<String, Object>, Map<String, Object>> innerObjParam =
             ApiObjParamBuilder.builder("innerobj", (String name, Map<String, Object> map) -> (Map<String, Object>) map.get(name))

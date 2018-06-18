@@ -127,7 +127,7 @@ public class IntegerParamChecksTests {
 
         CheckFuncResult check4 = checkFunction.check(-1);
         assertFalse(check4.successful);
-        
+
         // Passing
 
         CheckFuncResult check3 = checkFunction.check(0);

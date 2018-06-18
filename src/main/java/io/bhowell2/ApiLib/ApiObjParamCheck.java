@@ -63,32 +63,22 @@ public final class ApiObjParamCheck {
 
     /**
      * @param objectParamName name of the object parameter that was checked
-     * @return the ApiObjectParamTuple or null
+     * @return the ApiObjParamCheck or null
      */
-    public ApiObjParamCheck getObjectParamTuple(String objectParamName) {
+    public ApiObjParamCheck getObjectParamCheck(String objectParamName) {
         return providedObjParams.get(objectParamName);
     }
 
     /**
      * @param customParamName name that was given to the ApiCustomParamsTuple on checking
-     * @return the ApiCustomParamsTuple or null
+     * @return the ApiCustomParamsCheck or null
      */
-    public ApiCustomParamCheck getCustomParamsTuple(String customParamName) {
+    public ApiCustomParamCheck getCustomParamsCheck(String customParamName) {
         return providedCustomParams.get(customParamName);
     }
 
     public List<String> getProvidedParamsAsList() {
         return new ArrayList<>(this.providedParamNames);
-    }
-
-    /**
-     * This linear search is much slower than using a Map, but right now I feel that the performance (in the single digit microseconds from rough micro-benchmark) will be fine as compared to
-     *
-     * @param parameterName
-     * @return the tuple or NULL if it does not exist
-     */
-    public ApiObjParamCheck getInnerObjectParamTuple(String parameterName) {
-        return this.providedObjParams.get(parameterName);
     }
 
     /* Static creation methods */
