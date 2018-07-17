@@ -201,6 +201,11 @@ public class StringParamChecks {
         };
     }
 
+    /**
+     * Not a regex match, so casing does matter.
+     * @param equalsList
+     * @return checkFunc that ensures the string to be checked equals one of the strings in the list
+     */
     public static CheckFunc<String> equalsStringInList(List<String> equalsList) {
         return s -> {
             for (String equals : equalsList) {
@@ -213,6 +218,18 @@ public class StringParamChecks {
     }
 
     /**
+     * Not a regex match, so casing does matter.
+     * Using some type of Hashed set will be faster than using the list alternative of this.
+     * @param equalsSet
+     * @return
+     */
+    public static CheckFunc<String> equalsStringInSet(Set<String> equalsSet) {
+        return s -> equalsSet.contains(s) ? CheckFuncResult.success() :
+            CheckFuncResult.failure("must equal: " + equalsSet.stream().collect(Collectors.joining(",")));
+    }
+
+    /**
+     * Not a regex match, so casing does matter.
      * Checks to ensure that the string does not equal any strings provided in the list.
      * @param notEqualsList
      * @return
@@ -226,6 +243,19 @@ public class StringParamChecks {
             }
             return CheckFuncResult.success();
         };
+    }
+
+    /**
+     * Not a regex match, so casing does matter.
+     * Using some type of Hashed set will be faster than using the list alternative of this.
+     * @param notEqualsSet
+     * @return
+     */
+    public static CheckFunc<String> doesNotEqualStringInSet(Set<String> notEqualsSet) {
+        return s ->
+            notEqualsSet.contains(s) ?
+                CheckFuncResult.failure("cannot be one of the following strings: " + notEqualsSet.stream().collect(Collectors.joining(","))) :
+                CheckFuncResult.success();
     }
 
     /**

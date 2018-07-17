@@ -353,7 +353,41 @@ public class StringParamChecksTests {
         assertTrue(failingCheck8.failed());
         CheckFuncResult failingCheck9 = checkFunc.check("1autocomplete");
         assertTrue(failingCheck9.failed());
+        CheckFuncResult failingCheck10 = checkFunc.check("AUTOCOMPLETE");
+        assertTrue(failingCheck10.failed());
+    }
 
+    @Test
+    public void testEqualsStringInSet() {
+        CheckFunc<String> checkFunc = equalsStringInSet(new HashSet<>(Arrays.asList("autocomplete", "search")));
+
+        // passing
+        CheckFuncResult check1 = checkFunc.check("autocomplete");
+        assertTrue(check1.successful);
+        CheckFuncResult check2 = checkFunc.check("search");
+        assertTrue(check2.successful);
+
+        // failing
+        CheckFuncResult failingCheck1 = checkFunc.check("fine");
+        assertTrue(failingCheck1.failed());
+        CheckFuncResult failingCheck2 = checkFunc.check("a");
+        assertTrue(failingCheck2.failed());
+        CheckFuncResult failingCheck3 = checkFunc.check("");
+        assertTrue(failingCheck3.failed());
+        CheckFuncResult failingCheck4 = checkFunc.check("1autocomplete");
+        assertTrue(failingCheck4.failed());
+        CheckFuncResult failingCheck5 = checkFunc.check("autocomplete1");
+        assertTrue(failingCheck5.failed());
+        CheckFuncResult failingCheck6 = checkFunc.check("autocomplete ");
+        assertTrue(failingCheck6.failed());
+        CheckFuncResult failingCheck7 = checkFunc.check(" autocomplete");
+        assertTrue(failingCheck7.failed());
+        CheckFuncResult failingCheck8 = checkFunc.check("searchh");
+        assertTrue(failingCheck8.failed());
+        CheckFuncResult failingCheck9 = checkFunc.check("1autocomplete");
+        assertTrue(failingCheck9.failed());
+        CheckFuncResult failingCheck10 = checkFunc.check("AUTOCOMPLETE");
+        assertTrue(failingCheck10.failed());
     }
 
     @Test
@@ -379,6 +413,9 @@ public class StringParamChecksTests {
         assertTrue(check8.successful);
         CheckFuncResult check9 = checkFunc.check("1autocomplete");
         assertTrue(check9.successful);
+        CheckFuncResult check10 = checkFunc.check("AUTOCOMPLETE");
+        assertTrue(check10.successful);
+
 
         // failing
         CheckFuncResult failingCheck1 = checkFunc.check("autocomplete");
@@ -387,6 +424,38 @@ public class StringParamChecksTests {
         assertTrue(failingCheck2.failed());
     }
 
+    @Test
+    public void testDoesNotEqualStringInSet() {
+        CheckFunc<String> checkFunc = doesNotEqualStringInSet(new HashSet<>(Arrays.asList("autocomplete", "search")));
+
+        // passing
+        CheckFuncResult check1 = checkFunc.check("fine");
+        assertTrue(check1.successful);
+        CheckFuncResult check2 = checkFunc.check("a");
+        assertTrue(check2.successful);
+        CheckFuncResult check3 = checkFunc.check("");
+        assertTrue(check3.successful);
+        CheckFuncResult check4 = checkFunc.check("1autocomplete");
+        assertTrue(check4.successful);
+        CheckFuncResult check5 = checkFunc.check("autocomplete1");
+        assertTrue(check5.successful);
+        CheckFuncResult check6 = checkFunc.check("autocomplete ");
+        assertTrue(check6.successful);
+        CheckFuncResult check7 = checkFunc.check(" autocomplete");
+        assertTrue(check7.successful);
+        CheckFuncResult check8 = checkFunc.check("searchh");
+        assertTrue(check8.successful);
+        CheckFuncResult check9 = checkFunc.check("1autocomplete");
+        assertTrue(check9.successful);
+        CheckFuncResult check10 = checkFunc.check("AUTOCOMPLETE");
+        assertTrue(check10.successful);
+
+        // failing
+        CheckFuncResult failingCheck1 = checkFunc.check("autocomplete");
+        assertTrue(failingCheck1.failed());
+        CheckFuncResult failingCheck2 = checkFunc.check("search");
+        assertTrue(failingCheck2.failed());
+    }
 
     @Test
     public void testUnreservedUrlCharacters() {
@@ -425,5 +494,6 @@ public class StringParamChecksTests {
         assertTrue(failingCheck7.failed());
 
     }
+
 
 }
