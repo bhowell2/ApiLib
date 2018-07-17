@@ -3,6 +3,8 @@ package io.bhowell2.ApiLib.utils;
 import io.bhowell2.ApiLib.CheckFunc;
 import io.bhowell2.ApiLib.CheckFuncResult;
 
+import java.util.Arrays;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.regex.Pattern;
@@ -220,6 +222,24 @@ public class StringParamChecks {
             for (String dontEqualString : notEqualsList) {
                 if (s.equals(dontEqualString)) {
                     return CheckFuncResult.failure("cannot be equal to '" + dontEqualString + "'.");
+                }
+            }
+            return CheckFuncResult.success();
+        };
+    }
+
+    /**
+     * Only permits unreserved URL characters in the string (i.e., a-z, 0-9, '-', '.', '_', '~')
+     * @return successful if the string only contains unreserved URL characters. otherwise it fails
+     */
+    public static CheckFunc<String> onlyAllowUnreservedUrlCharacters() {
+        return s -> {
+            String lower = s.toLowerCase();
+            for (int i = 0; i < lower.length(); i++) {
+                if ((lower.charAt(i) < 'a' || lower.charAt(i) > 'z') &&
+                    (lower.charAt(i) < '0' || lower.charAt(i) > '9') &&
+                    (lower.charAt(i) != '-' && lower.charAt(i) != '.' && lower.charAt(i) != '_' && lower.charAt(i) != '~')) {
+                    return CheckFuncResult.failure("contains reserved URL characters. May only contain a-z, 0-9, '-', '.', '_', and '~'");
                 }
             }
             return CheckFuncResult.success();

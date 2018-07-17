@@ -387,4 +387,43 @@ public class StringParamChecksTests {
         assertTrue(failingCheck2.failed());
     }
 
+
+    @Test
+    public void testUnreservedUrlCharacters() {
+        CheckFunc<String> checkFunc = onlyAllowUnreservedUrlCharacters();
+
+        // passing
+        CheckFuncResult check1 = checkFunc.check("heyyyoal.123");
+        assertTrue(check1.successful);
+        CheckFuncResult check2 = checkFunc.check("ABC123...__~--");
+        assertTrue(check2.successful);
+        CheckFuncResult check3 = checkFunc.check("._-~");
+        assertTrue(check3.successful);
+        CheckFuncResult check4 = checkFunc.check("1234567890");
+        assertTrue(check4.successful);
+        CheckFuncResult check5 = checkFunc.check("abcdefghijklmnopqrstuvwxyz");
+        assertTrue(check5.successful);
+        CheckFuncResult check6 = checkFunc.check("ABCDEFGHIJKLMNOPQRSTUVWXYZ");
+        assertTrue(check6.successful);
+        CheckFuncResult check7 = checkFunc.check("A");
+        assertTrue(check7.successful);
+
+        // failing
+        CheckFuncResult failingCheck1 = checkFunc.check("!");
+        assertTrue(failingCheck1.failed());
+        CheckFuncResult failingCheck2 = checkFunc.check("abcd$&?*");
+        assertTrue(failingCheck2.failed());
+        CheckFuncResult failingCheck3 = checkFunc.check("._-~!");
+        assertTrue(failingCheck3.failed());
+        CheckFuncResult failingCheck4 = checkFunc.check("nope#");
+        assertTrue(failingCheck4.failed());
+        CheckFuncResult failingCheck5 = checkFunc.check("@");
+        assertTrue(failingCheck5.failed());
+        CheckFuncResult failingCheck6 = checkFunc.check("%");
+        assertTrue(failingCheck6.failed());
+        CheckFuncResult failingCheck7 = checkFunc.check("ABCD ");
+        assertTrue(failingCheck7.failed());
+
+    }
+
 }
