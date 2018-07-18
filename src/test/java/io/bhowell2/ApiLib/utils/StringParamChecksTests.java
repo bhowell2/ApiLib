@@ -198,7 +198,7 @@ public class StringParamChecksTests {
         CheckFuncResult check = checkFunc.check("");
         assertTrue(check.successful);
 
-        CheckFuncResult check2 = checkFunc.check("123");
+        CheckFuncResult check2 = checkFunc.check("123 ");
         assertTrue(check2.successful);
 
         CheckFuncResult check3 = checkFunc.check("0123456789");
@@ -459,7 +459,7 @@ public class StringParamChecksTests {
 
     @Test
     public void testUnreservedUrlCharacters() {
-        CheckFunc<String> checkFunc = onlyAllowUnreservedUrlCharacters();
+        CheckFunc<String> checkFunc = ONLY_ALLOW_UNRESERVED_URL_CHARS;
 
         // passing
         CheckFuncResult check1 = checkFunc.check("heyyyoal.123");
@@ -495,5 +495,72 @@ public class StringParamChecksTests {
 
     }
 
+    @Test
+    public void testIsNotEmptyOrOnlyWhitespace() {
+        CheckFunc<String> checkFunc = IS_NOT_EMPTY_OR_ONLY_WHITESPACE;
+
+        // passing
+        CheckFuncResult check1 = checkFunc.check("hey");
+        assertTrue(check1.successful);
+        CheckFuncResult check2 = checkFunc.check("hey ");
+        assertTrue(check2.successful);
+        CheckFuncResult check3 = checkFunc.check(" okay");
+        assertTrue(check3.successful);
+        CheckFuncResult check4 = checkFunc.check("! !");
+        assertTrue(check4.successful);
+        CheckFuncResult check5 = checkFunc.check("hey\t");
+        assertTrue(check5.successful);
+        CheckFuncResult check6 = checkFunc.check("\t\nhey");
+        assertTrue(check6.successful);
+
+        // failing
+        CheckFuncResult failingCheck = checkFunc.check("");
+        assertTrue(failingCheck.failed());
+        CheckFuncResult failingCheck1 = checkFunc.check(" ");
+        assertTrue(failingCheck1.failed());
+        CheckFuncResult failingCheck2 = checkFunc.check("\t");
+        assertTrue(failingCheck2.failed());
+        CheckFuncResult failingCheck3 = checkFunc.check("\n");
+        assertTrue(failingCheck3.failed());
+        CheckFuncResult failingCheck4 = checkFunc.check("\t\n");
+        assertTrue(failingCheck4.failed());
+        CheckFuncResult failingCheck5 = checkFunc.check("\t\n ");
+        assertTrue(failingCheck5.failed());
+    }
+
+    @Test
+    public void testIsEmptyOrContainsOnlyWhitespace() {
+        CheckFunc<String> checkFunc = IS_NOT_EMPTY_OR_ONLY_WHITESPACE;
+
+        // passing
+        CheckFuncResult check = checkFunc.check("");
+        assertTrue(check.failed());
+        CheckFuncResult check1 = checkFunc.check(" ");
+        assertTrue(check1.failed());
+        CheckFuncResult check2 = checkFunc.check("\t");
+        assertTrue(check2.failed());
+        CheckFuncResult check3 = checkFunc.check("\n");
+        assertTrue(check3.failed());
+        CheckFuncResult check4 = checkFunc.check("\t\n");
+        assertTrue(check4.failed());
+        CheckFuncResult check5 = checkFunc.check("\t\n ");
+        assertTrue(check5.failed());
+
+
+        // failing
+        CheckFuncResult failingCheck1 = checkFunc.check("hey");
+        assertTrue(failingCheck1.successful);
+        CheckFuncResult failingCheck2 = checkFunc.check("hey ");
+        assertTrue(failingCheck2.successful);
+        CheckFuncResult failingCheck3 = checkFunc.check(" okay");
+        assertTrue(failingCheck3.successful);
+        CheckFuncResult failingCheck4 = checkFunc.check("! !");
+        assertTrue(failingCheck4.successful);
+        CheckFuncResult failingCheck5 = checkFunc.check("hey\t");
+        assertTrue(failingCheck5.successful);
+        CheckFuncResult failingCheck6 = checkFunc.check("\t\nhey");
+        assertTrue(failingCheck6.successful);
+
+    }
 
 }

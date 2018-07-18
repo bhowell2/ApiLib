@@ -147,6 +147,12 @@ public class StringParamChecks {
         };
     }
 
+    public static CheckFunc<String> IS_NOT_EMPTY_OR_ONLY_WHITESPACE = s -> s.matches("^\\s*$") ?
+        CheckFuncResult.failure("cannot be empty or only contain whitespace.") : CheckFuncResult.success();
+
+    public static CheckFunc<String> IS_EMPTY_OR_ONLY_WHITESPACE = s -> s.matches("^\\s*$") ? CheckFuncResult.success() :
+    CheckFuncResult.failure("must be empty or only contain whitespace.");
+
     /**
      * Similar to empty, but length can be 0 or all white space characters.
      * @param checkFuncs
@@ -154,7 +160,7 @@ public class StringParamChecks {
      */
     public static CheckFunc<String> emptyWhitespaceOrMeetsChecks(CheckFunc<String>... checkFuncs) {
         return s -> {
-            if (s.length() == 0 || s.matches("\\s+")) {
+            if (s.length() == 0 || s.matches("^\\s+$")) {
                 return CheckFuncResult.success();
             } else {
                 for (CheckFunc<String> checkFunc : checkFuncs) {
@@ -262,18 +268,16 @@ public class StringParamChecks {
      * Only permits unreserved URL characters in the string (i.e., a-z, 0-9, '-', '.', '_', '~')
      * @return successful if the string only contains unreserved URL characters. otherwise it fails
      */
-    public static CheckFunc<String> onlyAllowUnreservedUrlCharacters() {
-        return s -> {
-            String lower = s.toLowerCase();
-            for (int i = 0; i < lower.length(); i++) {
-                if ((lower.charAt(i) < 'a' || lower.charAt(i) > 'z') &&
-                    (lower.charAt(i) < '0' || lower.charAt(i) > '9') &&
-                    (lower.charAt(i) != '-' && lower.charAt(i) != '.' && lower.charAt(i) != '_' && lower.charAt(i) != '~')) {
-                    return CheckFuncResult.failure("contains reserved URL characters. May only contain a-z, 0-9, '-', '.', '_', and '~'");
-                }
+    public static CheckFunc<String> ONLY_ALLOW_UNRESERVED_URL_CHARS = s -> {
+        String lower = s.toLowerCase();
+        for (int i = 0; i < lower.length(); i++) {
+            if ((lower.charAt(i) < 'a' || lower.charAt(i) > 'z') &&
+                (lower.charAt(i) < '0' || lower.charAt(i) > '9') &&
+                (lower.charAt(i) != '-' && lower.charAt(i) != '.' && lower.charAt(i) != '_' && lower.charAt(i) != '~')) {
+                return CheckFuncResult.failure("contains reserved URL characters. May only contain a-z, 0-9, '-', '.', '_', and '~'");
             }
-            return CheckFuncResult.success();
-        };
-    }
-
+        }
+        return CheckFuncResult.success();
+    };
+    
 }
