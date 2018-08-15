@@ -40,11 +40,13 @@ public class ApiParamBuilder<ParamType, ParamsObj> {
         return new ApiParamBuilder<ParamType, ParamsObj>(paramName, param);
     }
 
+    protected boolean canBeNull = false;
     protected String paramName;
     protected List<CheckFunc<ParamType>> checkFuncs;
     protected ParamRetrievalFunc<ParamType, ParamsObj> retrievalFunc;
     protected List<FormatFunc<ParamType>> formatFuncs;
     protected FormatInsertFunc<ParamType, ParamsObj> formatInsertFunc;
+    protected NullParamRetrievalCheckFunc<ParamsObj> nullRetrievalCheckFunc;
 
     /**
      *
@@ -71,7 +73,19 @@ public class ApiParamBuilder<ParamType, ParamsObj> {
                             retrievalFunc,
                             formatFuncs.toArray(new FormatFunc[0]),
                             formatInsertFunc,
-                            checkFuncs.toArray(new CheckFunc[0]));
+                            checkFuncs.toArray(new CheckFunc[0]),
+                            canBeNull,
+                            nullRetrievalCheckFunc);
+    }
+
+    public ApiParamBuilder<ParamType, ParamsObj> setCanBeNull(boolean canBeNull) {
+        this.canBeNull = canBeNull;
+        return this;
+    }
+
+    public ApiParamBuilder<ParamType, ParamsObj> setNullRetrievalCheckFunc(NullParamRetrievalCheckFunc<ParamsObj> nullRetrievalCheckFunc) {
+        this.nullRetrievalCheckFunc = nullRetrievalCheckFunc;
+        return this;
     }
 
     public ApiParamBuilder<ParamType, ParamsObj> addCheckFunction(CheckFunc<ParamType> checkFunc) {

@@ -9,6 +9,7 @@ import java.util.Map;
 
 import static io.bhowell2.ApiLib.extensions.map.utils.ApiMapParamRetrievalFuncs.*;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -108,6 +109,55 @@ public class ApiParamTest {
     }
 
     @Test
+    public void shouldSuccessfullyCheckNullParameter() {
+        String paramName = "p1";
+        ApiParam<String, Map<String, Object>> param =
+            ApiParamBuilder.builder(paramName, (String name, Map<String, Object> m) -> (String) m.get(name))
+                           .addFormatFunction(s -> s.substring(0, 3))
+                           .addFormatInsertionFunction((name, map, formattedStr) -> {
+                               map.put(name, formattedStr);
+                           })
+                           .addCheckFunction(ParamChecks.alwaysPass())
+                           .setCanBeNull(true)
+                           .setNullRetrievalCheckFunc((name, map) -> map.containsKey(name))
+                           .build();
+        Map<String, Object> requestParams = new HashMap<>(1);
+        requestParams.put(paramName, null);
+        ApiParamCheck check = param.check(requestParams);
+        assertTrue(check.successful(), "Should have successfully checked the parameter when it was null.");
+        assertFalse(check.failed(), "Just a redundant sanity check.");
+    }
+
+    @Test
+    public void shouldFailToCheckNullParameter() {
+        String paramName = "p1";
+        ApiParam<String, Map<String, Object>> param =
+            ApiParamBuilder.builder(paramName, (String name, Map<String, Object> m) -> (String) m.get(name))
+                           .addFormatFunction(s -> s.substring(0, 3))
+                           .addFormatInsertionFunction((name, map, formattedStr) -> {
+                               map.put(name, formattedStr);
+                           })
+                           .addCheckFunction(ParamChecks.alwaysPass())
+                           .setCanBeNull(true)
+                           .setNullRetrievalCheckFunc((name, map) -> map.containsKey(name))
+                           .build();
+        Map<String, Object> requestParams = new HashMap<>(1);
+        ApiParamCheck check = param.check(requestParams);
+        assertTrue(check.failed(), "Should have successfully checked the parameter when it was null.");
+        ApiParam<String, Map<String, Object>> param2 =
+            ApiParamBuilder.builder(paramName, (String name, Map<String, Object> m) -> (String) m.get(name))
+                           .addFormatFunction(s -> s.substring(0, 3))
+                           .addFormatInsertionFunction((name, map, formattedStr) -> {
+                               map.put(name, formattedStr);
+                           })
+                           .addCheckFunction(ParamChecks.alwaysPass())
+                           .build();
+        ApiParamCheck check2 = param2.check(requestParams);
+        assertTrue(check.failed());
+    }
+
+
+    @Test
     public void shouldThrowExceptionOnConstruction() {
         // No param retrieval function is provided
         assertThrows(RuntimeException.class, () -> {
@@ -115,7 +165,9 @@ public class ApiParamTest {
                                  null,  // param retrieval func
                                  null,
                                  null,
-                                 new CheckFunc[]{ParamChecks.alwaysPass()});
+                                 new CheckFunc[]{ParamChecks.alwaysPass()},
+                                         false,
+                                         null);
         }, "Should throw runtime exception when parameter retrieval function is not provided.");
 
         // No check function is provided (null)
@@ -124,6 +176,8 @@ public class ApiParamTest {
                                          (name, obj) -> name,  // param retrieval func (not really a correct use, but works here)
                                          null,
                                          null,
+                                         null,
+                                         false,
                                          null);
         }, "Should throw runtime exception when check functions are not provided.");
 
@@ -133,7 +187,9 @@ public class ApiParamTest {
                                          (name, obj) -> name,  // param retrieval func (not really a correct use, but works here)
                                          null,
                                          null,
-                                         new CheckFunc[0]);
+                                         new CheckFunc[0],
+                                         false,
+                                         null);
         }, "Should throw runtime exception when check functions are not provided (length 0).");
 
         // Format function is provided, but no function to inject the formatted value
@@ -142,8 +198,20 @@ public class ApiParamTest {
                                          (name, obj) -> name,  // param retrieval func (not really a correct use, but works here)
                                          new FormatFunc[]{(s) -> "hey"},
                                          null,
-                                         new CheckFunc[]{ParamChecks.alwaysPass()});
+                                         new CheckFunc[]{ParamChecks.alwaysPass()},
+                                         false,
+                                         null);
         }, "Should throw runtime exception when format functions are provided, but no FormatInsertFunc is provided.");
+
+        assertThrows(RuntimeException.class, () -> {
+           new ApiParam<String, Object>("whatever",
+                                        (name, obj) -> name,
+                                        new FormatFunc[]{(s) -> "hey"},
+                                        (name, params, formattedParam) -> {},
+                                        new CheckFunc[]{ParamChecks.alwaysFail()},
+                                        true,
+                                        null);
+        }, "Should throw runtime when can be null is set to true, but no NullParamRetrievalCheckFunc is provided.");
     }
 
 }

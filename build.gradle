@@ -22,10 +22,7 @@ repositories {
 }
 
 dependencies {
-//    compile 'org.slf4j:slf4j-api:1.7.25'
     testCompile 'org.junit.jupiter:junit-jupiter-engine:5.1.0'
-//    testRuntime 'org.junit.platform:junit-platform-launcher:1.1.0'
-//    testRuntime 'org.junit.vintage:junit-vintage-engine:5.1.0'
 }
 
 // use 'gradle install' to install to local maven repo
@@ -33,7 +30,7 @@ install {
     repositories.mavenInstaller {
         pom.groupId = 'io.bhowell2'
         pom.artifactId = 'api-lib'
-        pom.version = '0.2.0'
+        pom.version = '0.3.0'
     }
 }
 

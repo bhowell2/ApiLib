@@ -5,6 +5,7 @@ import io.bhowell2.ApiLib.CheckFunc;
 import io.bhowell2.ApiLib.FormatFunc;
 import io.bhowell2.ApiLib.FormatInsertFunc;
 import io.bhowell2.ApiLib.ParamRetrievalFunc;
+import io.bhowell2.ApiLib.extensions.map.utils.ApiMapNullParamRetrievalCheckFunc;
 import io.bhowell2.ApiLib.extensions.map.utils.ApiMapParamRetrievalFuncs;
 
 import java.util.Map;
@@ -36,24 +37,29 @@ public class ApiMapParam<ParamType> extends ApiParam<ParamType, Map<String, Obje
                        ParamRetrievalFunc<ParamType, Map<String, Object>> retrievalFunction,
                        FormatFunc<ParamType>[] formatFuncs,
                        FormatInsertFunc<ParamType, Map<String, Object>> formatInsertFunc,
-                       CheckFunc<ParamType>[] checkFuncs) {
+                       CheckFunc<ParamType>[] checkFuncs,
+                       boolean canBeNull) {
         super(parameterName,
               retrievalFunction,
               formatFuncs,
               formatInsertFunc,
-              checkFuncs);
+              checkFuncs,
+              canBeNull,
+              ApiMapNullParamRetrievalCheckFunc.NULL_CHECK);
     }
 
-    public ApiMapParam(String parameterName,
-                       Class<ParamType> paramTypeClass, boolean parseIfString, boolean replaceCastInMap,
-                       FormatFunc<ParamType>[] formatFuncs,
-                       FormatInsertFunc<ParamType, Map<String, Object>> formatInsertFunc,
-                       CheckFunc<ParamType>[] checkFuncs) {
-        this(parameterName,
-             ApiMapParamRetrievalFuncs.typeFromMap(paramTypeClass, parseIfString, replaceCastInMap),
-             formatFuncs,
-             formatInsertFunc,
-             checkFuncs);
-    }
+//    public ApiMapParam(String parameterName,
+//                       Class<ParamType> paramTypeClass, boolean parseIfString, boolean replaceCastInMap,
+//                       FormatFunc<ParamType>[] formatFuncs,
+//                       FormatInsertFunc<ParamType, Map<String, Object>> formatInsertFunc,
+//                       CheckFunc<ParamType>[] checkFuncs,
+//                       boolean canBeNull) {
+//        this(parameterName,
+//             ApiMapParamRetrievalFuncs.typeFromMap(paramTypeClass, parseIfString, replaceCastInMap),
+//             formatFuncs,
+//             formatInsertFunc,
+//             checkFuncs,
+//             canBeNull);
+//    }
 
 }

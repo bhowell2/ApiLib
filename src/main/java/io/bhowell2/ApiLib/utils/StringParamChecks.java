@@ -279,5 +279,5 @@ public class StringParamChecks {
         }
         return CheckFuncResult.success();
     };
-    
+
 }

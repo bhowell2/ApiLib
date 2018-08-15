@@ -145,7 +145,8 @@ public class ApiMapParamBuilder<ParamType> extends ApiParamBuilder<ParamType, Ma
                                  this.retrievalFunc,
                                  this.formatFuncs.toArray(new FormatFunc[0]),
                                  this.formatInsertFunc,
-                                 this.checkFuncs.toArray(new CheckFunc[0]));
+                                 this.checkFuncs.toArray(new CheckFunc[0]),
+                                 canBeNull);
     }
 
 }
