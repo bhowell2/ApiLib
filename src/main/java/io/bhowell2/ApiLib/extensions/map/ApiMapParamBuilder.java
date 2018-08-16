@@ -132,9 +132,19 @@ public class ApiMapParamBuilder<ParamType> extends ApiParamBuilder<ParamType, Ma
         return this;
     }
 
-    @Override
     public ApiMapParamBuilder<ParamType> addFormatInsertionFunction(FormatInsertFunc<ParamType, Map<String, Object>> formatInsertFunc) {
         super.addFormatInsertionFunction(formatInsertFunc);
+        return this;
+    }
+
+    /**
+     * Allow the parameter to pass checks only if it is actually provided as null and not just missing from the map (which
+     * will return null if it is missing also). This will cause the parameter to be added to the ProvidedParamNames list since the check will pass.
+     * @param canBeNull
+     * @return
+     */
+    public ApiMapParamBuilder<ParamType> setCanBeNull(boolean canBeNull) {
+        super.setCanBeNull(canBeNull);
         return this;
     }
 

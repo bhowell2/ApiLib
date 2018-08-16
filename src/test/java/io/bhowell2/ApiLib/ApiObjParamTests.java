@@ -1,6 +1,7 @@
 package io.bhowell2.ApiLib;
 
 import io.bhowell2.ApiLib.extensions.map.utils.ApiMapParamRetrievalFuncs;
+import io.bhowell2.ApiLib.utils.IntegerParamChecks;
 import io.bhowell2.ApiLib.utils.ParamChecks;
 import io.bhowell2.ApiLib.utils.StringParamChecks;
 import org.junit.jupiter.api.Test;
@@ -334,6 +335,96 @@ public class ApiObjParamTests {
         assertEquals(1, check.providedCustomParams.size());
         assertEquals(1, check.providedObjParams.get("innerobj").providedParamNames.size());
         assertTrue(check.providedObjParams.get("innerobj").providedParamNames.contains("innerParam1"));
+    }
+
+    @Test
+    public void shouldPassFromNullParamAndReturnInProvidedParamList() {
+        ParamRetrievalFunc<String, Map<String, Object>> stringRetrievalFunc = (String name, Map<String, Object> map) -> (String)map.get(name);
+        String fineNullParamName = "canBeNull";
+        ApiParam<String, Map<String, Object>> nullParam = ApiParamBuilder.builder(fineNullParamName, stringRetrievalFunc)
+                                                                         .setCanBeNull(true)
+                                                                         .setNullRetrievalCheckFunc((name, map) -> map.containsKey(name))
+                                                                         .addCheckFunction(ParamChecks.alwaysPass())
+                                                                         .build();
+        String notNullParamName = "notNull";
+        ApiParam<Integer, Map<String, Object>> notNullParam = ApiParamBuilder.builder(notNullParamName,
+                                                                                      (String name, Map<String, Object> m) -> (Integer) m.get(name))
+                                                                             .addCheckFunction(IntegerParamChecks.valueGreaterThan(5))
+                                                                             .build();
+
+        ApiObjParam<Map<String, Object>, Map<String, Object>> objParam =
+            ApiObjParamBuilder.rootObjBuilder((String dontCare, Map<String, Object> map) -> map)
+                              .addRequiredParams(nullParam, notNullParam)
+                              .build();
+
+        Map<String, Object> requestWithNullSet = new HashMap<>(2);
+        requestWithNullSet.put(fineNullParamName, null);
+        requestWithNullSet.put(notNullParamName, 55);
+
+
+        ApiObjParamCheck check = objParam.check(requestWithNullSet);
+        assertTrue(check.successful());
+        assertTrue(check.providedParamNames.contains(fineNullParamName));
+        assertTrue(check.providedParamNames.contains(notNullParamName));
+
+        Map<String, Object> requestWithoutNullSet = new HashMap<>(1);
+        requestWithoutNullSet.put(notNullParamName, 55);
+
+        Map<String, Object> requestWithOkayNullSetAsValue = new HashMap<>(1);
+        requestWithOkayNullSetAsValue.put(fineNullParamName, "heyy");
+        requestWithOkayNullSetAsValue.put(notNullParamName, 55);
+
+        ApiObjParamCheck check3 = objParam.check(requestWithOkayNullSetAsValue);
+        assertTrue(check3.successful());
+        assertTrue(check3.providedParamNames.contains(notNullParamName));
+        assertTrue(check3.providedParamNames.contains(fineNullParamName));
+
+    }
+
+    @Test
+    public void shouldNotContainNullParamNameWhenNullParamIsNotProvidedAsOptional() {
+        ParamRetrievalFunc<String, Map<String, Object>> stringRetrievalFunc = (String name, Map<String, Object> map) -> (String)map.get(name);
+        String fineNullParamName = "canBeNull";
+        ApiParam<String, Map<String, Object>> nullParam = ApiParamBuilder.builder(fineNullParamName, stringRetrievalFunc)
+                                                                         .setCanBeNull(true)
+                                                                         .setNullRetrievalCheckFunc((name, map) -> map.containsKey(name))
+                                                                         .addCheckFunction(ParamChecks.alwaysPass())
+                                                                         .build();
+        String notNullParamName = "notNull";
+        ApiParam<Integer, Map<String, Object>> notNullParam = ApiParamBuilder.builder(notNullParamName,
+                                                                                      (String name, Map<String, Object> m) -> (Integer) m.get(name))
+                                                                             .addCheckFunction(IntegerParamChecks.valueGreaterThan(5))
+                                                                             .build();
+
+        ApiObjParam<Map<String, Object>, Map<String, Object>> objParam =
+            ApiObjParamBuilder.rootObjBuilder((String dontCare, Map<String, Object> map) -> map)
+                              .addOptionalParams(nullParam, notNullParam)
+                              .build();
+
+        Map<String, Object> requestParameters = new HashMap<>(0);
+
+        ApiObjParamCheck check = objParam.check(requestParameters);
+        assertTrue(check.providedParamNames.size() == 0);
+        assertTrue(check.successful());
+
+        Map<String, Object> requestParamsWithNullSetToValue = new HashMap<>(1);
+        requestParamsWithNullSetToValue.put(fineNullParamName, "hey");
+
+        ApiObjParamCheck check2 = objParam.check(requestParamsWithNullSetToValue);
+        assertTrue(check2.successful());
+        assertTrue(check2.providedParamNames.contains(fineNullParamName));
+        assertTrue(check2.providedParamNames.size() == 1);
+
+        Map<String, Object> requestParamsWithNullSetToNull = new HashMap<>(1);
+        requestParamsWithNullSetToNull.put(fineNullParamName, null);
+        requestParamsWithNullSetToNull.put(notNullParamName, 55);
+
+        ApiObjParamCheck check3 = objParam.check(requestParamsWithNullSetToNull);
+        assertTrue(check3.successful());
+        assertTrue(check3.providedParamNames.size() == 2);
+        assertTrue(check3.providedParamNames.contains(fineNullParamName));
+        assertTrue(check3.providedParamNames.contains(notNullParamName));
+
     }
 
 }
