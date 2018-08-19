@@ -264,6 +264,19 @@ public class StringParamChecks {
                 CheckFuncResult.success();
     }
 
+    public static CheckFunc<String> doesNotEqualStringInListIgnoreCase(List<String> notEqualList) {
+        return s -> {
+            s = s.toLowerCase();
+            for (String notEqualString : notEqualList) {
+                if (notEqualString.toLowerCase().equals(s)) {
+                    return CheckFuncResult
+                        .failure("Cannot equal one of the following strings: " + notEqualList.stream().collect(Collectors.joining(",")));
+                }
+            }
+            return CheckFuncResult.success();
+        };
+    }
+
     /**
      * Only permits unreserved URL characters in the string (i.e., a-z, 0-9, '-', '.', '_', '~')
      * @return successful if the string only contains unreserved URL characters. otherwise it fails

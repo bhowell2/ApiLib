@@ -425,6 +425,44 @@ public class StringParamChecksTests {
     }
 
     @Test
+    public void testDoesNotEqualStringInListIgnoreCase() {
+        CheckFunc<String> checkFunc = doesNotEqualStringInListIgnoreCase(Arrays.asList("a", "beE", "GROUP"));
+
+        // passing
+        CheckFuncResult check1 = checkFunc.check("aa");
+        assertTrue(check1.successful);
+        CheckFuncResult check2 = checkFunc.check("Beee");
+        assertTrue(check2.successful);
+        CheckFuncResult check3 = checkFunc.check("AA");
+        assertTrue(check3.successful);
+        CheckFuncResult check4 = checkFunc.check("groups");
+        assertTrue(check4.successful);
+        CheckFuncResult check5 = checkFunc.check("grou");
+        assertTrue(check5.successful);
+        CheckFuncResult check6 = checkFunc.check("test");
+        assertTrue(check6.successful);
+        CheckFuncResult check7 = checkFunc.check("WHATEVER");
+        assertTrue(check7.successful);
+
+        // failing
+        CheckFuncResult failingCheck1 = checkFunc.check("A");
+        assertTrue(failingCheck1.failed());
+        CheckFuncResult failingCheck2 = checkFunc.check("a");
+        assertTrue(failingCheck2.failed());
+        CheckFuncResult failingCheck3 = checkFunc.check("BEE");
+        assertTrue(failingCheck3.failed());
+        CheckFuncResult failingCheck4 = checkFunc.check("bEe");
+        assertTrue(failingCheck4.failed());
+        CheckFuncResult failingCheck5 = checkFunc.check("group");
+        assertTrue(failingCheck5.failed());
+        CheckFuncResult failingCheck6 = checkFunc.check("GROUP");
+        assertTrue(failingCheck6.failed());
+        CheckFuncResult failingCheck7 = checkFunc.check("gRoUp");
+        assertTrue(failingCheck7.failed());
+
+    }
+
+    @Test
     public void testDoesNotEqualStringInSet() {
         CheckFunc<String> checkFunc = doesNotEqualStringInSet(new HashSet<>(Arrays.asList("autocomplete", "search")));
 
