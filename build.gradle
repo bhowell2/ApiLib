@@ -4,17 +4,17 @@ buildscript {
         // The following is only necessary if you want to use SNAPSHOT releases.
         // maven { url 'https://oss.sonatype.org/content/repositories/snapshots' }
     }
-    dependencies {
-        classpath 'org.junit.platform:junit-platform-gradle-plugin:1.1.0'
-    }
 }
 
 plugins {
-    id "java"
-    id "maven"
+    id 'java'
+    id 'maven-publish'
+    id 'signing'
 }
 
-apply plugin: 'org.junit.platform.gradle.plugin'
+version = '0.1.0'
+
+//apply plugin: 'org.junit.platform.gradle.plugin'
 
 repositories {
     mavenLocal()
@@ -22,28 +22,130 @@ repositories {
 }
 
 dependencies {
-    testCompile 'org.junit.jupiter:junit-jupiter-engine:5.1.0'
+    testImplementation 'org.junit.jupiter:junit-jupiter-api:5.3.2'
+    testRuntime 'org.junit.jupiter:junit-jupiter-engine:5.3.2'
 }
 
-// use 'gradle install' to install to local maven repo
-install {
-    repositories.mavenInstaller {
-        pom.groupId = 'io.bhowell2'
-        pom.artifactId = 'api-lib'
-        pom.version = '0.3.0'
+test {
+    useJUnitPlatform()
+}
+
+task sourcesJar(type: Jar) {
+    from sourceSets.main.allJava
+    classifier = 'sources'
+}
+
+task javadocJar(type: Jar) {
+    from javadoc.destinationDir
+    classifier = 'javadoc'
+}
+
+artifacts {
+    archives jar
+    archives sourcesJar
+    archives javadocJar
+}
+
+signing {
+    sign configurations.archives
+}
+
+publishing {
+    publications {
+        mavenJava(MavenPublication) {
+            
+            pom {
+                name = 'ApiLib'
+                description = 'Library to facilitate API development on the JVM.'
+                url = 'https://github.com/bhowell2/ApiLib'
+                licenses {
+                    license {
+                        name = 'MIT License'
+                        url = 'https://opensource.org/licenses/MIT'
+                    }
+                }
+
+                developers {
+                    developer {
+                        id = 'bhowell2'
+                        name = 'bhowell2'
+                    }
+                }
+                scm {
+                    url = 'https://github.com/bhowell2/ApiLib'
+                    connection = 'scm:git:git@github.com:bhowell2/ApiLib.git'
+                    developerConnection = 'scm:git:ssh://github.com:bhowell2/ApiLib.git'
+                }
+            }
+
+            // remove test dependencies if they are included (they aren't in gradle 5.0 as far as i can tell..)
+            pom.withXml {
+                def root = asNode()
+                root.dependencies.removeAll {
+                    it.scope == "test"
+                }
+            }
+
+            pom.withXml {
+                def pomFile = file("${project.buildDir}/generated-pom.xml")
+                writeTo(pomFile)
+                def pomAscFile = signing.sign(pomFile).signatureFiles[0]
+                artifact(pomAscFile) {
+                    classifier = null
+                    extension = 'pom.asc'
+                }
+            }
+
+            groupId  'io.github.bhowell2'
+            artifactId  'api-lib'
+            // version defined above
+
+            from components.java
+
+            artifact sourcesJar
+            artifact javadocJar
+
+            project.tasks.signArchives.signatureFiles.each {
+                artifact(it) {
+                    def matcher = it.file =~ /-(sources|javadoc)\.jar\.asc$/
+                    if (matcher.find()) {
+                        classifier = matcher.group(1)
+                    } else {
+                        classifier = null
+                    }
+                    extension = 'jar.asc'
+                }
+            }
+
+        }
+    }
+    repositories {
+        maven {
+            def releaseRepoUrl = "https://oss.sonatype.org/service/local/staging/deploy/maven2"
+            def snapshotsRepoUrl = "https://oss.sonatype.org/content/repositories/snapshots"
+            url = version.endsWith("SNAPSHOT") ? snapshotsRepoUrl : releaseRepoUrl
+            credentials {
+                username sonatypeUsername
+                password sonatypePassword
+            }
+        }
     }
 }
 
-//uploadArchives {
-//    repositories {
-//        mavenDeployer {
-//            pom.version = '1.0'
-//            pom.artifactId = 'api-lib'
-//            pom.groupId = 'io.bhowell2'
-//        }
-//    }
-//}
 
-task wrapper(type: Wrapper) {
-    gradleVersion = '4.6'
+model {
+    tasks.generatePomFileForMavenJavaPublication {
+        destination = file("$buildDir/generated-pom.xml")
+    }
+    tasks.publishMavenJavaPublicationToMavenLocal {
+        dependsOn project.tasks.signArchives
+    }
+    tasks.publishMavenJavaPublicationToMavenRepository {
+        dependsOn project.tasks.signArchives
+    }
+}
+
+
+wrapper {
+    gradleVersion = '5.0'
 }
