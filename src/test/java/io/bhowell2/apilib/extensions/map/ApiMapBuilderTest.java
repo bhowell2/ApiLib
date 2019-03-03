@@ -1,7 +1,7 @@
 package io.bhowell2.apilib.extensions.map;
 
 
-import io.bhowell2.apilib.utils.ParamChecks;
+import io.bhowell2.apilib.utils.paramchecks.AnyParamChecks;
 import org.junit.jupiter.api.Test;
 
 /**
@@ -12,7 +12,7 @@ public class ApiMapBuilderTest {
     @Test
     public void testBuildMapParam() {
         ApiMapParamBuilder.builder("test", String.class)
-                          .addCheckFunction(ParamChecks.alwaysPass())
+                          .addCheckFunction(AnyParamChecks.alwaysPass())
                           .build();
     }
 

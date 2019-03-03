@@ -6,6 +6,6 @@ package io.bhowell2.apilib;
 @FunctionalInterface
 public interface CheckFunc<T> {
 
-    CheckFuncResult check(T param);
+	CheckFuncResult check(T param);
 
 }

@@ -1,8 +1,8 @@
 package io.bhowell2.apilib;
 
 import io.bhowell2.apilib.extensions.map.utils.ApiMapParamRetrievalFuncs;
-import io.bhowell2.apilib.utils.IntegerParamChecks;
-import io.bhowell2.apilib.utils.StringParamChecks;
+import io.bhowell2.apilib.utils.paramchecks.IntegerParamChecks;
+import io.bhowell2.apilib.utils.paramchecks.StringParamChecks;
 
 import java.util.Arrays;
 import java.util.HashSet;

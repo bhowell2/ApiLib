@@ -1,9 +1,9 @@
 package io.bhowell2.apilib;
 
 import io.bhowell2.apilib.extensions.map.utils.ApiMapParamRetrievalFuncs;
-import io.bhowell2.apilib.utils.IntegerParamChecks;
-import io.bhowell2.apilib.utils.ParamChecks;
-import io.bhowell2.apilib.utils.StringParamChecks;
+import io.bhowell2.apilib.utils.paramchecks.IntegerParamChecks;
+import io.bhowell2.apilib.utils.paramchecks.AnyParamChecks;
+import io.bhowell2.apilib.utils.paramchecks.StringParamChecks;
 import org.junit.jupiter.api.Test;
 
 import java.util.ArrayList;
@@ -74,7 +74,7 @@ public class ApiCustomParameterTests {
 
         ApiParam<String, Map<String, Object>> param1 = ApiParamBuilder.builder(param1Name,
                                                                                (String name, Map<String, Object> map) -> (String) map.get(name))
-                                                                      .addCheckFunction(ParamChecks.alwaysPass())
+                                                                      .addCheckFunction(AnyParamChecks.alwaysPass())
                                                                       .build();
 
         ApiParam<String, Map<String, Object>> param2 = ApiParamBuilder.builder(param2Name,

@@ -2,6 +2,7 @@ package io.bhowell2.apilib.utils;
 
 import io.bhowell2.apilib.CheckFunc;
 import io.bhowell2.apilib.CheckFuncResult;
+import io.bhowell2.apilib.utils.paramchecks.StringParamChecks;
 import org.junit.jupiter.api.Test;
 
 import java.util.Arrays;
@@ -9,7 +10,7 @@ import java.util.HashSet;
 import java.util.Set;
 import java.util.regex.Pattern;
 
-import static io.bhowell2.apilib.utils.StringParamChecks.*;
+import static io.bhowell2.apilib.utils.paramchecks.StringParamChecks.*;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 

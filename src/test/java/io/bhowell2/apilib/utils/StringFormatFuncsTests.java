@@ -1,6 +1,7 @@
 package io.bhowell2.apilib.utils;
 
 
+import io.bhowell2.apilib.utils.formatfuncs.StringFormatFuncs;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -11,7 +12,7 @@ import static org.junit.jupiter.api.Assertions.*;
 public class StringFormatFuncsTests {
 
     @Test
-    public void shouldRemoveLeadingAndTrailingWhiteSpace() {
+    public void shouldRemoveLeadingAndTrailingWhiteSpace() throws Exception {
         String preTrim = "  he y   ";    // 2 leading spaces, 3 trailing
         int preLength = preTrim.length();
         String postTrim = StringFormatFuncs.TRIM.format(preTrim);
@@ -23,14 +24,14 @@ public class StringFormatFuncsTests {
     }
 
     @Test
-    public void shouldOnlyRemoveTrailingWhiteSpace() {
+    public void shouldOnlyRemoveTrailingWhiteSpace() throws Exception {
         String preTrimTrailing = "\nh e y \t\t\n";
         String postTrimTrailing = StringFormatFuncs.REMOVE_TRAILING_WHITESPACE.format(preTrimTrailing);
         assertEquals(6, postTrimTrailing.length());
     }
 
     @Test
-    public void shouldReplaceMatchingString() {
+    public void shouldReplaceMatchingString() throws Exception {
         String preReplace = "this is not the correct string";
         String expectedString = "this is the correct string";
         // note we're replacing 'not' AND the space before it
@@ -40,7 +41,7 @@ public class StringFormatFuncsTests {
 
 
     @Test
-    public void shouldUpperCaseString() {
+    public void shouldUpperCaseString() throws Exception {
         String somelower = "loWERcase";
         String uppered = StringFormatFuncs.TO_UPPER_CASE.format(somelower);
         assertEquals("LOWERCASE", uppered);

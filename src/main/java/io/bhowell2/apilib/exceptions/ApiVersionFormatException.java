@@ -5,8 +5,8 @@ package io.bhowell2.apilib.exceptions;
  */
 public class ApiVersionFormatException extends IllegalArgumentException {
 
-  public ApiVersionFormatException(String errorMessage) {
-    super(errorMessage);
-  }
+	public ApiVersionFormatException(String errorMessage) {
+		super(errorMessage);
+	}
 
 }

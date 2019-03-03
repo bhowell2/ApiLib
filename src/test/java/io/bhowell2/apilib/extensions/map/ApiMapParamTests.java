@@ -3,9 +3,9 @@ package io.bhowell2.apilib.extensions.map;
 import io.bhowell2.apilib.ApiParamCheck;
 import io.bhowell2.apilib.CheckFunc;
 import io.bhowell2.apilib.extensions.map.utils.ApiMapFormatInsertFuncs;
-import io.bhowell2.apilib.utils.IntegerParamChecks;
-import io.bhowell2.apilib.utils.ParamChecks;
-import io.bhowell2.apilib.utils.StringFormatFuncs;
+import io.bhowell2.apilib.utils.paramchecks.IntegerParamChecks;
+import io.bhowell2.apilib.utils.paramchecks.AnyParamChecks;
+import io.bhowell2.apilib.utils.formatfuncs.StringFormatFuncs;
 import org.junit.jupiter.api.Test;
 
 import java.util.HashMap;
@@ -62,7 +62,7 @@ public class ApiMapParamTests {
                                                                .addFormatFunction(StringFormatFuncs.TRIM)
                                                                .addFormatInsertionFunction(ApiMapFormatInsertFuncs.getFormatInsertFuncForType
                                                                    (String.class))
-                                                               .addCheckFunction(ParamChecks.alwaysPass())
+                                                               .addCheckFunction(AnyParamChecks.alwaysPass())
                                                                .build();
 
         Map<String, Object> requestParams = new HashMap<>(1);

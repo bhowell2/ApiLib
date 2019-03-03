@@ -4,7 +4,7 @@ import io.bhowell2.apilib.CheckFunc;
 import io.bhowell2.apilib.CheckFuncResult;
 import org.junit.jupiter.api.Test;
 
-import static io.bhowell2.apilib.utils.IntegerParamChecks.*;
+import static io.bhowell2.apilib.utils.paramchecks.IntegerParamChecks.*;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 

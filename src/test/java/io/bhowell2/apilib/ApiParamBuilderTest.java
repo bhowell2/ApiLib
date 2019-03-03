@@ -40,7 +40,7 @@ public class ApiParamBuilderTest {
         }, "Should fail to build because no ParamChecks were provided.");
         assertThrows(RuntimeException.class, () -> {
             ApiParam<String, Object> param = ApiParamBuilder.builder("test", (n, o) -> n)
-                                                            .addFormatFunction(s -> s.replace("a", "b"))
+                                                            .addFormatFunction(s -> ((String)s).replace("a", "b"))
                                                             .build();
         }, "Should fail to build because a format function was provided, but no injection function was provided.");
     }
