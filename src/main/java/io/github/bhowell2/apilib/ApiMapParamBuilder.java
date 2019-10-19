@@ -11,7 +11,7 @@ import java.util.Map;
 /**
  * @author Blake Howell
  */
-public class ApiMapParamBuilder {
+public class ApiMapParamBuilder extends ApiParamBuilderBase<ApiMapParamBuilder> {
 
 	public static ApiMapParamBuilder rootBuilder() {
 		return new ApiMapParamBuilder();
@@ -31,16 +31,15 @@ public class ApiMapParamBuilder {
 
 	private ApiMapParam copyFrom;
 
-	private String keyName, displayName, invalidErrorMessage;
 	// default to false, avoids potential problems for user down the line
 	private boolean canBeNull = false, continueOnOptionalFailure = false;
 	// using maps to easily keep track of already added params (by key name)
 	private Map<String, ApiSingleParam<?>> requiredSingleParams, optionalSingleParams;
 	private Map<String, ApiMapParam> requiredMapParams, optionalMapParams;
-	private Map<String, ApiArrayOfMapsParam> requiredArrayOfMapsParams, optionalArrayOfMapsParams;
+	private Map<String, ApiArrayOrListParamBase> requiredArrayParams, optionalArrayParams;
 
 	// custom parameters and conditional checks do not have names
-	private List<ApiCustomParam> requiredCustomParams, optionalCustomParams;
+	private List<ApiCustomParam<Map<String, Object>, ?>> requiredCustomParams, optionalCustomParams;
 	private List<ConditionalCheck> conditionalChecks;
 
 	public ApiMapParamBuilder() {
@@ -48,14 +47,13 @@ public class ApiMapParamBuilder {
 	}
 
 	public ApiMapParamBuilder(String keyName, String displayName) {
-		this.keyName = keyName;
-		this.displayName = displayName;
+		super(keyName, displayName);
 		this.requiredSingleParams = new HashMap<>();
 		this.optionalSingleParams = new HashMap<>();
 		this.requiredMapParams = new HashMap<>();
 		this.optionalMapParams = new HashMap<>();
-		this.requiredArrayOfMapsParams = new HashMap<>();
-		this.optionalArrayOfMapsParams = new HashMap<>();
+		this.requiredArrayParams = new HashMap<>();
+		this.optionalArrayParams = new HashMap<>();
 		this.requiredCustomParams = new ArrayList<>();
 		this.optionalCustomParams = new ArrayList<>();
 		this.conditionalChecks = new ArrayList<>();
@@ -85,188 +83,111 @@ public class ApiMapParamBuilder {
 		this.conditionalChecks = new ArrayList<>(Arrays.asList(copyFrom.conditionalChecks));
 	}
 
-	public ApiMapParamBuilder setCanBeNull(boolean canBeNull) {
-		this.canBeNull = canBeNull;
-	  return this;
-	}
-
 	public ApiMapParamBuilder setContinueOnOptionalFailure(boolean continueOnOptionalFailure) {
 		this.continueOnOptionalFailure = continueOnOptionalFailure;
 		return this;
 	}
 
-	/**
-	 * Allows for providing an error message that will override any message returned by
-	 * child parameters. This is not usually recommended, but is available if the user
-	 * deems it necessary.
-	 * @param errMsg
-	 * @return
-	 */
-	public ApiMapParamBuilder setInvalidErrorMessage(String errMsg) {
-		this.invalidErrorMessage = errMsg;
-		return this;
-	}
-
-	private void checkIsNotNullAndHasNotBeenAdded(ApiParamBase<?> param) {
+	// checks that the parameter by the given name has not been added to
+	private void checkHasNotBeenAdded(ApiParamBase<?, ?> param) {
+		// redundancy check since checkVarArgs... is used everywhere
 		if (param == null) {
 			throw new IllegalArgumentException("Cannot add null parameter.");
 		}
-		if (param instanceof ApiSingleParam) {
-			if (this.requiredSingleParams.containsKey(param.keyName)) {
-				throw new IllegalArgumentException("ApiSingleParam (" + param.keyName +
-					                                   ") has already been added to required single params.");
-			} else if (this.optionalSingleParams.containsKey(param.keyName)) {
-				throw new IllegalArgumentException("ApiSingleParam (" + param.keyName +
-					                                   ") has already been added to optional single params.");
-			}
-		} else if (param instanceof ApiArrayOfMapsParam) {
-			if (this.requiredArrayOfMapsParams.containsKey(param.keyName)) {
-				throw new IllegalArgumentException("ApiCustomParam (" + param.keyName +
-					                                   ") has already been added to required custom params.");
-			} else if (this.optionalArrayOfMapsParams.containsKey(param.keyName)) {
-				throw new IllegalArgumentException("ApiCustomParam (" + param.keyName +
-					                                   ") has already been added to optional custom params.");
-			}
-		} else if (param instanceof ApiMapParam) {
-			if (this.requiredMapParams.containsKey(param.keyName)) {
-				throw new IllegalArgumentException("ApiMapParam (" + param.keyName +
-					                                   ") has already been added to required map params");
-			} else if (this.optionalMapParams.containsKey(param.keyName)) {
-				throw new IllegalArgumentException("ApiMapParam (" + param.keyName +
-					                                   ") has already been added to optional map params");
-			}
-		} else {
-			throw new RuntimeException("Unknown parameter type.");
+		String keyName = param.keyName;
+		if (keyName == null) {
+			throw new IllegalArgumentException("Cannot add parameter with null key name to ApiMapParam");
 		}
-	}
-
-	public ApiMapParamBuilder addRequiredSingleParam(ApiSingleParam<?> param) {
-		checkIsNotNullAndHasNotBeenAdded(param);
-		this.requiredSingleParams.put(param.keyName, param);
-		return this;
+		if (this.requiredSingleParams.containsKey(keyName)) {
+			throw new IllegalArgumentException(keyName + " has already been added to required single params.");
+		} else if (this.optionalSingleParams.containsKey(keyName)) {
+			throw new IllegalArgumentException(keyName + " has already been added to optional single params.");
+		} else if (this.requiredArrayParams.containsKey(keyName)) {
+			throw new IllegalArgumentException(keyName + " has already been added to required array params.");
+		} else if (this.optionalArrayParams.containsKey(keyName)) {
+			throw new IllegalArgumentException(keyName + " has already been added to optional array params.");
+		} else if (this.requiredMapParams.containsKey(keyName)) {
+			throw new IllegalArgumentException(keyName + " has already been added to required map params.");
+		} else if (this.optionalMapParams.containsKey(keyName)) {
+			throw new IllegalArgumentException(keyName + " has already been added to optional map params.");
+		}
 	}
 
 	public ApiMapParamBuilder addRequiredSingleParams(ApiSingleParam<?>... params) {
+		checkVarArgsNotNullAndValuesNotNull(params);
 		for (ApiSingleParam p : params) {
-			this.addRequiredSingleParam(p);
+			checkHasNotBeenAdded(p);
+			this.requiredSingleParams.put(p.keyName, p);
 		}
-		return this;
-	}
-
-	public ApiMapParamBuilder addOptionalSingleParam(ApiSingleParam<?> param) {
-		checkIsNotNullAndHasNotBeenAdded(param);
-		this.optionalSingleParams.put(param.keyName, param);
 		return this;
 	}
 
 	public ApiMapParamBuilder addOptionalSingleParams(ApiSingleParam<?>... params) {
+		checkVarArgsNotNullAndValuesNotNull(params);
 		for (ApiSingleParam p : params) {
-			this.addOptionalSingleParam(p);
+			checkHasNotBeenAdded(p);
+			this.optionalSingleParams.put(p.keyName, p);
 		}
-		return this;
-	}
-
-	public ApiMapParamBuilder addRequiredMapParam(ApiMapParam param) {
-		checkIsNotNullAndHasNotBeenAdded(param);
-		this.requiredMapParams.put(param.keyName, param);
 		return this;
 	}
 
 	public ApiMapParamBuilder addRequiredMapParams(ApiMapParam... params) {
+		checkVarArgsNotNullAndValuesNotNull(params);
 		for (ApiMapParam p : params) {
-			this.addRequiredMapParam(p);
+			checkHasNotBeenAdded(p);
+			this.requiredMapParams.put(p.keyName, p);
 		}
-		return this;
-	}
-
-	public ApiMapParamBuilder addOptionalMapParam(ApiMapParam param) {
-		checkIsNotNullAndHasNotBeenAdded(param);
-		this.optionalMapParams.put(param.keyName, param);
 		return this;
 	}
 
 	public ApiMapParamBuilder addOptionalMapParams(ApiMapParam... params) {
+		checkVarArgsNotNullAndValuesNotNull(params);
 		for (ApiMapParam p : params) {
-			this.addOptionalMapParam(p);
+			checkHasNotBeenAdded(p);
+			this.optionalMapParams.put(p.keyName, p);
 		}
 		return this;
 	}
 
-	public ApiMapParamBuilder addRequiredArrayOfMapsParam(ApiArrayOfMapsParam param) {
-	  checkIsNotNullAndHasNotBeenAdded(param);
-		this.requiredArrayOfMapsParams.put(param.keyName, param);
-	  return this;
-	}
-
-	public ApiMapParamBuilder addRequiredArrayOfMapsParams(ApiArrayOfMapsParam... params) {
-		for (ApiArrayOfMapsParam param : params) {
-			this.addRequiredArrayOfMapsParam(param);
+	public ApiMapParamBuilder addRequiredArrayOfMapsParam(ApiArrayOrListParamBase... params) {
+		checkVarArgsNotNullAndValuesNotNull(params);
+		for (ApiArrayOrListParamBase p : params) {
+			checkHasNotBeenAdded(p);
+			this.requiredArrayParams.put(p.keyName, p);
 		}
 		return this;
 	}
 
-	public ApiMapParamBuilder addOptionalArrayOfMapsParam(ApiArrayOfMapsParam param) {
-	  checkIsNotNullAndHasNotBeenAdded(param);
-		this.optionalArrayOfMapsParams.put(param.keyName, param);
-	  return this;
-	}
-
-	public ApiMapParamBuilder addOptionalArrayOfMapsParams(ApiArrayOfMapsParam... params) {
-		for (ApiArrayOfMapsParam param : params) {
-			this.addOptionalArrayOfMapsParam(param);
+	public ApiMapParamBuilder addOptionalArrayOfMapsParam(ApiArrayOrListParamBase... params) {
+		checkVarArgsNotNullAndValuesNotNull(params);
+		for (ApiArrayOrListParamBase p : params) {
+			checkHasNotBeenAdded(p);
+			this.optionalArrayParams.put(p.keyName, p);
 		}
 		return this;
 	}
 
-
-	public ApiMapParamBuilder addRequiredCustomParam(ApiCustomParam param) {
-		if (param == null) {
-			throw new IllegalArgumentException("Cannot add null custom parameter");
-		}
-		this.requiredCustomParams.add(param);
+	@SafeVarargs
+	public final ApiMapParamBuilder addRequiredCustomParams(ApiCustomParam<Map<String, Object>, ?>... params) {
+		checkVarArgsNotNullAndValuesNotNull(params);
+		this.requiredCustomParams.addAll(Arrays.asList(params));
 		return this;
 	}
 
-	public ApiMapParamBuilder addRequiredCustomParams(ApiCustomParam... params) {
-		for (ApiCustomParam p : params) {
-			this.addRequiredCustomParam(p);
-		}
+	@SafeVarargs
+	public final ApiMapParamBuilder addOptionalCustomParam(ApiCustomParam<Map<String, Object>, ?>... params) {
+		checkVarArgsNotNullAndValuesNotNull(params);
+		this.optionalCustomParams.addAll(Arrays.asList(params));
 		return this;
 	}
 
-	public ApiMapParamBuilder addOptionalCustomParam(ApiCustomParam param) {
-		if (param == null) {
-			throw new IllegalArgumentException("Cannot add null custom parameter");
-		}
-		this.optionalCustomParams.add(param);
+	public ApiMapParamBuilder addConditionalChecks(ConditionalCheck... conditionalChecks) {
+		checkVarArgsNotNullAndValuesNotNull(conditionalChecks);
+		this.conditionalChecks.addAll(Arrays.asList(conditionalChecks));
 		return this;
 	}
 
-	public ApiMapParamBuilder addOptionalCustomParams(ApiCustomParam... params) {
-		for (ApiCustomParam p : params) {
-			this.addOptionalCustomParam(p);
-		}
-		return this;
-	}
-	public ApiMapParamBuilder addConditonalCheck(ConditionalCheck conditionalCheck) {
-		if (conditionalCheck == null) {
-			throw new IllegalArgumentException("Cannot add null check");
-		}
-		// because these are not named, just make sure the same check has not been added before
-		if (!this.conditionalChecks.contains(conditionalCheck)) {
-			this.conditionalChecks.add(conditionalCheck);
-		}
-		return this;
-	}
-
-	public ApiMapParamBuilder addConditonalChecks(ConditionalCheck... conditionalChecks) {
-		for (ConditionalCheck cc : conditionalChecks) {
-			this.addConditonalCheck(cc);
-		}
-		return this;
-	}
-
-	private static <T extends ApiParamBase<?>> Map<String, T> mergeCopyFromParams(T[] copyFromParams,
+	private static <T extends ApiParamBase<?, ?>> Map<String, T> mergeCopyFromParams(T[] copyFromParams,
 	                                                                              Map<String, T> builderMap) {
 		Map<String, T> copyMap = new HashMap<>();
 		for (T p : copyFromParams) {
@@ -282,35 +203,34 @@ public class ApiMapParamBuilder {
 		return copyList;
 	}
 
+	@SuppressWarnings("unchecked")
 	public ApiMapParam build() {
 		if (this.copyFrom != null) {
-			this.requiredSingleParams = mergeCopyFromParams(this.copyFrom.requiredParams, this.requiredSingleParams);
-			this.optionalSingleParams = mergeCopyFromParams(this.copyFrom.optionalParams, this.optionalSingleParams);
+			this.requiredSingleParams = mergeCopyFromParams(this.copyFrom.requiredSingleParams, this.requiredSingleParams);
+			this.optionalSingleParams = mergeCopyFromParams(this.copyFrom.optionalSingleParams, this.optionalSingleParams);
 			this.requiredMapParams = mergeCopyFromParams(this.copyFrom.requiredMapParams, this.requiredMapParams);
 			this.optionalMapParams = mergeCopyFromParams(this.copyFrom.optionalMapParams, this.optionalMapParams);
-			this.requiredArrayOfMapsParams = mergeCopyFromParams(this.copyFrom.requiredArrayOfMapsParam,
-			                                                     this.requiredArrayOfMapsParams);
-			this.optionalArrayOfMapsParams = mergeCopyFromParams(this.copyFrom.optionalArrayOfMapsParam,
-			                                                     this.optionalArrayOfMapsParams);
-
+			this.requiredArrayParams = mergeCopyFromParams(this.copyFrom.requiredArrayParams, this.requiredArrayParams);
+			this.optionalArrayParams = mergeCopyFromParams(this.copyFrom.optionalArrayParams, this.optionalArrayParams);
 			this.requiredCustomParams = mergeCopyFromList(this.copyFrom.requiredCustomParams, this.requiredCustomParams);
 			this.optionalCustomParams = mergeCopyFromList(this.copyFrom.optionalCustomParams, this.optionalCustomParams);
-			this.conditionalChecks = mergeCopyFromList(this.copyFrom.conditionalChecks,
-			                                           this.conditionalChecks);
+			this.conditionalChecks = mergeCopyFromList(this.copyFrom.conditionalChecks, this.conditionalChecks);
 		}
 		return new ApiMapParam(this.keyName,
 		                       this.displayName,
+		                       this.invalidErrorMessage,
 		                       this.canBeNull,
 		                       this.continueOnOptionalFailure,
 		                       this.requiredSingleParams.values().toArray(new ApiSingleParam[0]),
 		                       this.optionalSingleParams.values().toArray(new ApiSingleParam[0]),
 		                       this.requiredMapParams.values().toArray(new ApiMapParam[0]),
 		                       this.optionalMapParams.values().toArray(new ApiMapParam[0]),
-		                       this.requiredArrayOfMapsParams.values().toArray(new ApiArrayOfMapsParam[0]),
-		                       this.optionalArrayOfMapsParams.values().toArray(new ApiArrayOfMapsParam[0]),
+		                       this.requiredArrayParams.values().toArray(new ApiArrayOrListParamBase[0]),
+		                       this.optionalArrayParams.values().toArray(new ApiArrayOrListParamBase[0]),
 		                       this.requiredCustomParams.toArray(new ApiCustomParam[0]),
 		                       this.optionalCustomParams.toArray(new ApiCustomParam[0]),
 		                       this.conditionalChecks.toArray(new ConditionalCheck[0]));
 	}
 
 }
+

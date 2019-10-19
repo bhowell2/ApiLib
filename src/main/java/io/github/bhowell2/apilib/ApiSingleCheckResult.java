@@ -9,24 +9,24 @@ import java.util.Map;
  * keyNames in {@link ApiCustomParamCheckResult}.
  * @author Blake Howell
  */
-public class ApiSingleParamCheckResult extends ApiNamedCheckResultBase {
+public class ApiSingleCheckResult extends ApiNamedCheckResultBase {
 	
-	public ApiSingleParamCheckResult(String keyName) {
+	public ApiSingleCheckResult(String keyName) {
 		super(keyName);
 	}
 
-	public ApiSingleParamCheckResult(ApiParamError apiParamError) {
+	public ApiSingleCheckResult(ApiParamError apiParamError) {
 		super(apiParamError);
 	}
 
 	/* Static creation methods */
 
-	public static ApiSingleParamCheckResult success(String keyName) {
-		return new ApiSingleParamCheckResult(keyName);
+	public static ApiSingleCheckResult success(String keyName) {
+		return new ApiSingleCheckResult(keyName);
 	}
 
-	public static ApiSingleParamCheckResult failure(ApiParamError apiParamError) {
-		return new ApiSingleParamCheckResult(apiParamError);
+	public static ApiSingleCheckResult failure(ApiParamError apiParamError) {
+		return new ApiSingleCheckResult(apiParamError);
 	}
 	
 }

@@ -1,13 +1,13 @@
 package io.github.bhowell2.apilib;
 
-import java.util.Map;
-
 /**
- * Basic structure for all parameters in this library.
+ *
+ * @param <In> the input parameter type that (usually the check will retrieve something from this parameter)
+ * @param <Result> the return type
  * @author Blake Howell
  */
 @FunctionalInterface
-public interface ApiParam<Result extends ApiCheckResultBase> {
+public interface ApiParam<In, Result> {
 
 	/**
 	 * Retrieves the parameter to be checked from the supplied Map and returns
@@ -23,6 +23,6 @@ public interface ApiParam<Result extends ApiCheckResultBase> {
 	 *               supplied map itself.
 	 * @return the result of the check operation
 	 */
-	Result check(Map<String, Object> params);
+	Result check(In params);
 
 }

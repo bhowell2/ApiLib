@@ -16,8 +16,8 @@ import java.util.Set;
 public class ApiCustomParamCheckResult extends ApiCheckResultBase {
 
 	public final Set<String> providedParamKeyNames;
-	public final Map<String, ApiMapParamCheckResult> providedMapParams; // name and result of successfully checked Maps
-	public final Map<String, List<ApiMapParamCheckResult>> providedArrayOfMapParams;       // for Maps that are the indices of arrays
+	public final Map<String, ApiMapCheckResult> providedMapParams; // name and result of successfully checked Maps
+	public final Map<String, List<ApiMapCheckResult>> providedArrayOfMapParams;       // for Maps that are the indices of arrays
 	public final ApiParamError apiParamError;
 
 	/**
@@ -28,8 +28,8 @@ public class ApiCustomParamCheckResult extends ApiCheckResultBase {
 	 * @param providedArrayOfMapParams if an array is being checked and each index of the array contains a Map/JsonObject
 	 */
 	public ApiCustomParamCheckResult(Set<String> providedParamKeyNames,
-	                                 Map<String, ApiMapParamCheckResult> providedMapParams,
-	                                 Map<String, List<ApiMapParamCheckResult>> providedArrayOfMapParams) {
+	                                 Map<String, ApiMapCheckResult> providedMapParams,
+	                                 Map<String, List<ApiMapCheckResult>> providedArrayOfMapParams) {
 		super((String) null);
 		/*
 		 * Setting these to empty sets/lists to avoid user accidentally getting null pointers when attempting to access
@@ -62,7 +62,7 @@ public class ApiCustomParamCheckResult extends ApiCheckResultBase {
 	 * @param objName
 	 * @return the ApiObjParamCheck or null
 	 */
-	public ApiMapParamCheckResult getMapParamCheck(String objName) {
+	public ApiMapCheckResult getMapParamCheck(String objName) {
 		return this.providedMapParams.get(objName);
 	}
 
@@ -89,17 +89,17 @@ public class ApiCustomParamCheckResult extends ApiCheckResultBase {
 		return success(providedParamNames, null, null);
 	}
 
-	public static ApiCustomParamCheckResult successForMaps(Map<String, ApiMapParamCheckResult> providedMapParams) {
+	public static ApiCustomParamCheckResult successForMaps(Map<String, ApiMapCheckResult> providedMapParams) {
 		return success(null, providedMapParams, null);
 	}
 
-	public static ApiCustomParamCheckResult successForArraysOfMaps(Map<String, List<ApiMapParamCheckResult>> providedArrayOfMapsParams) {
+	public static ApiCustomParamCheckResult successForArraysOfMaps(Map<String, List<ApiMapCheckResult>> providedArrayOfMapsParams) {
 		return success(null, null, providedArrayOfMapsParams);
 	}
 
 	public static ApiCustomParamCheckResult success(Set<String> providedParamNames,
-	                                                Map<String, ApiMapParamCheckResult> providedMapParams,
-	                                                Map<String, List<ApiMapParamCheckResult>> providedArrayOfMapsParams) {
+	                                                Map<String, ApiMapCheckResult> providedMapParams,
+	                                                Map<String, List<ApiMapCheckResult>> providedArrayOfMapsParams) {
 		return new ApiCustomParamCheckResult(providedParamNames, providedMapParams, providedArrayOfMapsParams);
 	}
 

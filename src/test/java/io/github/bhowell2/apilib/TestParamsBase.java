@@ -38,13 +38,13 @@ public abstract class TestParamsBase {
 
 	public static final ApiSingleParam<String> USERNAME_PARAM =
 		ApiSingleParamBuilder.builder(USERNAME_KEY, String.class)
-		                     .addCheck(StringChecks.doesNotBeginWithCodePoints("abc"))
-		                     .addCheck(StringChecks.lengthGreaterThan(3))
+		                     .addChecks(StringChecks.doesNotBeginWithCodePoints("abc"))
+		                     .addChecks(StringChecks.lengthGreaterThan(3))
 		                     .build();
 
 	public static final ApiSingleParam<String> EMAIL_PARAM =
 		ApiSingleParamBuilder.builder(EMAIL_KEY, String.class)
-		                     .addCheck(StringChecks.MATCHES_BASIC_EMAIL_PATTERN)
+		                     .addChecks(StringChecks.MATCHES_BASIC_EMAIL_PATTERN)
 		                     .build();
 
 	public static final ApiSingleParam<String> PASSWORD_PARAM =
