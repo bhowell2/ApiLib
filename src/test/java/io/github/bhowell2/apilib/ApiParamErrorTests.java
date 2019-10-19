@@ -2,6 +2,9 @@ package io.github.bhowell2.apilib;
 
 import org.junit.jupiter.api.Test;
 
+import java.util.Arrays;
+import java.util.Map;
+
 import static org.junit.jupiter.api.Assertions.*;
 
 /**
@@ -10,7 +13,7 @@ import static org.junit.jupiter.api.Assertions.*;
 public class ApiParamErrorTests {
 
 	@Test
-	public void shouldGenerateCorrectErrorMessageWithoutChildError() throws Exception {
+	public void shouldGenerateApiParamErrorWithoutChildError() throws Exception {
 		String errMsg = "Something is not right!";
 		String keyName = "key_1";
 		String displayName = "Key 1";
@@ -23,30 +26,12 @@ public class ApiParamErrorTests {
 		assertEquals(errMsg, apiParamError.errorMessage);
 		assertEquals(keyName, apiParamError.keyName);
 		assertEquals(displayName, apiParamError.displayName);
-		assertFalse(apiParamError.isNestedError());
+		assertFalse(apiParamError.hasChildError());
 	}
 
-	// helper
-	private String generateOrder(int count, boolean reversed, String name, String delimiter) {
-		StringBuilder builder = new StringBuilder();
-		if (reversed) {
-			builder.append(name);
-			for (int i = 0; i < count; i++) {
-				builder.append(delimiter)
-				       .append(i);
-			}
-		} else {
-			for (int i = count - 1; i >= 0; i--) {
-				builder.append(i)
-				.append(delimiter);
-			}
-			builder.append(name);
-		}
-		return builder.toString();
-	}
-
+	@SuppressWarnings("unchecked")
 	@Test
-	public void shouldGenerateCorrectErrorMessageWithChild() throws Exception {
+	public void shouldGenerateApiParamErrorForChildError() throws Exception {
 		String errMsg = "Something is not right!";
 		String keyName = "key";
 		String displayName = "Key";
@@ -54,21 +39,46 @@ public class ApiParamErrorTests {
 		                                                displayName,
 		                                                ApiErrorType.INVALID_PARAMETER,
 		                                                errMsg);
-		int count = 5;
+		int depth = 4;
 		/*
 		* Emulates what would be created if there were 5 nested map/jsonobjects where the error occurred
-		* make apiParamError 5 children deep. Note, the outermost key is 4. The innermost PARENT (not
-		* the innermost child) key is 0. The innermost child (where the error occurred) key is "key".
+		* making ApiParamError 5 children deep. Note, the first position in the array is the outermost
+		* depth ("0") and the last position in the array is the innermost depth ("4"). The innermost
+		* child where the error occurred is "key".
 		* */
-		for (int i = 0; i < count; i++) {
-			apiParamError.addParentKeyAndDisplayNames("" + i , "" + i);
+		for (int i = depth; i >= 0; i--) {
+			apiParamError = new ApiParamError("" + i,
+			                                  "" + i,
+			                                  apiParamError.errorType,
+			                                  apiParamError.errorMessage,
+			                                  apiParamError.exception,
+			                                  apiParamError);
 		}
-		assertEquals(5, apiParamError.getParentKeyNames().size());
-		assertEquals(5, apiParamError.getParentDisplayNames().size());
-		for (int i = 0; i < count; i++) {
-			assertEquals(Integer.toString(i), apiParamError.getParentKeyNames().get(i));
-			assertEquals(Integer.toString(i), apiParamError.getParentDisplayNames().get(i));
+
+		Map<String, Object> errorAsMap = apiParamError.toMap();
+		int mapDepthCounter = 0;
+		while (errorAsMap.get(ApiLibSettings.ErrorMessageParamNames.CHILD_ERROR) != null) {
+			assertEquals("" + mapDepthCounter, errorAsMap.get(ApiLibSettings.ErrorMessageParamNames.KEY_NAME));
+			errorAsMap = (Map<String, Object>) errorAsMap.get(ApiLibSettings.ErrorMessageParamNames.CHILD_ERROR);
+			mapDepthCounter++;
 		}
+
+		assertEquals(keyName, errorAsMap.get(ApiLibSettings.ErrorMessageParamNames.KEY_NAME));
+		assertEquals(5, mapDepthCounter); // depth is 6, but starts at 0 so goes counter goes to 5...
+
+		for (int i = 0; i <= depth; i++) {
+			assertTrue(apiParamError.hasChildError());
+			assertEquals("" + i, apiParamError.keyName);
+			assertEquals("" + i, apiParamError.displayName);
+			assertEquals(errMsg, apiParamError.errorMessage);
+			// all should have same error type
+			assertEquals(ApiErrorType.INVALID_PARAMETER, apiParamError.errorType);
+			apiParamError = apiParamError.childParamError;
+		}
+		assertFalse(apiParamError.hasChildError());
+		assertEquals(keyName, apiParamError.keyName);
+		assertEquals(displayName, apiParamError.displayName);
+
 	}
 
 }

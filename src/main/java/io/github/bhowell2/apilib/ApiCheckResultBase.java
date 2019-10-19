@@ -16,30 +16,33 @@ public abstract class ApiCheckResultBase {
 	* For ApiMapParams the keyName is the name of the map if it is a nested map, otherwise it
 	* is the root_key_name.
 	* */
+	/**
+	 * The key name may be null.
+	 */
 	public final String keyName;
-	public final ApiParamError apiParamError;
+	public final ApiParamError error;
 
 	protected ApiCheckResultBase(String keyName) {
 		this.keyName = keyName;
-		this.apiParamError = null;
+		this.error = null;
 	}
 
-	protected ApiCheckResultBase(ApiParamError apiParamError) {
+	protected ApiCheckResultBase(ApiParamError error) {
 		// must enforce this for successful and failed methods below to return correctly
-		if (apiParamError == null) {
+		if (error == null) {
 			throw new IllegalArgumentException("Cannot create failed check result with null.");
 		}
-		this.apiParamError = apiParamError;
+		this.error = error;
 		// keyName should be obtained in the ApiParamError
 		this.keyName = null;
 	}
 
 	public boolean failed() {
-		return apiParamError != null;
+		return error != null;
 	}
 
 	public boolean successful() {
-		return apiParamError == null;
+		return error == null;
 	}
 
 	/**
@@ -47,15 +50,25 @@ public abstract class ApiCheckResultBase {
 	 *
 	 * @return ErrorTuple containing the parameter name, error message, and error type.
 	 */
-	public ApiParamError getApiParamError() {
-		return apiParamError;
+	public ApiParamError getError() {
+		return error;
 	}
 
+	/**
+	 * @return whether or not the key name has been set (is not null) for this check result
+	 */
+	public boolean hasKeyName() {
+		return this.keyName != null;
+	}
 
 	/**
-	 * In the case of success a keyName is only guaranteed if this extends
-	 * {@link ApiNamedCheckResultBase}
-	 * @return name of successfully checked parameter
+	 * Returns the key name for this check result. The top level
+	 * {@link ApiMapCheckResult} will not have a key name (is null)
+	 * as the top level {@link ApiMapParam} does not have a name.
+	 * Can use {@link #hasKeyName()} to ensure this will not be null
+	 * if desired.
+	 *
+	 * @return name of successfully checked parameter - may be null
 	 */
 	public String getKeyName() {
 		return keyName;

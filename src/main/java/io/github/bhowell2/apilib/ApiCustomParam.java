@@ -9,9 +9,11 @@ package io.github.bhowell2.apilib;
  * the parameter in which the error occurred will be considered the calling
  * ApiMapParam.
  *
+ * @param <In> the object input type to {@link #check(Object)}
+ * @param <T> the optional custom value to return in the check result
  * @author Blake Howell
  */
 @FunctionalInterface
-public interface ApiCustomParam extends ApiParam<ApiCustomParamCheckResult> {
+public interface ApiCustomParam<In, T> extends ApiParam<In, ApiCustomCheckResult<T>> {
 
 }

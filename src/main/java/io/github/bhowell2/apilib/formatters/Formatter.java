@@ -77,6 +77,6 @@ public interface Formatter<In, Out> {
 	 * @param param the parameter to format. this will never be null.
 	 * @return
 	 */
-	Result<Out> format(In param) throws Exception;
+	Result<Out> format(In param);
 
 }

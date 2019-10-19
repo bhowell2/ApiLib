@@ -1,14 +1,11 @@
 package io.github.bhowell2.apilib.checks;
 
 
-import io.github.bhowell2.apilib.ApiCustomParamCheckResult;
 import io.github.bhowell2.apilib.ApiLibSettings;
-import io.github.bhowell2.apilib.ApiMapParamCheckResult;
+import io.github.bhowell2.apilib.ApiMapCheckResult;
 import io.github.bhowell2.apilib.ApiMapParam;
 
-import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 /**
  * Conditional checks are run after all the other checks in {@link ApiMapParam}.
@@ -77,9 +74,6 @@ public interface ConditionalCheck {
 	 *
 	 * @return
 	 */
-	Result check(Map<String, Object> params,
-	             Set<String> providedParams,
-	             Map<String, ApiMapParamCheckResult> providedMapParams,
-	             Map<String, List<ApiMapParamCheckResult>> providedArrayOfMapsParams);
+	Result check(Map<String, Object> params, ApiMapCheckResult mapCheckResult);
 
 }

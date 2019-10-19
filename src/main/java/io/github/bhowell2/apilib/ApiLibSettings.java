@@ -59,11 +59,13 @@ public class ApiLibSettings {
 	 * These are used to set the
 	 */
 	public static class ErrorMessageParamNames {
-		public static volatile String ERROR_PARAM_KEY_NAME = "key";
-		public static volatile String ERROR_PARAM_DISPLAY_NAME = "display";
-		public static volatile String ERROR_PARAM_KEY_NAME_LIST = "key_names";
-		public static volatile String ERROR_PARAM_DISPLAY_NAME_LIST = "display_names";
-		public static volatile String ERROR_MESSAGE = "message";
+		public static volatile String KEY_NAME = "keyName";
+		public static volatile String DISPLAY_NAME = "displayName";
+		public static volatile String INDEX = "index";
+		public static volatile String ERROR_TYPE = "errorType";
+		public static volatile String ERROR_MESSAGE = "errorMessage";
+		public static volatile String CHILD_ERROR = "childError";
+
 	}
 
 }

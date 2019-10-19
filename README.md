@@ -1,26 +1,27 @@
 # API Library
 Library to aid API parameter checking. Facilitates rapidly creating a structured API where each parameter will be checked 
 to ensure that it meets certain conditions. The list of successfully checked parameters will be returned so the user 
-knows which parameters can be trusted. This library assumes that the parameters are stored in an object of type 
+knows which parameters are valid. This library assumes that the parameters are stored in an object of type 
 `Map<String, Object>`. It is probably most helpful to think of `Map` and `JsonObject` as synonymous - Java does not 
-have a native `JsonObject` type, but in most every library that implements a `JsonObject` they are backed by `Map`.
+have a native `JsonObject` type, but in most every library that implements a `JsonObject` they are backed by 
+`Map<String, Object>`. 
 
 ## Quick Start
-An example will make things more comprehensible since there are a few parts to the library.
+An example will make things more digestible since there are a few parts to the library.
 ```java
 /*
 This is just a possible way to create parameters, but can be done whichever way the user deems 
 appropriate. However, it is HIGHLY recommended that parameters are created statically. Otherwise,
 there would be a lot of overhead recreating the parameters every time they need to be checked. The 
-classes are thread-safe so long as they do not use a Formatter. If a formatter is supplied, then 
+classes are thread-safe so long as they do not use a Formatter. If a Formatter is supplied, then 
 it will write back to the Map containing the parameters being checked - generally this should not 
 cause problems because the parameters should not be trusted until they have passed all checks.. 
 This can of course be alleviated if the map is synchronized in some way (e.g.,  
 Collections.synchronizedMap(..) or ConcurrentHashMap). 
 */
 
-
 /*
+This is a wrapper around an ob
 */
 public abstract class ApiRequestBase {
 
@@ -55,10 +56,6 @@ public abstract class ApiRequestBase {
     return this.checkResult.getMapParamCheck(keyName);
   }
 
-  // 
-  public ApiCustomParamCheckResult getCustomParamCheck(String keyName) {
-    return this.checkResult.getCustomParamCheck(keyName);
-  }
 
 }
 

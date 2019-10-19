@@ -3,7 +3,9 @@ package io.github.bhowell2.apilib;
 import io.github.bhowell2.apilib.checks.Check;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Returned when some type of error occurred checking a parameter. This provides
@@ -27,39 +29,13 @@ public class ApiParamError {
 	public final String keyName, displayName;
 
 	/**
-	 * If the error occurs in a nested map (i.e. a map within a map) then these will be
-	 * set. This allows for tracing the error to the source parameter. Note index 0 of
-	 * the list is the closest parent while the highest index is the most outer "parent".
-	 *
-	 * E.g.,
-	 * {
-	 *    outer1: {
-	 *      outer2: {
-	 *        param1: "failing!"
-	 *      }
-	 *    }
-	 * }
-	 * Will return a keyName of "param1" and the parentKeyNames list will be:
-	 * ["outer2", "outer1"].
-	 *
-	 * This is necessary to disambiguate where an error actually occurred.
-	 * E.g.,
-	 * {
-	 *   nested1: {
-	 *     param1: "this should fail",
-	 *     param2: "pass"
-	 *   },
-	 *   nested2: {
-	 *     param1: "pass",
-	 *     param2: "pass"
-	 *   }
-	 * }
-	 * If 'param1' failed in the above JSON then it would not be clear if this occurred in
-	 * 'nested1' or 'nested2'.
-	 *
-	 * TODO: Handle map within array
+	 * In the case of arrays/lists this is used to track the index where error
+	 * occurred. This can be combined with {@link #childParamError} for
+	 * multidimensional arrays/lists. If an {@link ApiParamError} has {@link #index}
+	 * set and a {@link #childParamError} then it is either a multidimensional array
+	 * or an array of maps.
 	 */
-	private List<String> parentKeyNames, parentDisplayNames;
+	public final Integer index;
 
 	/**
 	 * The error type will be the same for all nested errors. I.e., if the error
@@ -82,17 +58,24 @@ public class ApiParamError {
 	 */
 	public final Exception exception;
 
+	/**
+	 * Allows for tracking exactly where the error occurred. Container parameters
+	 * (i.e., {@link ApiMapParam} and {@link ApiListParam}/{@link ApiArrayParam})
+	 * will wrap the error of a child parameter with their name and/or index.
+	 */
+	public final ApiParamError childParamError;
+
 	public ApiParamError(String keyName,
 	                     String displayName,
 	                     Exception exception) {
-		this(keyName, displayName, ApiErrorType.EXCEPTIONAL, null, exception);
+		this(keyName, displayName, ApiErrorType.EXCEPTIONAL, null, exception, null, null);
 	}
 
 	public ApiParamError(String keyName,
 	                     String displayName,
 	                     ApiErrorType type,
 	                     String errorMessage) {
-		this(keyName, displayName, type, errorMessage, null);
+		this(keyName, displayName, type, errorMessage, null, null, null);
 	}
 
 	public ApiParamError(String keyName,
@@ -100,41 +83,72 @@ public class ApiParamError {
 	                     ApiErrorType type,
 	                     String errorMessage,
 	                     Exception exception) {
+		this(keyName, displayName, type, errorMessage, exception, null, null);
+	}
+
+	public ApiParamError(String keyName,
+	                     String displayName,
+	                     ApiErrorType type,
+	                     String errorMessage,
+	                     Exception exception,
+	                     ApiParamError childParamError) {
+		this(keyName, displayName, type, errorMessage, exception, null, childParamError);
+	}
+
+	public ApiParamError(String keyName,
+	                     String displayName,
+	                     ApiErrorType type,
+	                     String errorMessage,
+	                     Exception exception,
+	                     Integer index,
+	                     ApiParamError childParamError) {
 		this.keyName = keyName;
 		this.displayName = displayName;
 		this.errorType = type;
 		this.errorMessage = errorMessage;
 		this.exception = exception;
+		this.index = index;
+		this.childParamError = childParamError;
 	}
 
 	/**
-	 * @return true if error message is not nul
+	 * @return true if error message is not null
 	 */
 	public boolean hasErrorMessage() {
 		return this.errorMessage != null;
 	}
 
-	/**
-	 * @return true if the error is nested within another parameter (e.g., a map within a map). false otherwise.
-	 */
-	public boolean isNestedError() {
-		return this.parentKeyNames != null;
+	public boolean hasChildError() {
+		return this.childParamError != null;
 	}
 
 	/**
-	 * If the error occurs within a nested map the nested map name should be
-	 * @param keyName
-	 * @param displayName
+	 * Creates a map from the fields. This map will be as complex as the
+	 * API. If there are many nested maps/arrays they will have to be 
+	 * traversed in the map.
+	 * @return
 	 */
-	public void addParentKeyAndDisplayNames(String keyName, String displayName) {
-		if (this.parentKeyNames == null) {
-			this.parentKeyNames = new ArrayList<>(1);
+	public Map<String, Object> toMap() {
+		Map<String, Object> map = new HashMap<>();
+		if (this.keyName != null) {
+			map.put(ApiLibSettings.ErrorMessageParamNames.KEY_NAME, this.keyName);
 		}
-		this.parentKeyNames.add(keyName);
-		if (this.parentDisplayNames == null) {
-			this.parentDisplayNames = new ArrayList<>(1);
+		if (this.displayName != null) {
+			map.put(ApiLibSettings.ErrorMessageParamNames.DISPLAY_NAME, this.displayName);
 		}
-		this.parentDisplayNames.add(displayName);
+		if (this.index != null) {
+			map.put(ApiLibSettings.ErrorMessageParamNames.INDEX, this.index);
+		}
+		if (this.errorMessage != null) {
+			map.put(ApiLibSettings.ErrorMessageParamNames.ERROR_MESSAGE, this.errorMessage);
+		}
+		if (this.errorType != null) {
+			map.put(ApiLibSettings.ErrorMessageParamNames.ERROR_TYPE, this.errorType.name());
+		}
+		if (this.hasChildError()) {
+			map.put(ApiLibSettings.ErrorMessageParamNames.CHILD_ERROR, this.childParamError.toMap());
+		}
+		return map;
 	}
 
 	private static String joinKeyOrDisplayParentsIfExists(String keyOrDisplayName,
@@ -157,36 +171,36 @@ public class ApiParamError {
 		}
 	}
 
-	/**
-	 * @return the list of the parameter's parents' key names. null if error is not nested.
-	 */
-	public List<String> getParentKeyNames() {
-		return this.parentKeyNames;
-	}
-
-	/**
-	 * Joins the parent key names with the key name of the failed parameter.
-	 *
-	 * The normal order is error-key-name -> parent 1 -> grandparent 1 -> great grand parent
-	 * @param delimiter delimiter between key names
-	 * @param reverse true for order from the error key name to topmost (named) map or
-	 *                false for the order from the topmost (named) map to the error key name.
-	 * @return
-	 */
-	public String joinParentKeyNamesWithErrorKeyName(String delimiter, boolean reverse) {
-		return joinKeyOrDisplayParentsIfExists(this.keyName, this.parentKeyNames, delimiter, reverse);
-	}
-
-	/**
-	 * @return the list of the parameter's parents' display names. null if error is not nested.
-	 */
-	public List<String> getParentDisplayNames() {
-		return parentDisplayNames;
-	}
-
-	public String joinParentDisplayNamesWithErrorDisplayName(String delimiter, boolean reverse) {
-		return joinKeyOrDisplayParentsIfExists(this.displayName, this.parentDisplayNames, delimiter, reverse);
-	}
+//	/**
+//	 * @return the list of the parameter's parents' key names. null if error is not nested.
+//	 */
+//	public List<String> getParentKeyNames() {
+//		return this.parentKeyNames;
+//	}
+//
+//	/**
+//	 * Joins the parent key names with the key name of the failed parameter.
+//	 *
+//	 * The normal order is error-key-name -> parent 1 -> grandparent 1 -> great grand parent
+//	 * @param delimiter delimiter between key names
+//	 * @param reverse true for order from the error key name to topmost (named) map or
+//	 *                false for the order from the topmost (named) map to the error key name.
+//	 * @return
+//	 */
+//	public String joinParentKeyNamesWithErrorKeyName(String delimiter, boolean reverse) {
+//		return joinKeyOrDisplayParentsIfExists(this.keyName, this.parentKeyNames, delimiter, reverse);
+//	}
+//
+//	/**
+//	 * @return the list of the parameter's parents' display names. null if error is not nested.
+//	 */
+//	public List<String> getParentDisplayNames() {
+//		return parentDisplayNames;
+//	}
+//
+//	public String joinParentDisplayNamesWithErrorDisplayName(String delimiter, boolean reverse) {
+//		return joinKeyOrDisplayParentsIfExists(this.displayName, this.parentDisplayNames, delimiter, reverse);
+//	}
 
 	/**
 	 * Whether or not this error was caused by an exception. In the case that
@@ -199,112 +213,6 @@ public class ApiParamError {
 		return this.errorType == ApiErrorType.EXCEPTIONAL;
 	}
 
-//	/**
-//	 * Creates a list of the nested display names where this error occurred.
-//	 * Generally the user will only want to call this when {@link #hasChildError()}
-//	 * is true to obtain a tree of where the error occurred.
-//	 */
-//	public List<String> getListOfDisplayNames() {
-//		ApiParamError traverser = this;
-//		List<String> list = new ArrayList<>();
-//		while (traverser.hasChildError()) {
-//			list.add(traverser.displayName);
-//			traverser = traverser.childApiParamError;
-//		}
-//		list.add(traverser.displayName);
-//		return list;
-//	}
-//
-//	/**
-//	 * Creates a list of the nested display names where this error occurred.
-//	 * Generally the user will only want to call this when {@link #hasChildError()}
-//	 * is true to obtain a tree of where the error occurred.
-//	 */
-//	public List<String> getListOfKeyNames() {
-//		ApiParamError traverser = this;
-//		List<String> list = new ArrayList<>();
-//		while (traverser.hasChildError()) {
-//			list.add(traverser.keyName);
-//			traverser = traverser.childApiParamError;
-//		}
-//		list.add(traverser.displayName);
-//		return list;
-//	}
-//
-//	/**
-//	 * Returns a Map containing the name of the parameter
-//	 */
-//	public Map<String, Object> getCompleteErrorMessage() {
-//		Map<String, Object> message = new HashMap<>();
-//		message.put(ApiLibSettings.ErrorMessageParamNames.ERROR_PARAM_KEY_NAME, getInnermostChildKeyName());
-//		message.put(ApiLibSettings.ErrorMessageParamNames.ERROR_PARAM_DISPLAY_NAME, getInnermostChildKeyName());
-//		message.put(ApiLibSettings.ErrorMessageParamNames.ERROR_PARAM_KEY_NAME_LIST, getListOfKeyNames());
-//		message.put(ApiLibSettings.ErrorMessageParamNames.ERROR_PARAM_DISPLAY_NAME_LIST, getListOfDisplayNames());
-//		message.put(ApiLibSettings.ErrorMessageParamNames.ERROR_MESSAGE, getInnermostErrorMessage());
-//		return message;
-//	}
-
-//	private static String injectNameIntoTemplateVar(String templatedErrMsg, String replacementValue) {
-//		/*
-//		 * StringBuilder.replace is much more efficient that String.replace since the latter uses
-//		 * a Pattern (and creates a new one every-time at that).
-//		 * */
-//		int startTemplateVarPos = templatedErrMsg.indexOf(PARAM_NAME_TEMPLATE_VAR);
-//		if (startTemplateVarPos >= 0) {
-//			int endTemplateVarPos = startTemplateVarPos + PARAM_NAME_TEMPLATE_VAR_LENGTH;
-//			return new StringBuilder(templatedErrMsg)
-//				.replace(startTemplateVarPos, endTemplateVarPos, replacementValue == null ? "" : replacementValue)
-//				.toString();
-//		}
-//		// nothing to replace, just return message.
-//		return templatedErrMsg;
-//	}
-
-	/**
-	 * Creates an error message by joining the supplied list with the delimiter and the error message. Allows for
-	 * reversing the name list, which puts the innermost parameter name (display or key) first.
-	 * @param templatedErrMsg
-	 * @param displayOrKeyNames
-	 * @param joinDelimiter
-	 * @param reversed
-	 * @return
-	 */
-//	private static String generateErrorMessage(String templatedErrMsg,
-//	                                           List<String> displayOrKeyNames,
-//	                                           String joinDelimiter,
-//	                                           boolean reversed) {
-//		StringBuilder paramName = new StringBuilder();
-//		if (reversed) {
-//			int endPos = 0;
-//			for (int i = displayOrKeyNames.size() - 1; i >= endPos; i--) {
-//				if (i != endPos) {
-//					paramName.append(displayOrKeyNames.get(i))
-//					         .append(joinDelimiter);
-//				} else {
-//					paramName.append(displayOrKeyNames.get(i));
-//				}
-//			}
-//		} else {
-//			int endPos = displayOrKeyNames.size() - 1;
-//			for (int i = 0; i <= endPos; i++) {
-//				if (i != endPos) {
-//					paramName.append(displayOrKeyNames.get(i))
-//					         .append(joinDelimiter);
-//				} else {
-//					paramName.append(displayOrKeyNames.get(i));
-//				}
-//			}
-//		}
-////		return injectNameIntoTemplateVar(templatedErrMsg, paramName.toString());
-//	}
-
-	/**
-	 *
-	 * @return
-	 */
-//	public String getErrorMessageWithDisplayName() {
-//		return getErrorMessageWithDisplayName(".", false);
-//	}
 
 	/**
 	 * Injects the display name into the error message (at '$PARAM_NAME$').
@@ -379,6 +287,16 @@ public class ApiParamError {
 //		return getErrorMessageWithKeyName(".", false);
 //	}
 //
+
+	@Override
+	public String toString() {
+		return "Key name: " + this.keyName +
+			". Display name: " + this.displayName +
+			". Error message: " + this.errorMessage +
+			". Error type: " + this.errorType +
+			(this.exception != null ? ("Exception message: " + this.exception.getMessage()) : ".");
+	}
+
 	/**
 	 * Combines the key name with the error message. For all {@link Check}s used from this library this will
 	 * generate a coherent error message (e.g., 'Username' must have a length greater than 3.) The user should be
@@ -440,6 +358,7 @@ public class ApiParamError {
 //			return this.errorMessage;
 //		}
 //	}
+
 
 
 	/* Static Creation Methods */
@@ -504,7 +423,6 @@ public class ApiParamError {
 		return new ApiParamError(keyName, displayName, ApiErrorType.MISSING_PARAMETER, errorMessage);
 	}
 
-
 	/**
 	 * Creates ApiParamError with {@link ApiErrorType#FORMAT_ERROR}
 	 * and {@link ApiLibSettings#DEFAULT_FORMATTING_ERROR_MESSAGE}.
@@ -527,8 +445,6 @@ public class ApiParamError {
 	public static ApiParamError format(String keyName, String displayName, String failureMessage) {
 		return new ApiParamError(keyName, displayName, ApiErrorType.FORMAT_ERROR, failureMessage);
 	}
-
-
 
 	/**
 	 * Creates an ApiParamError with {@link ApiErrorType#CONDITIONAL_ERROR}
@@ -579,6 +495,8 @@ public class ApiParamError {
 		                         displayName,
 		                         ApiErrorType.EXCEPTIONAL,
 		                         null,
-		                         exception);
+		                         exception,
+		                         null,
+		                         null);
 	}
 }

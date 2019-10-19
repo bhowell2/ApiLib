@@ -16,10 +16,9 @@ import java.util.Map;
  *
  * @author Blake Howell
  */
-public class ApiSingleParam<Param> extends ApiNamedParamBase<ApiSingleParamCheckResult> {
+public class ApiSingleParam<Param> extends ApiParamBase<Map<String, Object>, ApiSingleCheckResult> {
 
 	public final String invalidErrMsg;
-	public final boolean canBeNull;
 	final Formatter<? super Object, ? super Object>[] formatters;
 	final Check<Param>[] checks;
 
@@ -29,28 +28,32 @@ public class ApiSingleParam<Param> extends ApiNamedParamBase<ApiSingleParamCheck
 	 * @param displayName the name that the client/user would understand (e.g., primary_email may be the name of a
 	 *                    parameter in a JsonObject, but the user sees 'primary email' as the field they are inputting
 	 *                    their information into.)
+	 * @param invalidErrMsg overrides all error messages from invalid parameter checks (i.e., when a check fails) and
+	 *                      returns this message instead
 	 * @param canBeNull   whether or not the parameter value is allowed to be SET to null
 	 * @param formatters  requiring formatters to return object of Param type. so if a cast needs to happen to Param,
 	 *                    it should be done in the first formatter (they are run in order)
 	 * @param checks      ensure the value of the parameter is as expected
-	 * @param invalidErrMsg overrides all error messages from invalid parameter checks (i.e., when a check fails) and
-	 *                      returns this message instead
 	 */
 	public ApiSingleParam(String keyName,
 	                      String displayName,
+	                      String invalidErrMsg,
 	                      boolean canBeNull,
 	                      Formatter<? super Object, ? super Object>[] formatters,
-	                      Check<Param>[] checks,
-	                      String invalidErrMsg) {
-		super(keyName, displayName);
-		this.canBeNull = canBeNull;
+	                      Check<Param>[] checks) {
+		super(keyName, displayName, invalidErrMsg, canBeNull);
+		if (keyName == null) {
+			throw new IllegalArgumentException("Cannot create ApiSingleParam with null keyName.");
+		} else if (displayName == null) {
+			throw new IllegalArgumentException("Cannot create ApiSingleParam with null displayName.");
+		}
 		this.formatters = formatters;
 		if (checks == null || checks.length == 0) {
 			throw new RuntimeException("No checks were provided for parameter (key name) '" + keyName + "'." +
-				                           "If this is intentional, provide a function check that returns " +
-				                           "a Check.Result. If the check should always pass Check.alwaysPass() has been " +
-				                           "provided for this case and Check.alwaysFail() has been provided if the parameter " +
-				                           "check should always fail.");
+				                           "If this is intentional, provide a check that always passes or always fails." +
+				                           "If the check should always pass Check.alwaysPass() has been provided for this " +
+				                           "case and Check.alwaysFail() has been provided if the parameter check should " +
+				                           "always fail.");
 		}
 		for (Check check : checks) {
 			if (check == null) {
@@ -61,48 +64,48 @@ public class ApiSingleParam<Param> extends ApiNamedParamBase<ApiSingleParamCheck
 		this.invalidErrMsg = invalidErrMsg;
 	}
 
-	private ApiSingleParamCheckResult returnInvalidErrorMessage(String errMsg) {
+	private ApiSingleCheckResult returnInvalidErrorMessage(String errMsg) {
 		// if invalid error message is set it overrides all other error messages
 		if (this.invalidErrMsg != null) {
-			return ApiSingleParamCheckResult.failure(ApiParamError.invalid(this, this.invalidErrMsg));
+			return ApiSingleCheckResult.failure(ApiParamError.invalid(this, this.invalidErrMsg));
 		} else {
 			return errMsg == null
 				?
-				ApiSingleParamCheckResult.failure(ApiParamError.invalid(this))
+				ApiSingleCheckResult.failure(ApiParamError.invalid(this))
 				:
-				ApiSingleParamCheckResult.failure(ApiParamError.invalid(this, errMsg));
+				ApiSingleCheckResult.failure(ApiParamError.invalid(this, errMsg));
 		}
 	}
 
 	@Override
 	@SuppressWarnings("unchecked")
-	public ApiSingleParamCheckResult check(Map<String, Object> params) {
+	public ApiSingleCheckResult check(Map<String, Object> params) {
 		try {
 			/*
-			* Due to type erasure this is really just (Object) here. Will not see any casting issues until param is
-			* passed to formatters or checks that cast to a specific class.
-			* */
+			 * Due to type erasure this is really just (Object) here. Will not see any casting issues until param is
+			 * passed to formatters or checks that cast to a specific class.
+			 * */
 			Param param = (Param) params.get(this.keyName);
 			if (param == null) {
 				if (params.containsKey(this.keyName)) {
 					// was SET to null, not just null because it was not set at all
 					if (canBeNull) {
-						return ApiSingleParamCheckResult.success(this.keyName);
+						return ApiSingleCheckResult.success(this.keyName);
 					} else {
 						return returnInvalidErrorMessage(ApiLibSettings.DEFAULT_CANNOT_BE_NULL_MESSAGE);
 					}
 				} else {
 					// param is null, but was not SET to null. therefore it is missing.
-					return ApiSingleParamCheckResult.failure(ApiParamError.missing(this));
+					return ApiSingleCheckResult.failure(ApiParamError.missing(this));
 				}
 			}
 
 			/*
-			* It has been decided to avoid re-inserting the formatted value until all checks pass.
-			* This allows the developer to more easily trace where possible errors occurred.
-			* Formatters could make irreversible changes to an object and therefore the developer
-			* would not be able to deduce the original value from the formatted value.
-			* */
+			 * It has been decided to avoid re-inserting the formatted value until all checks pass.
+			 * This allows the developer to more easily trace where possible errors occurred.
+			 * Formatters could make irreversible changes to an object and therefore the developer
+			 * would not be able to deduce the original value from the formatted value.
+			 * */
 			boolean formatted = false;
 			if (this.formatters != null && this.formatters.length > 0) {
 				formatted = true;
@@ -112,9 +115,9 @@ public class ApiSingleParam<Param> extends ApiNamedParamBase<ApiSingleParamCheck
 					if (formatResult.failed()) {
 						return formatResult.hasFailureMessage()
 							?
-							ApiSingleParamCheckResult.failure(ApiParamError.format(this, formatResult.getFailureMessage()))
+							ApiSingleCheckResult.failure(ApiParamError.format(this, formatResult.getFailureMessage()))
 							:
-							ApiSingleParamCheckResult.failure(ApiParamError.format(this));
+							ApiSingleCheckResult.failure(ApiParamError.format(this));
 					}
 					paramToFormat = formatResult.getFormattedValue();
 				}
@@ -122,13 +125,13 @@ public class ApiSingleParam<Param> extends ApiNamedParamBase<ApiSingleParamCheck
 			}
 
 			/*
-			* Possible that the formatter set the param to null or that the formatter did
-			* not do anything with it and it already was null. In either case there are no
-			* possible checks to run on a null value, so return here.
-			* */
+			 * Possible that the formatter set the param to null or that the formatter did
+			 * not do anything with it and it already was null. In either case there are no
+			 * possible checks to run on a null value, so return here.
+			 * */
 			if (param == null) {
 				if (canBeNull) {
-					return ApiSingleParamCheckResult.success(this.keyName);
+					return ApiSingleCheckResult.success(this.keyName);
 				} else {
 					return returnInvalidErrorMessage(ApiLibSettings.DEFAULT_CANNOT_BE_NULL_MESSAGE);
 				}
@@ -145,11 +148,11 @@ public class ApiSingleParam<Param> extends ApiNamedParamBase<ApiSingleParamCheck
 			if (formatted) {
 				params.put(this.keyName, param);
 			}
-			return ApiSingleParamCheckResult.success(this.keyName);
+			return ApiSingleCheckResult.success(this.keyName);
 		} catch (ClassCastException e) {
-			return ApiSingleParamCheckResult.failure(ApiParamError.cast(this, e));
+			return ApiSingleCheckResult.failure(ApiParamError.cast(this, e));
 		} catch (Exception e) {
-			return ApiSingleParamCheckResult.failure(ApiParamError.exceptional(this, e));
+			return ApiSingleCheckResult.failure(ApiParamError.exceptional(this, e));
 		}
 	}
 

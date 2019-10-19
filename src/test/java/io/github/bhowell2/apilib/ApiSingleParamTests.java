@@ -27,8 +27,8 @@ public class ApiSingleParamTests {
 	// arbitrary username
 	public static final ApiSingleParam<String> USERNAME_PARAM =
 		ApiSingleParamBuilder.builder(USERNAME_KEY, String.class)
-		                     .addCheck(StringChecks.doesNotBeginWithCodePoints("abc"))
-		                     .addCheck(StringChecks.lengthGreaterThan(3))
+		                     .addChecks(StringChecks.doesNotBeginWithCodePoints("abc"))
+		                     .addChecks(StringChecks.lengthGreaterThan(3))
 		                     .build();
 
 	Map<String, Object> passingParams, failingParams;
@@ -46,12 +46,12 @@ public class ApiSingleParamTests {
 	public void shouldThrowExceptionCreatingOrBuilding() throws Exception {
 		assertThrows(RuntimeException.class, () -> {
 			ApiSingleParamBuilder.builder(null, String.class)
-			                     .addCheck(Check.alwaysPass(String.class))
+			                     .addChecks(Check.alwaysPass(String.class))
 			                     .build();
 		});
 		assertThrows(RuntimeException.class, () -> {
 			ApiSingleParamBuilder.builder("whatever", String.class)
-			                     .addCheck(null)
+			                     .addChecks((Check)null)
 			                     .build();
 		});
 		assertThrows(RuntimeException.class, () -> {
@@ -62,7 +62,7 @@ public class ApiSingleParamTests {
 
 	@Test
 	public void shouldSuccessfullyCheckParameter() throws Exception {
-		ApiSingleParamCheckResult checkResult = USERNAME_PARAM.check(passingParams);
+		ApiSingleCheckResult checkResult = USERNAME_PARAM.check(passingParams);
 		assertTrue(checkResult.successful());
 		assertFalse(checkResult.failed());
 		assertEquals(checkResult.keyName, USERNAME_KEY);
@@ -70,11 +70,11 @@ public class ApiSingleParamTests {
 
 	@Test
 	public void shouldFailToCheckParameter() throws Exception {
-		ApiSingleParamCheckResult checkResult = USERNAME_PARAM.check(failingParams);
+		ApiSingleCheckResult checkResult = USERNAME_PARAM.check(failingParams);
 		assertTrue(checkResult.failed());
 		assertFalse(checkResult.successful());
-		assertEquals(USERNAME_KEY, checkResult.apiParamError.keyName);
-		assertEquals(USERNAME_KEY, checkResult.apiParamError.displayName,
+		assertEquals(USERNAME_KEY, checkResult.error.keyName);
+		assertEquals(USERNAME_KEY, checkResult.error.displayName,
 		             "Display name should be same as key name if no display name was provided.");
 	}
 
@@ -83,34 +83,34 @@ public class ApiSingleParamTests {
 		// Copy the original test parameter and add on a check to make sure it works as intended.
 		String localTestKey = "thistestkey";
 		ApiSingleParam<String> copiedParam = ApiSingleParamBuilder.builder(localTestKey, "diff", USERNAME_PARAM)
-		                                                          .addCheck(StringChecks.doesNotBeginWithCodePoints("defg"))
+		                                                          .addChecks(StringChecks.doesNotBeginWithCodePoints("defg"))
 		                                                          .build();
 
 		// should fail with this (passed in above tests, but added 'defg' to cannot begin with
 		Map<String, Object> localFailingParams = new HashMap<>();
 		localFailingParams.put(localTestKey, "dzz");
-		ApiSingleParamCheckResult checkResultFailing = copiedParam.check(localFailingParams);
+		ApiSingleCheckResult checkResultFailing = copiedParam.check(localFailingParams);
 		assertTrue(checkResultFailing.failed());
 		assertFalse(checkResultFailing.successful());
-		assertEquals(localTestKey, checkResultFailing.apiParamError.keyName);
-		assertEquals("diff", checkResultFailing.apiParamError.displayName);
-		assertEquals(ApiErrorType.INVALID_PARAMETER, checkResultFailing.apiParamError.errorType);
+		assertEquals(localTestKey, checkResultFailing.error.keyName);
+		assertEquals("diff", checkResultFailing.error.displayName);
+		assertEquals(ApiErrorType.INVALID_PARAMETER, checkResultFailing.error.errorType);
 
 		Map<String, Object> localPassingParams = new HashMap<>();
 		localPassingParams.put(localTestKey, "hijk");
-		ApiSingleParamCheckResult checkResultPassing = copiedParam.check(localPassingParams);
+		ApiSingleCheckResult checkResultPassing = copiedParam.check(localPassingParams);
 		assertTrue(checkResultPassing.successful());
 		assertFalse(checkResultPassing.failed());
 		assertEquals(localTestKey, checkResultPassing.keyName);
 
 
 		// should ignore key1 (just a sanity check)
-		ApiSingleParamCheckResult checkResultFailing2 = copiedParam.check(passingParams);
+		ApiSingleCheckResult checkResultFailing2 = copiedParam.check(passingParams);
 		assertTrue(checkResultFailing2.failed());
 		assertFalse(checkResultFailing2.successful());
-		assertEquals(localTestKey, checkResultFailing2.apiParamError.keyName);
-		assertEquals("diff", checkResultFailing2.apiParamError.displayName);
-		assertEquals(ApiErrorType.MISSING_PARAMETER, checkResultFailing2.apiParamError.errorType);
+		assertEquals(localTestKey, checkResultFailing2.error.keyName);
+		assertEquals("diff", checkResultFailing2.error.displayName);
+		assertEquals(ApiErrorType.MISSING_PARAMETER, checkResultFailing2.error.errorType);
 	}
 
 
@@ -129,24 +129,24 @@ public class ApiSingleParamTests {
 		* */
 		ApiSingleParam<Double> doubleParam = ApiSingleParamBuilder
 			.builder(localKey, "disp name", Double.class)
-			.addFormatter((String s) -> Formatter.Result.success(Double.parseDouble(s)))
-			.addCheck(DoubleChecks.valueGreaterThan(15.01))
-			.addFormatter((Double d) -> Formatter.Result.success(d + 0.02))
+			.addFormatters((String s) -> Formatter.Result.success(Double.parseDouble(s)),
+			               (Double d) -> Formatter.Result.success(d + 0.02))
+			.addChecks(DoubleChecks.valueGreaterThan(15.01))
 			.build();
 
-		ApiSingleParamCheckResult checkResultFailing = doubleParam.check(failingParams);
+		ApiSingleCheckResult checkResultFailing = doubleParam.check(failingParams);
 		assertTrue(checkResultFailing.failed());
 		assertFalse(checkResultFailing.successful());
-		assertEquals(localKey, checkResultFailing.apiParamError.keyName);
-		assertEquals("disp name", checkResultFailing.apiParamError.displayName);
-		assertEquals(ApiErrorType.INVALID_PARAMETER, checkResultFailing.apiParamError.errorType);
+		assertEquals(localKey, checkResultFailing.error.keyName);
+		assertEquals("disp name", checkResultFailing.error.displayName);
+		assertEquals(ApiErrorType.INVALID_PARAMETER, checkResultFailing.error.errorType);
 		assertEquals("14.99", failingParams.get(localKey),
 		             "Parameter should not have been put back in map after formatting. Only after successful check.");
 
 		Map<String, Object> passingParams = new HashMap<>();
 		passingParams.put(localKey, "15.00");
 
-		ApiSingleParamCheckResult checkResultPassing = doubleParam.check(passingParams);
+		ApiSingleCheckResult checkResultPassing = doubleParam.check(passingParams);
 		assertTrue(checkResultPassing.successful());
 		assertFalse(checkResultPassing.failed());
 		assertEquals(localKey, checkResultPassing.keyName);
@@ -162,19 +162,19 @@ public class ApiSingleParamTests {
 		params.put(key, "whatever");
 
 		ApiSingleParam<String> singleParam = ApiSingleParamBuilder.builder(key, String.class)
-		                                                          .addFormatter(o -> Formatter.Result.failure(formatErrMsg))
-		                                                          .addCheck(Check.alwaysPass(String.class))
+		                                                          .addFormatters(o -> Formatter.Result.failure(formatErrMsg))
+		                                                          .addChecks(Check.alwaysPass(String.class))
 		                                                          .build();
 
-		ApiSingleParamCheckResult checkResult = singleParam.check(params);
+		ApiSingleCheckResult checkResult = singleParam.check(params);
 		assertTrue(checkResult.failed());
 		assertFalse(checkResult.successful());
-		assertEquals(key, checkResult.apiParamError.keyName);
-		assertEquals(key, checkResult.apiParamError.displayName,
+		assertEquals(key, checkResult.error.keyName);
+		assertEquals(key, checkResult.error.displayName,
 		             "Display name should be same as key name if no display name was provided.");
-		assertEquals(ApiErrorType.FORMAT_ERROR, checkResult.apiParamError.errorType);
-		assertTrue(checkResult.apiParamError.hasErrorMessage());
-		assertEquals(formatErrMsg, checkResult.apiParamError.errorMessage);
+		assertEquals(ApiErrorType.FORMAT_ERROR, checkResult.error.errorType);
+		assertTrue(checkResult.error.hasErrorMessage());
+		assertEquals(formatErrMsg, checkResult.error.errorMessage);
 	}
 
 	@Test
@@ -202,7 +202,7 @@ public class ApiSingleParamTests {
 		Map<String, Object> params = new HashMap<>();
 		params.put(localKey, "whatever");
 
-		ApiSingleParamCheckResult checkResultVarArgs = localParamVarArgChecks.check(params);
+		ApiSingleCheckResult checkResultVarArgs = localParamVarArgChecks.check(params);
 		assertTrue(checkResultVarArgs.successful());
 		assertEquals(1, checkOrderVarArgs.get(0));
 		assertEquals(2, checkOrderVarArgs.get(1));
@@ -218,12 +218,12 @@ public class ApiSingleParamTests {
 
 		ApiSingleParam<String> localParam =
 			ApiSingleParamBuilder.builder(localKey, String.class)
-			                     .addCheck(check2)
-			                     .addCheck(check1)
-			                     .addCheck(check3)
+			                     .addChecks(check2)
+			                     .addChecks(check1)
+			                     .addChecks(check3)
 			                     .build();
 
-		ApiSingleParamCheckResult checkResult = localParam.check(params);
+		ApiSingleCheckResult checkResult = localParam.check(params);
 		assertTrue(checkResult.successful());
 		// note this order is different than what was added above!! should be 2,1,3
 		assertEquals(2, checkOrder.get(0));
@@ -259,7 +259,7 @@ public class ApiSingleParamTests {
 		Map<String, Object> params = new HashMap<>();
 		params.put(localKey, "whatever");
 
-		ApiSingleParamCheckResult checkResultVarArgFormatters = localParamVarArgFormatter.check(params);
+		ApiSingleCheckResult checkResultVarArgFormatters = localParamVarArgFormatter.check(params);
 		assertTrue(checkResultVarArgFormatters.successful());
 		// note order here. formatters added in order: 1,3,2
 		assertEquals(1, formatOrderVarArgs.get(0));
@@ -274,13 +274,11 @@ public class ApiSingleParamTests {
 
 		ApiSingleParam<String> localParam =
 			ApiSingleParamBuilder.builder(localKey, String.class)
-			                     .addFormatter(formatter3)
-			                     .addFormatter(formatter2)
-			                     .addFormatter(formatter1)
+			                     .addFormatters(formatter3, formatter2, formatter1)
 			                     .addChecks(Check.alwaysPass(String.class))
 			                     .build();
 
-		ApiSingleParamCheckResult checkResult = localParam.check(params);
+		ApiSingleCheckResult checkResult = localParam.check(params);
 		assertTrue(checkResult.successful());
 		// note order here. added backwards
 		assertEquals(3, formatOrder.get(0));
@@ -293,10 +291,10 @@ public class ApiSingleParamTests {
 	public void shouldFailWithLaterChecks() throws Exception {
 		ApiSingleParam<String> localParam =
 			ApiSingleParamBuilder.builder(USERNAME_PARAM)
-			                     .addCheck(Check.alwaysFail())
+			                     .addChecks(Check.alwaysFail())
 			                     .build();
 
-		ApiSingleParamCheckResult checkResult = localParam.check(passingParams);
+		ApiSingleCheckResult checkResult = localParam.check(passingParams);
 		assertTrue(checkResult.failed());
 	}
 
@@ -305,13 +303,13 @@ public class ApiSingleParamTests {
 		String localKey = "localKey";
 		ApiSingleParam<String> localParam = ApiSingleParamBuilder.builder(localKey, String.class)
 		                                                         .setCanBeNull(true)
-		                                                         .addCheck(Check.alwaysPass(String.class))
+		                                                         .addChecks(Check.alwaysPass(String.class))
 		                                                         .build();
 
 		Map<String, Object> passingNullParams = new HashMap<>();
 		passingNullParams.put(localKey, null);
 
-		ApiSingleParamCheckResult checkResult = localParam.check(passingNullParams);
+		ApiSingleCheckResult checkResult = localParam.check(passingNullParams);
 		assertTrue(checkResult.successful());
 		assertEquals(localKey, checkResult.keyName);
 	}
@@ -321,22 +319,22 @@ public class ApiSingleParamTests {
 		String localKey = "localKey";
 		ApiSingleParam<String> localParam = ApiSingleParamBuilder.builder(localKey, String.class)
 		                                                         .setCanBeNull(false)
-		                                                         .addCheck(Check.alwaysPass(String.class))
+		                                                         .addChecks(Check.alwaysPass(String.class))
 		                                                         .build();
 
 		Map<String, Object> failingNullParams = new HashMap<>();
 		failingNullParams.put(localKey, null);
 
-		ApiSingleParamCheckResult checkResultInvalidFromNull = localParam.check(failingNullParams);
+		ApiSingleCheckResult checkResultInvalidFromNull = localParam.check(failingNullParams);
 		assertTrue(checkResultInvalidFromNull.failed());
-		assertEquals(localKey, checkResultInvalidFromNull.apiParamError.keyName);
-		assertEquals(ApiErrorType.INVALID_PARAMETER, checkResultInvalidFromNull.apiParamError.errorType);
+		assertEquals(localKey, checkResultInvalidFromNull.error.keyName);
+		assertEquals(ApiErrorType.INVALID_PARAMETER, checkResultInvalidFromNull.error.errorType);
 
 		failingNullParams.remove(localKey);
-		ApiSingleParamCheckResult checkResultMissing = localParam.check(failingNullParams);
+		ApiSingleCheckResult checkResultMissing = localParam.check(failingNullParams);
 		assertTrue(checkResultMissing.failed());
-		assertEquals(localKey, checkResultMissing.apiParamError.keyName);
-		assertEquals(ApiErrorType.MISSING_PARAMETER, checkResultMissing.apiParamError.errorType);
+		assertEquals(localKey, checkResultMissing.error.keyName);
+		assertEquals(ApiErrorType.MISSING_PARAMETER, checkResultMissing.error.errorType);
 
 	}
 
