@@ -37,7 +37,6 @@ public class ArrayChecksTests extends ChecksTestBase {
 		assertTrue(failedResult.failureMessage.contains("at index 0"));
 	}
 
-
 	@Test
 	public void testCheckArrayOfArrays() throws Exception {
 		Check<Integer[][]> check = ArrayChecks.checkArrayOfArrays(IntegerChecks.valueIsEven(),

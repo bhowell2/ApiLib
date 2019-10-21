@@ -51,7 +51,7 @@ public class ApiSingleParamTests {
 		});
 		assertThrows(RuntimeException.class, () -> {
 			ApiSingleParamBuilder.builder("whatever", String.class)
-			                     .addChecks((Check)null)
+			                     .addChecks((Check<String>)null)
 			                     .build();
 		});
 		assertThrows(RuntimeException.class, () -> {

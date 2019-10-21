@@ -6,26 +6,33 @@ import io.github.bhowell2.apilib.checks.Check;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 
 /**
  * @author Blake Howell
  */
-abstract class ApiArrayOrListParamBuilderBase<T extends ApiArrayOrListParamBuilderBase,
-	Param,
+public abstract class ApiArrayOrListParamBuilderBase<
+	B extends ApiArrayOrListParamBuilderBase,
 	In,
-	C extends ApiArrayOrListParamBase<Param, In>>
-extends ApiParamBuilderBase<T> {
+	Param,
+	C extends ApiArrayOrListParam<In, Param>
+	>
+	extends ApiParamBuilderBase<ApiArrayOrListParamBuilderBase<B, In, Param, C>> {
+
+	/* IMPLEMENTATION */
+
 
 	List<ArrayCheck<Param>> indexChecks;
 	List<List<ArrayCheck<Param>>> individualIndexChecks;
 	ApiMapParam indexMapCheck;
 	List<ApiMapParam> individualIndexMapCheck;
-	ApiArrayOrListParamBase<?, Param> innerArrayOrListParam;
+	ApiArrayOrListParam<Param, ?> innerArrayOrListParam;
 
 	public ApiArrayOrListParamBuilderBase(String keyName, String displayName) {
 		super(keyName, displayName);
 		this.indexChecks = new ArrayList<>();
 		this.individualIndexChecks = new ArrayList<>();
+		this.individualIndexMapCheck = new ArrayList<>();
 	}
 
 	/**
@@ -35,17 +42,17 @@ extends ApiParamBuilderBase<T> {
 	 */
 	@SafeVarargs
 	@SuppressWarnings("unchecked")
-	public final T addIndexChecks(Check<Param>... indexChecks) {
+	public final B addIndexChecks(Check<Param>... indexChecks) {
 		checkVarArgsNotNullAndValuesNotNull(indexChecks);
-		return (T) this.addIndexChecks((ArrayCheck<Param>[])
-			Arrays.stream(indexChecks)
-			      .map(ArrayCheck::wrapCheck)
-			      .toArray(ArrayCheck[]::new));
+		return this.addIndexChecks((ArrayCheck<Param>[])
+			                           Arrays.stream(indexChecks)
+			                                 .map(ArrayCheck::wrapCheck)
+			                                 .toArray(ArrayCheck[]::new));
 	}
 
-	@SafeVarargs
 	@SuppressWarnings("unchecked")
-	public final T addIndexChecks(ArrayCheck<Param>... indexChecks) {
+	@SafeVarargs
+	public final B addIndexChecks(ArrayCheck<Param>... indexChecks) {
 		checkVarArgsNotNullAndValuesNotNull(indexChecks);
 		for (ArrayCheck<Param> c : indexChecks) {
 			if (c == null) {
@@ -53,41 +60,64 @@ extends ApiParamBuilderBase<T> {
 			}
 			this.indexChecks.add(c);
 		}
-		return (T) this;
+		return (B) this;
 	}
 
 	@SuppressWarnings("unchecked")
-	public T setIndividualIndexChecks(List<List<ArrayCheck<Param>>> individualIndexChecks) {
+	public B
+	setIndividualIndexChecks(List<List<ArrayCheck<Param>>> individualIndexChecks) {
 		if (this.individualIndexChecks != null) {
 			throw new IllegalArgumentException("Individual index checks has already been set.");
 		}
 		// could set to null if copying from another and wanting to remove it
 		this.individualIndexChecks = individualIndexChecks;
-		return (T) this;
+		return (B) this;
 	}
 
 	@SuppressWarnings("unchecked")
-	public T setIndexMapCheck(ApiMapParam indexMapCheck) {
+	public B setIndexMapCheck(ApiMapParam indexMapCheck) {
 		this.indexMapCheck = indexMapCheck;
-		return (T) this;
+		return (B) this;
 	}
 
 	@SuppressWarnings("unchecked")
-	public T setIndividualIndexMapChecks(List<ApiMapParam> individualIndexMapChecks) {
+	public B
+	setIndividualIndexMapChecks(List<ApiMapParam> individualIndexMapChecks) {
 		this.individualIndexMapCheck = individualIndexMapChecks;
-		return (T) this;
+		return (B) this;
 	}
 
 	@SuppressWarnings("unchecked")
-	public T setInnerListParam(ApiListParam<?, Param> innerListParam) {
+	public B setInnerArrayOrListParam(ApiArrayOrListParam<Param, ?> innerListParam) {
+		if (innerListParam.keyName != null) {
+			throw new IllegalArgumentException("Cannot have inner array with a key name. If using an ApiArrayOrListParam " +
+				                                   "that was created elsewhere, make a copy of it with the the builder.");
+		}
 		this.innerArrayOrListParam = innerListParam;
-		return (T) this;
+		return (B) this;
 	}
 
-	/**
-	 * Build the {@link ApiListParam} or {@link ApiArrayParam}.
-	 * @return
-	 */
 	abstract C build();
+
+//	@SuppressWarnings("unchecked")
+//	public ApiArrayOrListParam<In, Param> build() {
+//		ArrayCheck<Param>[][] individualIndexChecksAry =
+//			this.individualIndexChecks.stream()
+//				.<List<ArrayCheck[]>>collect(ArrayList::new,
+//				                             (a, b) -> a.add(b.toArray(new ArrayCheck[0])),
+//				                             List::addAll)
+//				.toArray(new ArrayCheck[0][]);
+//		return new ApiArrayOrListParam<>(this.keyName,
+//		                                 this.displayName,
+//		                                 this.invalidErrorMessage,
+//		                                 this.canBeNull,
+//		                                 this.indexChecks.toArray(new ArrayCheck[0]),
+//		                                 individualIndexChecksAry,
+//		                                 this.indexMapCheck,
+//		                                 this.individualIndexMapCheck.toArray(new ApiMapParam[0]),
+//		                                 this.innerArrayOrListParam,
+//		                                 this.requireArray,
+//		                                 this.requireList);
+//	}
 
 }

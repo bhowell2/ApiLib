@@ -2,7 +2,6 @@ package io.github.bhowell2.apilib;
 
 import io.github.bhowell2.apilib.checks.Check;
 
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -60,7 +59,7 @@ public class ApiParamError {
 
 	/**
 	 * Allows for tracking exactly where the error occurred. Container parameters
-	 * (i.e., {@link ApiMapParam} and {@link ApiListParam}/{@link ApiArrayParam})
+	 * (i.e., {@link ApiMapParam} and {@link ApiListParam}/{@link ApiArrayOrListParam})
 	 * will wrap the error of a child parameter with their name and/or index.
 	 */
 	public final ApiParamError childParamError;

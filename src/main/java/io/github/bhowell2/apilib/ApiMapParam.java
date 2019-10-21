@@ -62,7 +62,7 @@ public class ApiMapParam extends ApiParamBase<Map<String, Object>, ApiMapCheckRe
 	final boolean continueOnOptionalFailure;
 	final ApiSingleParam<?>[] requiredSingleParams, optionalSingleParams;
 	final ApiMapParam[] requiredMapParams, optionalMapParams;
-	final ApiArrayOrListParamBase[] requiredArrayParams, optionalArrayParams;
+	final ApiArrayOrListParam[] requiredArrayParams, optionalArrayParams;
 	final ApiCustomParam<Map<String, Object>, ?>[] requiredCustomParams, optionalCustomParams;
 	final ConditionalCheck[] conditionalChecks;
 
@@ -88,8 +88,8 @@ public class ApiMapParam extends ApiParamBase<Map<String, Object>, ApiMapCheckRe
 	                   ApiSingleParam<?>[] optionalSingleParams,
 	                   ApiMapParam[] requiredMapParams,
 	                   ApiMapParam[] optionalMapParams,
-	                   ApiArrayOrListParamBase[] requiredArrayParams,
-	                   ApiArrayOrListParamBase[] optionalArrayParams,
+	                   ApiArrayOrListParam[] requiredArrayParams,
+	                   ApiArrayOrListParam[] optionalArrayParams,
 	                   ApiCustomParam<Map<String, Object>, ?>[] requiredCustomParams,
 	                   ApiCustomParam<Map<String, Object>, ?>[] optionalCustomParams,
 	                   ConditionalCheck[] conditionalChecks) {
@@ -277,7 +277,7 @@ public class ApiMapParam extends ApiParamBase<Map<String, Object>, ApiMapCheckRe
 			}
 
 			if (this.requiredArrayParams != null) {
-				for (ApiArrayOrListParamBase<?, Map<String, Object>> param : this.requiredArrayParams) {
+				for (ApiArrayOrListParam<Map<String, Object>, ?> param : this.requiredArrayParams) {
 					// catch any fall-through exceptions (should never happen for this)
 					try {
 						ApiArrayOrListCheckResult checkResult = param.check(mapParamToCheck);
@@ -415,7 +415,7 @@ public class ApiMapParam extends ApiParamBase<Map<String, Object>, ApiMapCheckRe
 
 
 			if (this.optionalArrayParams != null) {
-				for (ApiArrayOrListParamBase<?, Map<String, Object>> param : this.optionalArrayParams) {
+				for (ApiArrayOrListParam<Map<String, Object>, ?> param : this.optionalArrayParams) {
 					// catch any fall-through exceptions (should never happen for this)
 					try {
 						ApiArrayOrListCheckResult checkResult = param.check(mapParamToCheck);
