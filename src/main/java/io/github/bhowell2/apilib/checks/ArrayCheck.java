@@ -1,5 +1,7 @@
 package io.github.bhowell2.apilib.checks;
 
+import io.github.bhowell2.apilib.ApiArrayOrListParam;
+
 import java.util.List;
 
 /**
@@ -55,7 +57,7 @@ public interface ArrayCheck<Param> {
 	 * Allows for passing in the index that is being checked in case it
 	 * is needed for the check. Usually this will not be necessary and
 	 * a simple {@link Check} would suffice. However, since this is
-	 * required by {@link io.github.bhowell2.apilib.ApiArrayOrListParamBase},
+	 * required by {@link ApiArrayOrListParam},
 	 * a wrapper has been supplied for standard checks:
 	 * @param index
 	 * @param value

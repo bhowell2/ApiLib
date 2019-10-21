@@ -1033,7 +1033,7 @@ public class StringChecksTests extends ChecksTestBase {
 			StringChecks.doesNotEqualStrings(new HashSet<>());
 		});
 		assertThrows(NullPointerException.class, () -> {
-			StringChecks.doesNotEqualStrings((Set)null);
+			StringChecks.doesNotEqualStrings((Set<String>)null);
 		});
 	}
 

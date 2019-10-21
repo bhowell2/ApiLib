@@ -36,7 +36,7 @@ public class ApiMapParamBuilder extends ApiParamBuilderBase<ApiMapParamBuilder> 
 	// using maps to easily keep track of already added params (by key name)
 	private Map<String, ApiSingleParam<?>> requiredSingleParams, optionalSingleParams;
 	private Map<String, ApiMapParam> requiredMapParams, optionalMapParams;
-	private Map<String, ApiArrayOrListParamBase> requiredArrayParams, optionalArrayParams;
+	private Map<String, ApiArrayOrListParam<Map<String, Object>, ?>> requiredArrayParams, optionalArrayParams;
 
 	// custom parameters and conditional checks do not have names
 	private List<ApiCustomParam<Map<String, Object>, ?>> requiredCustomParams, optionalCustomParams;
@@ -149,18 +149,20 @@ public class ApiMapParamBuilder extends ApiParamBuilderBase<ApiMapParamBuilder> 
 		return this;
 	}
 
-	public ApiMapParamBuilder addRequiredArrayOfMapsParam(ApiArrayOrListParamBase... params) {
+	@SafeVarargs
+	public final ApiMapParamBuilder addRequiredArrayOfMapsParam(ApiArrayOrListParam<Map<String, Object>, ?>... params) {
 		checkVarArgsNotNullAndValuesNotNull(params);
-		for (ApiArrayOrListParamBase p : params) {
+		for (ApiArrayOrListParam<Map<String, Object>, ?> p : params) {
 			checkHasNotBeenAdded(p);
 			this.requiredArrayParams.put(p.keyName, p);
 		}
 		return this;
 	}
 
-	public ApiMapParamBuilder addOptionalArrayOfMapsParam(ApiArrayOrListParamBase... params) {
+	@SafeVarargs
+	public final ApiMapParamBuilder addOptionalArrayOfMapsParam(ApiArrayOrListParam<Map<String, Object>, ?>... params) {
 		checkVarArgsNotNullAndValuesNotNull(params);
-		for (ApiArrayOrListParamBase p : params) {
+		for (ApiArrayOrListParam<Map<String, Object>, ?> p : params) {
 			checkHasNotBeenAdded(p);
 			this.optionalArrayParams.put(p.keyName, p);
 		}
@@ -225,8 +227,8 @@ public class ApiMapParamBuilder extends ApiParamBuilderBase<ApiMapParamBuilder> 
 		                       this.optionalSingleParams.values().toArray(new ApiSingleParam[0]),
 		                       this.requiredMapParams.values().toArray(new ApiMapParam[0]),
 		                       this.optionalMapParams.values().toArray(new ApiMapParam[0]),
-		                       this.requiredArrayParams.values().toArray(new ApiArrayOrListParamBase[0]),
-		                       this.optionalArrayParams.values().toArray(new ApiArrayOrListParamBase[0]),
+		                       this.requiredArrayParams.values().toArray(new ApiArrayOrListParam[0]),
+		                       this.optionalArrayParams.values().toArray(new ApiArrayOrListParam[0]),
 		                       this.requiredCustomParams.toArray(new ApiCustomParam[0]),
 		                       this.optionalCustomParams.toArray(new ApiCustomParam[0]),
 		                       this.conditionalChecks.toArray(new ConditionalCheck[0]));

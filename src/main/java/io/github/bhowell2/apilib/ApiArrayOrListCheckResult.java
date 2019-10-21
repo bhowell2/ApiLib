@@ -3,7 +3,7 @@ package io.github.bhowell2.apilib;
 import java.util.List;
 
 /**
- * Check result for {@link ApiArrayParam} and {@link ApiListParam}.
+ * Check result for {@link ApiArrayOrListParam} and {@link ApiListParam}.
  * Only allows for returning the name of a successfully checked
  * array-type parameter and a list of {@link ApiMapCheckResult} in
  * case the array has maps as values.
@@ -91,7 +91,8 @@ public class ApiArrayOrListCheckResult extends ApiCheckResultBase {
 	 */
 	final List<ApiMapCheckResult> mapCheckResults;
 
-	public ApiArrayOrListCheckResult(String keyName, List<ApiArrayOrListCheckResult> innerArrayCheckResults,
+	public ApiArrayOrListCheckResult(String keyName,
+	                                 List<ApiArrayOrListCheckResult> innerArrayCheckResults,
 	                                 List<ApiMapCheckResult> mapCheckResults) {
 		super(keyName);
 		this.innerArrayCheckResults = innerArrayCheckResults;
@@ -124,22 +125,6 @@ public class ApiArrayOrListCheckResult extends ApiCheckResultBase {
 	}
 
 	/* Static creation methods */
-
-	/**
-	 * Used for inner arrays that do not need to actually return any information,
-	 * just that the check was successful. This means that in the final case
-	 * there are no maps within the array, just that it was a multi-dimensional
-	 * array and the values were okay. If the user has a multi-dimensional array
-	 * and needs to return custom information, they should use an
-	 * {@link ApiCustomParam} and use {@link ApiCustomCheckResult#customValue}
-	 * to return whatever they need.
-	 *
-	 * @return
-	 */
-	public static ApiArrayOrListCheckResult success() {
-		return new ApiArrayOrListCheckResult(null, null, null);
-	}
-
 
 	/**
 	 * Used when only the values of the list are checked and there are

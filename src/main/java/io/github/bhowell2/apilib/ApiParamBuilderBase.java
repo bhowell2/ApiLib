@@ -46,7 +46,7 @@ public class ApiParamBuilderBase<T extends ApiParamBuilderBase> {
 	 * from {@link io.github.bhowell2.apilib.checks.Check.Result} or even the
 	 * error message of {@link ApiParamError} in the case of a container
 	 * parameter such as {@link ApiMapParam} or
-	 * {@link ApiArrayParam}/{@link ApiListParam}. This can be useful when the
+	 * {@link ApiArrayOrListParam}/{@link ApiListParam}. This can be useful when the
 	 * user wants to return all of the requirements for a parameter in a single
 	 * string, rather than only what caused the failure with the current request.
 	 */

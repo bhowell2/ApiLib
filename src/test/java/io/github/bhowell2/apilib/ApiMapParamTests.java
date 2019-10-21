@@ -440,8 +440,8 @@ public class ApiMapParamTests {
 		 * There is quite a bit of overhead that goes into creating a custom parameter that checks each
 		 * array position for a map. If it is as simple as checking the value in each position then this
 		 * */
-		public static final ApiListParam<Map<String, Object>, Map<String, Object>> SHIPPING_ADDRESSES =
-			ApiListParamBuilder.<Map<String, Object>, Map<String, Object>>builder(BodyParamNames.SHIPPING_ADDRESSES, "Shipping Addresses")
+		public static final ApiArrayOrListParam<Map<String, Object>, Map<String, Object>> SHIPPING_ADDRESSES =
+			ApiArrayOrListParamBuilder.<Map<String, Object>, Map<String, Object>>builder(BodyParamNames.SHIPPING_ADDRESSES, "Shipping Addresses")
 				.setIndexMapCheck(ShippingAddress.SHIPPING_ADDRESS_MAP_PARAM)
 				.build();
 
