@@ -16,6 +16,12 @@ public class ApiArrayParamBuilder<In, Param>
 		return new ApiArrayParamBuilder<>(keyName, displayName);
 	}
 
+	public static <In, Param> ApiArrayParamBuilder<In, Param> copyFrom(String keyName,
+	                                                                   String displayName,
+	                                                                   ApiArrayParam<In, Param> copyFrom) {
+		return new ApiArrayParamBuilder<>(keyName, displayName, copyFrom);
+	}
+
 	public static <In, Param> ApiArrayParamBuilder<In, Param> unnamedBuilder() {
 		return builder(null, null);
 	}
@@ -42,6 +48,11 @@ public class ApiArrayParamBuilder<In, Param>
 	public ApiArrayParamBuilder(String keyName, String displayName) {
 		super(keyName, displayName);
 	}
+
+	public ApiArrayParamBuilder(String keyName, String displayName, ApiArrayParam<In, Param> copyFrom) {
+		super(keyName, displayName, copyFrom);
+	}
+
 
 	@SuppressWarnings("unchecked")
 	@Override

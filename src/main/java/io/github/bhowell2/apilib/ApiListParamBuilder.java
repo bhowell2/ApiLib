@@ -19,6 +19,12 @@ public class ApiListParamBuilder<In, Param>
 		return new ApiListParamBuilder<>(keyName, displayName);
 	}
 
+	public static <In, Param> ApiListParamBuilder<In, Param> builder(String keyName,
+	                                                                 String displayName,
+	                                                                 ApiListParam<In, Param> copyFrom) {
+		return new ApiListParamBuilder<>(keyName, displayName, copyFrom);
+	}
+
 	public static <In, Param> ApiListParamBuilder<In, Param> unnamedBuilder() {
 		return builder(null, null);
 	}
@@ -43,6 +49,10 @@ public class ApiListParamBuilder<In, Param>
 
 	public ApiListParamBuilder(String keyName, String displayName) {
 		super(keyName, displayName);
+	}
+
+	public ApiListParamBuilder(String keyName, String displayName, ApiListParam<In, Param> copyFrom) {
+		super(keyName, displayName, copyFrom);
 	}
 
 	@SuppressWarnings("unchecked")

@@ -7,11 +7,12 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 /**
  * @author Blake Howell
  */
-public abstract class ApiArrayOrListParamBuilderBase<
+abstract class ApiArrayOrListParamBuilderBase<
 	B extends ApiArrayOrListParamBuilderBase,
 	In,
 	Param,
@@ -33,6 +34,24 @@ public abstract class ApiArrayOrListParamBuilderBase<
 		this.indexChecks = new ArrayList<>();
 		this.individualIndexChecks = new ArrayList<>();
 		this.individualIndexMapCheck = new ArrayList<>();
+	}
+
+	public ApiArrayOrListParamBuilderBase(String keyName, String displayName, ApiArrayOrListParam<In, Param> copyFrom) {
+		super(keyName, displayName);
+		this.indexChecks = copyFrom.indexChecks != null
+			? new ArrayList<>(Arrays.asList(copyFrom.indexChecks))
+			: new ArrayList<>();
+		this.individualIndexChecks = copyFrom.individualIndexChecks != null
+			? Arrays.stream(copyFrom.individualIndexChecks)
+			        .map(Arrays::asList)
+			        .collect(ArrayList::new,
+			                 ArrayList::add,
+			                 List::addAll)
+			: new ArrayList<>();
+		this.indexMapCheck = copyFrom.indexMapCheck;
+		this.individualIndexMapCheck = copyFrom.individualIndexMapChecks != null
+			? Arrays.asList(copyFrom.individualIndexMapChecks)
+			: new ArrayList<>();
 	}
 
 	/**
@@ -64,8 +83,18 @@ public abstract class ApiArrayOrListParamBuilderBase<
 	}
 
 	@SuppressWarnings("unchecked")
-	public B
-	setIndividualIndexChecks(List<List<ArrayCheck<Param>>> individualIndexChecks) {
+	public B setIndividualIndexChecksWrapCheck(List<List<Check<Param>>> individualIndexChecks) {
+		this.individualIndexChecks =
+			individualIndexChecks.stream()
+			                     .map(checks -> checks.stream()
+			                                          .map(ArrayCheck::wrapCheck)
+			                                          .collect(Collectors.toList()))
+			                     .collect(Collectors.toList());
+		return (B) this;
+	}
+
+	@SuppressWarnings("unchecked")
+	public B setIndividualIndexChecks(List<List<ArrayCheck<Param>>> individualIndexChecks) {
 		if (this.individualIndexChecks != null) {
 			throw new IllegalArgumentException("Individual index checks has already been set.");
 		}
@@ -98,26 +127,5 @@ public abstract class ApiArrayOrListParamBuilderBase<
 	}
 
 	abstract C build();
-
-//	@SuppressWarnings("unchecked")
-//	public ApiArrayOrListParam<In, Param> build() {
-//		ArrayCheck<Param>[][] individualIndexChecksAry =
-//			this.individualIndexChecks.stream()
-//				.<List<ArrayCheck[]>>collect(ArrayList::new,
-//				                             (a, b) -> a.add(b.toArray(new ArrayCheck[0])),
-//				                             List::addAll)
-//				.toArray(new ArrayCheck[0][]);
-//		return new ApiArrayOrListParam<>(this.keyName,
-//		                                 this.displayName,
-//		                                 this.invalidErrorMessage,
-//		                                 this.canBeNull,
-//		                                 this.indexChecks.toArray(new ArrayCheck[0]),
-//		                                 individualIndexChecksAry,
-//		                                 this.indexMapCheck,
-//		                                 this.individualIndexMapCheck.toArray(new ApiMapParam[0]),
-//		                                 this.innerArrayOrListParam,
-//		                                 this.requireArray,
-//		                                 this.requireList);
-//	}
 
 }

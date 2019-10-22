@@ -3,6 +3,9 @@ package io.github.bhowell2.apilib;
 import io.github.bhowell2.apilib.checks.Check;
 import io.github.bhowell2.apilib.formatters.Formatter;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -18,9 +21,75 @@ import java.util.Map;
  */
 public class ApiSingleParam<Param> extends ApiParamBase<Map<String, Object>, ApiSingleCheckResult> {
 
-	public final String invalidErrMsg;
+	public static <Param> ApiSingleParam.Builder<Param> builder(String keyName) {
+		return new Builder<>(keyName);
+	}
+
+	public static <Param> ApiSingleParam.Builder<Param> builder(String keyName, Class<Param> paramType) {
+		return new Builder<>(keyName);
+	}
+
 	final Formatter<? super Object, ? super Object>[] formatters;
 	final Check<Param>[] checks;
+
+	public static class Builder<Param> extends ApiParamBase.Builder<Builder<Param>> {
+
+		private List<Check<Param>> checks;
+		private List<Formatter<?,?>> formatters;
+
+		public Builder(String keyName) {
+			super(keyName);
+			this.checks = new ArrayList<>(1);
+			this.formatters = new ArrayList<>();
+		}
+
+		public Builder(String keyName, ApiSingleParam<Param> copyFrom) {
+			super(keyName);
+			this.checks = new ArrayList<>(Arrays.asList(copyFrom.checks));
+			this.formatters = (copyFrom.formatters != null && copyFrom.formatters.length > 0)
+				? new ArrayList<>(Arrays.asList(copyFrom.formatters))
+				: new ArrayList<>();
+		}
+
+		@SafeVarargs
+		@SuppressWarnings("varargs")
+		public final Builder<Param> addChecks(Check<Param>... checks) {
+			checkVarArgsNotNullAndValuesNotNull(checks);
+			this.checks.addAll(Arrays.asList(checks));
+			return this;
+		}
+
+		/**
+		 * Formatters are applied in the order they are added, so if a later formatter depends on the parameter being of a
+		 * different type then it must come after the formatter that cast the parameter to a different type.
+		 * @param formatters
+		 * @return
+		 */
+		@SuppressWarnings("varargs")
+		public Builder<Param> addFormatters(Formatter<?, ?>... formatters) {
+			checkVarArgsNotNullAndValuesNotNull(formatters);
+			this.formatters.addAll(Arrays.asList(formatters));
+			return this;
+		}
+
+		public ApiSingleParam<Param> build() {
+			return new ApiSingleParam<>(this);
+		}
+
+	}
+
+	public static class Result extends ApiNamedCheckResultBase {
+		public Result(String keyName) {
+			super(keyName);
+		}
+	}
+
+	@SuppressWarnings("unchecked")
+	private ApiSingleParam(Builder<Param> builder) {
+		super(builder);
+		this.checks = builder.checks.toArray(new Check[0]);
+		this.formatters = builder.formatters.toArray(new Formatter[0]);
+	}
 
 	/**
 	 *
@@ -28,7 +97,7 @@ public class ApiSingleParam<Param> extends ApiParamBase<Map<String, Object>, Api
 	 * @param displayName the name that the client/user would understand (e.g., primary_email may be the name of a
 	 *                    parameter in a JsonObject, but the user sees 'primary email' as the field they are inputting
 	 *                    their information into.)
-	 * @param invalidErrMsg overrides all error messages from invalid parameter checks (i.e., when a check fails) and
+	 * @param invalidErrorMessage overrides all error messages from invalid parameter checks (i.e., when a check fails) and
 	 *                      returns this message instead
 	 * @param canBeNull   whether or not the parameter value is allowed to be SET to null
 	 * @param formatters  requiring formatters to return object of Param type. so if a cast needs to happen to Param,
@@ -37,11 +106,11 @@ public class ApiSingleParam<Param> extends ApiParamBase<Map<String, Object>, Api
 	 */
 	public ApiSingleParam(String keyName,
 	                      String displayName,
-	                      String invalidErrMsg,
+	                      String invalidErrorMessage,
 	                      boolean canBeNull,
 	                      Formatter<? super Object, ? super Object>[] formatters,
 	                      Check<Param>[] checks) {
-		super(keyName, displayName, invalidErrMsg, canBeNull);
+		super(keyName, displayName, invalidErrorMessage, canBeNull);
 		if (keyName == null) {
 			throw new IllegalArgumentException("Cannot create ApiSingleParam with null keyName.");
 		} else if (displayName == null) {
@@ -61,13 +130,12 @@ public class ApiSingleParam<Param> extends ApiParamBase<Map<String, Object>, Api
 			}
 		}
 		this.checks = checks;
-		this.invalidErrMsg = invalidErrMsg;
 	}
 
 	private ApiSingleCheckResult returnInvalidErrorMessage(String errMsg) {
 		// if invalid error message is set it overrides all other error messages
-		if (this.invalidErrMsg != null) {
-			return ApiSingleCheckResult.failure(ApiParamError.invalid(this, this.invalidErrMsg));
+		if (this.invalidErrorMessage != null) {
+			return ApiSingleCheckResult.failure(ApiParamError.invalid(this, this.invalidErrorMessage));
 		} else {
 			return errMsg == null
 				?
