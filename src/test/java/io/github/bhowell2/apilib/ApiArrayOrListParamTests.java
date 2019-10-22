@@ -1,5 +1,6 @@
 package io.github.bhowell2.apilib;
 
+import io.github.bhowell2.apilib.checks.ArrayCheck;
 import io.github.bhowell2.apilib.checks.Check;
 import io.github.bhowell2.apilib.checks.DoubleChecks;
 import io.github.bhowell2.apilib.checks.IntegerChecks;
@@ -59,6 +60,12 @@ public class ApiArrayOrListParamTests {
 
 		assertThrows(IllegalArgumentException.class, () -> {
 			new ApiArrayOrListParam("whatever", "whatever", "whatever", false, null, null, null, null, null) {
+
+			};
+		}, "Should not be able to create array param without checks.");
+
+		assertThrows(IllegalArgumentException.class, () -> {
+			new ApiArrayOrListParam("whatever", "whatever", "whatever", false, new ArrayCheck[0], null, null, new ApiMapParam[0], null) {
 
 			};
 		}, "Should not be able to create array param without checks.");
@@ -620,6 +627,41 @@ public class ApiArrayOrListParamTests {
 		ApiArrayOrListCheckResult passingCheckResult = listParam.check(requestParams);
 		assertTrue(passingCheckResult.successful());
 
+	}
+
+	@Test
+	public void testIndividualIndexChecks() throws Exception {
+		String keyName = "key";
+		ApiArrayOrListParam<Map<String, Object>, String> arrayOrListParam =
+			ApiArrayOrListParamBuilder.mapInputBuilder(keyName, keyName, String.class)
+			                          .setIndividualIndexChecksWrapCheck(
+			                          	Arrays.asList(
+			                          		Arrays.asList(
+			                          			StringChecks.lengthEqualTo(1)
+					                          ),
+					                          Arrays.asList(
+					                          	StringChecks.lengthEqualTo(2)
+					                          ),
+					                          Arrays.asList(
+						                          StringChecks.lengthEqualTo(3)
+					                          )
+				                          ))
+			                          .build();
+		Map<String, Object> requestParams = new HashMap<>();
+		requestParams.put(keyName, Arrays.asList("1", "12", "123"));
+		ApiArrayOrListCheckResult passingCheckResult = arrayOrListParam.check(requestParams);
+		assertTrue(passingCheckResult.successful());
+		assertEquals(keyName, passingCheckResult.keyName);
+		assertFalse(passingCheckResult.hasInnerArrayCheckResults());
+		assertFalse(passingCheckResult.hasMapCheckResults());
+
+		// should cause failure
+		requestParams.put(keyName, Arrays.asList("1", "123", "123"));
+		ApiArrayOrListCheckResult failingCheckResult = arrayOrListParam.check(requestParams);
+		assertTrue(failingCheckResult.failed());
+		assertEquals(keyName, failingCheckResult.error.keyName);
+		assertEquals(ApiErrorType.INVALID_PARAMETER, failingCheckResult.error.errorType);
+		assertEquals(1, failingCheckResult.error.index);
 	}
 
 }

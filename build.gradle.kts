@@ -5,8 +5,12 @@ plugins {
 }
 
 repositories {
+  mavenLocal()
   mavenCentral()
 }
+
+group = "io.github.bhowell2"
+version = "0.1.1"
 
 java {
   sourceCompatibility = JavaVersion.VERSION_1_8
@@ -23,7 +27,6 @@ tasks.withType(JavaCompile::class) {
   options.compilerArgs.add("-Xlint:unchecked")
 }
 
-
 tasks {
   test {
     useJUnitPlatform()
@@ -33,7 +36,8 @@ tasks {
 publishing {
   publications {
     create<MavenPublication>("mavenJava") {
-
+      artifactId = "api-lib"
+      from(components["java"])
     }
   }
 }

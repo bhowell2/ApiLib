@@ -63,7 +63,7 @@ public class ApiMapParam extends ApiParamBase<Map<String, Object>, ApiMapCheckRe
 	final ApiSingleParam<?>[] requiredSingleParams, optionalSingleParams;
 	final ApiMapParam[] requiredMapParams, optionalMapParams;
 	final ApiArrayOrListParam[] requiredArrayParams, optionalArrayParams;
-	final ApiCustomParam<Map<String, Object>, ?>[] requiredCustomParams, optionalCustomParams;
+	final ApiCustomParam[] requiredCustomParams, optionalCustomParams;
 	final ConditionalCheck[] conditionalChecks;
 
 	/**
@@ -90,8 +90,8 @@ public class ApiMapParam extends ApiParamBase<Map<String, Object>, ApiMapCheckRe
 	                   ApiMapParam[] optionalMapParams,
 	                   ApiArrayOrListParam[] requiredArrayParams,
 	                   ApiArrayOrListParam[] optionalArrayParams,
-	                   ApiCustomParam<Map<String, Object>, ?>[] requiredCustomParams,
-	                   ApiCustomParam<Map<String, Object>, ?>[] optionalCustomParams,
+	                   ApiCustomParam[] requiredCustomParams,
+	                   ApiCustomParam[] optionalCustomParams,
 	                   ConditionalCheck[] conditionalChecks) {
 		super(keyName, displayName, invalidErrorMessage, canBeNull);
 		this.continueOnOptionalFailure = continueOnOptionalFailure;
@@ -310,9 +310,9 @@ public class ApiMapParam extends ApiParamBase<Map<String, Object>, ApiMapCheckRe
 			}
 
 			if (this.requiredCustomParams != null) {
-				for (ApiCustomParam<Map<String, Object>, ?> param : this.requiredCustomParams) {
+				for (ApiCustomParam param : this.requiredCustomParams) {
 					try {
-						ApiCustomCheckResult<?> checkResult = param.check(mapParamToCheck);
+						ApiCustomCheckResult checkResult = param.check(mapParamToCheck);
 						if (checkResult.failed()) {
 							return returnFailedCheckResult(checkResult.error);
 						}
@@ -451,9 +451,9 @@ public class ApiMapParam extends ApiParamBase<Map<String, Object>, ApiMapCheckRe
 			}
 
 			if (this.optionalCustomParams != null) {
-				for (ApiCustomParam<Map<String, Object>, ?> param : this.optionalCustomParams) {
+				for (ApiCustomParam param : this.optionalCustomParams) {
 					try {
-						ApiCustomCheckResult<?> checkResult = param.check(mapParamToCheck);
+						ApiCustomCheckResult checkResult = param.check(mapParamToCheck);
 						if (checkResult.failed()) {
 							if (this.continueOnOptionalFailure || checkResult.error.errorType == ApiErrorType.MISSING_PARAMETER) {
 								continue;

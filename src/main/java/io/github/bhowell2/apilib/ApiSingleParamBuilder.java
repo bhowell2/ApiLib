@@ -89,7 +89,7 @@ public class ApiSingleParamBuilder<Param> extends ApiParamBuilderBase<ApiSingleP
 	                                                           ApiSingleParam<Param> copyParam) {
 		return new ApiSingleParamBuilder<Param>(keyName, displayName)
 			.setCanBeNull(copyParam.canBeNull)
-			.setInvalidErrorMessage(copyParam.invalidErrMsg)
+			.setInvalidErrorMessage(copyParam.invalidErrorMessage)
 			.addChecks(copyParam.checks)
 			.addFormatters(copyParam.formatters);
 	}

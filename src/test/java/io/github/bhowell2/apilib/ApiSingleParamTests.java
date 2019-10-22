@@ -337,5 +337,16 @@ public class ApiSingleParamTests {
 		assertEquals(ApiErrorType.MISSING_PARAMETER, checkResultMissing.error.errorType);
 
 	}
+	
+	@Test
+	public void testBuilder() throws Exception {
+		ApiSingleParam param = ApiSingleParam.builder("hey", String.class)
+		                                     .addChecks(StringChecks.lengthGreaterThan(5))
+		                                     .build();
+
+		Map<String, Object> requestParams = new HashMap<>();
+		requestParams.put("hey", "wtfisthis");
+
+	}
 
 }

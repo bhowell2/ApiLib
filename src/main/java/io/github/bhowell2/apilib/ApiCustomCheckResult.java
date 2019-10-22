@@ -3,6 +3,7 @@ package io.github.bhowell2.apilib;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 
 /**
@@ -23,25 +24,25 @@ import java.util.Set;
  *
  * @author Blake Howell
  */
-public class ApiCustomCheckResult<T> extends ApiCheckResultBase {
+public class ApiCustomCheckResult extends ApiCheckResultBase {
 
-	final Set<String> checkedKeyNames;
+	public final Set<String> checkedKeyNames;
 
-	final Map<String, ApiArrayOrListCheckResult> checkedArrayOfMapsParams;
+	public final Map<String, ApiArrayOrListCheckResult> checkedArrayOfMapsParams;
 
-	final Map<String, ApiMapCheckResult> checkedMapParams;
+	public final Map<String, ApiMapCheckResult> checkedMapParams;
 
 	/**
 	 * Allows the user to return any type of object. They will have to cast this
 	 * when they retrieve it from an {@link ApiMapCheckResult}.
 	 */
-	final T customValue;
+	public final Object customValue;
 
 	public ApiCustomCheckResult(String keyName,
 	                            Set<String> checkedKeyNames,
 	                            Map<String, ApiArrayOrListCheckResult> checkedArrayOfMapsParams,
 	                            Map<String, ApiMapCheckResult> checkedMapParams,
-	                            T customValue) {
+	                            Object customValue) {
 		super(keyName);
 		this.checkedKeyNames = checkedKeyNames;
 		this.checkedArrayOfMapsParams = checkedArrayOfMapsParams;
@@ -79,16 +80,45 @@ public class ApiCustomCheckResult<T> extends ApiCheckResultBase {
 
 	/* Static Creation Methods */
 
-	public static ApiCustomCheckResult success(String keyName) {
-		return new ApiCustomCheckResult<>(keyName, null, null, null, null);
-	}
-
 	public static ApiCustomCheckResult success(String... checkedKeyNames) {
 		return success(new HashSet<>(Arrays.asList(checkedKeyNames)));
 	}
 
 	public static ApiCustomCheckResult success(Set<String> checkedKeyNames) {
-		return new ApiCustomCheckResult<>(null, checkedKeyNames, null, null, null);
+		return new ApiCustomCheckResult(null, checkedKeyNames, null, null, null);
+	}
+
+	public static ApiCustomCheckResult success(Set<String> checkedKeyNames,
+	                                           Map<String, ApiArrayOrListCheckResult> checkedArrayOfMapsParams,
+	                                           Map<String, ApiMapCheckResult> checkedMapParams) {
+		return new ApiCustomCheckResult(null, checkedKeyNames, checkedArrayOfMapsParams, checkedMapParams, null);
+	}
+
+	/**
+	 * @param keyName keyName is only required when custom value is set.
+	 * @param checkedKeyNames
+	 * @param checkedArrayOfMapsParams
+	 * @param checkedMapParams
+	 * @param customValue
+	 * @return
+	 */
+	public static ApiCustomCheckResult success(String keyName,
+	                                           Set<String> checkedKeyNames,
+	                                           Map<String, ApiArrayOrListCheckResult> checkedArrayOfMapsParams,
+	                                           Map<String, ApiMapCheckResult> checkedMapParams,
+	                                           Object customValue) {
+		return new ApiCustomCheckResult(keyName, checkedKeyNames, checkedArrayOfMapsParams, checkedMapParams, customValue);
+	}
+
+
+	public static <T> ApiCustomCheckResult successWithCustomResult(String keyName, T customResult) {
+		Objects.requireNonNull(keyName, "Cannot have custom value without key name, otherwise would not have " +
+			"a way to retrieve it");
+		return new ApiCustomCheckResult(keyName, null, null, null, customResult);
+	}
+
+	public static ApiCustomCheckResult failure(ApiParamError error) {
+		return new ApiCustomCheckResult(error);
 	}
 
 }

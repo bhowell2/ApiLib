@@ -39,7 +39,7 @@ public class ApiMapParamBuilder extends ApiParamBuilderBase<ApiMapParamBuilder> 
 	private Map<String, ApiArrayOrListParam<Map<String, Object>, ?>> requiredArrayParams, optionalArrayParams;
 
 	// custom parameters and conditional checks do not have names
-	private List<ApiCustomParam<Map<String, Object>, ?>> requiredCustomParams, optionalCustomParams;
+	private List<ApiCustomParam> requiredCustomParams, optionalCustomParams;
 	private List<ConditionalCheck> conditionalChecks;
 
 	public ApiMapParamBuilder() {
@@ -170,14 +170,14 @@ public class ApiMapParamBuilder extends ApiParamBuilderBase<ApiMapParamBuilder> 
 	}
 
 	@SafeVarargs
-	public final ApiMapParamBuilder addRequiredCustomParams(ApiCustomParam<Map<String, Object>, ?>... params) {
+	public final ApiMapParamBuilder addRequiredCustomParams(ApiCustomParam... params) {
 		checkVarArgsNotNullAndValuesNotNull(params);
 		this.requiredCustomParams.addAll(Arrays.asList(params));
 		return this;
 	}
 
 	@SafeVarargs
-	public final ApiMapParamBuilder addOptionalCustomParam(ApiCustomParam<Map<String, Object>, ?>... params) {
+	public final ApiMapParamBuilder addOptionalCustomParam(ApiCustomParam... params) {
 		checkVarArgsNotNullAndValuesNotNull(params);
 		this.optionalCustomParams.addAll(Arrays.asList(params));
 		return this;
