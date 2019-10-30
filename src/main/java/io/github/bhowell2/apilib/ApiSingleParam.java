@@ -19,20 +19,86 @@ import java.util.Map;
  *
  * @author Blake Howell
  */
-public class ApiSingleParam<Param> extends ApiParamBase<Map<String, Object>, ApiSingleCheckResult> {
+public class ApiSingleParam<Param> extends ApiParamBase<Map<String, Object>, ApiSingleParam.Result> {
 
-	public static <Param> ApiSingleParam.Builder<Param> builder(String keyName) {
+	/**
+	 * Creates a builder for {@link ApiSingleParam}. A key name is required for a
+	 * single parameter so that the parameter can be retrieved from the Map input
+	 * into {@link #check(Map)}.
+	 *
+	 * canBeNull defaults to false
+	 * displayName defaults to null
+	 * invalidErrorMessage defaults to null
+	 *
+	 * @param keyName name used to retrieve the parameter from a Map. cannot be null.
+	 * @param <Param> the parameter's type
+	 * @return a builder for the parameter
+	 */
+	public static <Param> Builder<Param> builder(String keyName) {
 		return new Builder<>(keyName);
 	}
 
-	public static <Param> ApiSingleParam.Builder<Param> builder(String keyName, Class<Param> paramType) {
-		return new Builder<>(keyName);
+	/**
+	 * Creates a builder for {@link ApiSingleParam}. A key name is required for a
+	 * single parameter so that the parameter can be retrieved from the Map input
+	 * into {@link #check(Map)}.
+	 *
+	 * canBeNull defaults to false
+	 * displayName defaults to null
+	 * invalidErrorMessage defaults to null
+	 *
+	 * @param keyName name used to retrieve the parameter from a Map. cannot be null.
+	 * @param paramType allows for providing the param type as a parameter rather than
+	 *                  parameterizing the method call or casting.
+	 * @param <Param> the parameter's type (will be the Class provided as parameter)
+	 * @return a builder for the parameter
+	 */
+	public static <Param> Builder<Param> builder(String keyName, Class<Param> paramType) {
+		return builder(keyName);
+	}
+
+	/**
+	 * Creates a builder for {@link ApiSingleParam} that uses all of the fields
+	 * from the supplied ApiSingleParam to copy. A key name is required for a
+	 * single parameter so that the parameter can be retrieved from the Map input
+	 * into {@link #check(Map)}.
+	 *
+	 * The copied fields include: keyName, displayName, canBeNull,
+	 * invalidErrorMessage, formatters, and checks.
+	 *
+	 * @param copyFrom the single parameter to copy
+	 * @param <Param> the parameter's type
+	 * @return a builder for the parameter
+	 */
+	public static <Param> Builder<Param> builder(ApiSingleParam<Param> copyFrom) {
+		return new Builder<>(copyFrom.keyName, copyFrom);
+	}
+
+	/**
+	 * Creates a builder for {@link ApiSingleParam} that uses all of the fields
+	 * from the supplied ApiSingleParam to copy, but uses a different key name.
+	 * A key name is required for a single parameter so that the parameter can
+	 * be retrieved from the Map input into {@link #check(Map)}.
+	 *
+	 * The copied fields include: displayName, canBeNull, invalidErrorMessage,
+	 * formatters, and checks.
+	 *
+	 * @param keyName name used to retrieve the parameter from a Map. cannot be null.
+	 * @param copyFrom the single parameter to copy
+	 * @param <Param> the parameter's type
+	 * @return a builder for the parameter
+	 */
+	public static <Param> Builder<Param> builder(String keyName, ApiSingleParam<Param> copyFrom) {
+		return new Builder<>(keyName, copyFrom);
 	}
 
 	final Formatter<? super Object, ? super Object>[] formatters;
 	final Check<Param>[] checks;
 
-	public static class Builder<Param> extends ApiParamBase.Builder<Builder<Param>> {
+	public static class Builder<Param> extends ApiParamBase.Builder<
+		ApiSingleParam<Param>,
+		Builder<Param>
+		> {
 
 		private List<Check<Param>> checks;
 		private List<Formatter<?,?>> formatters;
@@ -44,9 +110,10 @@ public class ApiSingleParam<Param> extends ApiParamBase<Map<String, Object>, Api
 		}
 
 		public Builder(String keyName, ApiSingleParam<Param> copyFrom) {
-			super(keyName);
+			this(keyName);
+			// checks can never be null or empty
 			this.checks = new ArrayList<>(Arrays.asList(copyFrom.checks));
-			this.formatters = (copyFrom.formatters != null && copyFrom.formatters.length > 0)
+			this.formatters = arrayIsNotNullOrEmpty(copyFrom.formatters)
 				? new ArrayList<>(Arrays.asList(copyFrom.formatters))
 				: new ArrayList<>();
 		}
@@ -68,86 +135,79 @@ public class ApiSingleParam<Param> extends ApiParamBase<Map<String, Object>, Api
 		@SuppressWarnings("varargs")
 		public Builder<Param> addFormatters(Formatter<?, ?>... formatters) {
 			checkVarArgsNotNullAndValuesNotNull(formatters);
+			if (this.formatters == null) {
+				this.formatters = new ArrayList<>(formatters.length);
+			}
 			this.formatters.addAll(Arrays.asList(formatters));
 			return this;
 		}
 
 		public ApiSingleParam<Param> build() {
+			// check key name
+			if (keyName == null) {
+				throw new IllegalArgumentException("Cannot create ApiSingleParam with null keyName.");
+			}
+			// ensure some checks are provided
+			if (checks == null || checks.size() == 0) {
+				throw new RuntimeException("No checks were provided for parameter (key name) '" + keyName + "'." +
+					                           "If this is intentional, provide a check that always passes or always fails." +
+					                           "If the check should always pass Check.alwaysPass() has been provided for this " +
+					                           "case and Check.alwaysFail() has been provided if the parameter check should " +
+					                           "always fail.");
+			}
 			return new ApiSingleParam<>(this);
 		}
 
 	}
 
-	public static class Result extends ApiNamedCheckResultBase {
+	/**
+	 * Result for {@link ApiSingleParam#check(Map)}.
+	 */
+	public static class Result extends ApiParamBase.Result {
+
 		public Result(String keyName) {
 			super(keyName);
 		}
+
+		public Result(ApiParamError error) {
+			super(error);
+		}
+
+		public static Result success(String keyName) {
+			return new Result(keyName);
+		}
+
+		public static Result failure(ApiParamError error) {
+			return new Result(error);
+		}
+
 	}
 
 	@SuppressWarnings("unchecked")
 	private ApiSingleParam(Builder<Param> builder) {
 		super(builder);
 		this.checks = builder.checks.toArray(new Check[0]);
-		this.formatters = builder.formatters.toArray(new Formatter[0]);
+		this.formatters = listIsNotNullOrEmpty(builder.formatters)
+			? builder.formatters.toArray(new Formatter[0])
+			: null;
 	}
 
-	/**
-	 *
-	 * @param keyName     key to retrieve the parameter from Map of string keys
-	 * @param displayName the name that the client/user would understand (e.g., primary_email may be the name of a
-	 *                    parameter in a JsonObject, but the user sees 'primary email' as the field they are inputting
-	 *                    their information into.)
-	 * @param invalidErrorMessage overrides all error messages from invalid parameter checks (i.e., when a check fails) and
-	 *                      returns this message instead
-	 * @param canBeNull   whether or not the parameter value is allowed to be SET to null
-	 * @param formatters  requiring formatters to return object of Param type. so if a cast needs to happen to Param,
-	 *                    it should be done in the first formatter (they are run in order)
-	 * @param checks      ensure the value of the parameter is as expected
-	 */
-	public ApiSingleParam(String keyName,
-	                      String displayName,
-	                      String invalidErrorMessage,
-	                      boolean canBeNull,
-	                      Formatter<? super Object, ? super Object>[] formatters,
-	                      Check<Param>[] checks) {
-		super(keyName, displayName, invalidErrorMessage, canBeNull);
-		if (keyName == null) {
-			throw new IllegalArgumentException("Cannot create ApiSingleParam with null keyName.");
-		} else if (displayName == null) {
-			throw new IllegalArgumentException("Cannot create ApiSingleParam with null displayName.");
-		}
-		this.formatters = formatters;
-		if (checks == null || checks.length == 0) {
-			throw new RuntimeException("No checks were provided for parameter (key name) '" + keyName + "'." +
-				                           "If this is intentional, provide a check that always passes or always fails." +
-				                           "If the check should always pass Check.alwaysPass() has been provided for this " +
-				                           "case and Check.alwaysFail() has been provided if the parameter check should " +
-				                           "always fail.");
-		}
-		for (Check check : checks) {
-			if (check == null) {
-				throw new RuntimeException("Cannot have null values in Check array.");
-			}
-		}
-		this.checks = checks;
-	}
-
-	private ApiSingleCheckResult returnInvalidErrorMessage(String errMsg) {
+	private Result returnInvalidErrorMessage(String errMsg) {
 		// if invalid error message is set it overrides all other error messages
 		if (this.invalidErrorMessage != null) {
-			return ApiSingleCheckResult.failure(ApiParamError.invalid(this, this.invalidErrorMessage));
+			return Result.failure(ApiParamError.invalid(this, this.invalidErrorMessage));
 		} else {
 			return errMsg == null
 				?
-				ApiSingleCheckResult.failure(ApiParamError.invalid(this))
+				Result.failure(ApiParamError.invalid(this))
 				:
-				ApiSingleCheckResult.failure(ApiParamError.invalid(this, errMsg));
+				Result.failure(ApiParamError.invalid(this, errMsg));
 		}
 	}
 
 	@Override
 	@SuppressWarnings("unchecked")
-	public ApiSingleCheckResult check(Map<String, Object> params) {
+	public Result check(Map<String, Object> params) {
 		try {
 			/*
 			 * Due to type erasure this is really just (Object) here. Will not see any casting issues until param is
@@ -158,13 +218,13 @@ public class ApiSingleParam<Param> extends ApiParamBase<Map<String, Object>, Api
 				if (params.containsKey(this.keyName)) {
 					// was SET to null, not just null because it was not set at all
 					if (canBeNull) {
-						return ApiSingleCheckResult.success(this.keyName);
+						return Result.success(this.keyName);
 					} else {
 						return returnInvalidErrorMessage(ApiLibSettings.DEFAULT_CANNOT_BE_NULL_MESSAGE);
 					}
 				} else {
 					// param is null, but was not SET to null. therefore it is missing.
-					return ApiSingleCheckResult.failure(ApiParamError.missing(this));
+					return Result.failure(ApiParamError.missing(this));
 				}
 			}
 
@@ -183,9 +243,9 @@ public class ApiSingleParam<Param> extends ApiParamBase<Map<String, Object>, Api
 					if (formatResult.failed()) {
 						return formatResult.hasFailureMessage()
 							?
-							ApiSingleCheckResult.failure(ApiParamError.format(this, formatResult.getFailureMessage()))
+							Result.failure(ApiParamError.format(this, formatResult.getFailureMessage()))
 							:
-							ApiSingleCheckResult.failure(ApiParamError.format(this));
+							Result.failure(ApiParamError.format(this));
 					}
 					paramToFormat = formatResult.getFormattedValue();
 				}
@@ -199,7 +259,7 @@ public class ApiSingleParam<Param> extends ApiParamBase<Map<String, Object>, Api
 			 * */
 			if (param == null) {
 				if (canBeNull) {
-					return ApiSingleCheckResult.success(this.keyName);
+					return Result.success(this.keyName);
 				} else {
 					return returnInvalidErrorMessage(ApiLibSettings.DEFAULT_CANNOT_BE_NULL_MESSAGE);
 				}
@@ -216,21 +276,12 @@ public class ApiSingleParam<Param> extends ApiParamBase<Map<String, Object>, Api
 			if (formatted) {
 				params.put(this.keyName, param);
 			}
-			return ApiSingleCheckResult.success(this.keyName);
+			return Result.success(this.keyName);
 		} catch (ClassCastException e) {
-			return ApiSingleCheckResult.failure(ApiParamError.cast(this, e));
+			return Result.failure(ApiParamError.cast(this, e));
 		} catch (Exception e) {
-			return ApiSingleCheckResult.failure(ApiParamError.exceptional(this, e));
+			return Result.failure(ApiParamError.exceptional(this, e));
 		}
-	}
-
-	/**
-	 * This is the same as calling {@link ApiSingleParamBuilder#builder(ApiSingleParam)}, but a bit more succinct
-	 * and clear for which parameter is used.
-	 * @return
-	 */
-	public ApiSingleParamBuilder<Param> toBuilder() {
-		return ApiSingleParamBuilder.builder(this);
 	}
 
 	/**
@@ -240,8 +291,9 @@ public class ApiSingleParam<Param> extends ApiParamBase<Map<String, Object>, Api
 	 * @param displayName
 	 * @return
 	 */
-	public ApiSingleParamBuilder<Param> toBuilder(String keyName, String displayName) {
-		return ApiSingleParamBuilder.builder(keyName, displayName, this);
+	public Builder<Param> toBuilder(String keyName, String displayName) {
+		return ApiSingleParam.builder(keyName, this)
+		                     .setDisplayName(displayName);
 	}
 
 }

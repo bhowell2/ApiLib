@@ -2,12 +2,8 @@ package io.github.bhowell2.apilib.checks;
 
 import io.github.bhowell2.apilib.ApiLibSettings;
 import io.github.bhowell2.apilib.ApiSingleParam;
-import io.github.bhowell2.apilib.checks.utils.CollectionUtils;
 
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
 
 /**
  * Intended to be used to check the value of a single parameter - a parameter that does not contain
@@ -44,18 +40,30 @@ public interface Check<T> {
 			this.failureMessage = failureMessage;
 		}
 
+		/**
+		 * Whether or not the check was successful.
+		 */
 		public boolean successful() {
 			return this.failureMessage == null;
 		}
 
+		/**
+		 * Whether or not the check failed.
+		 */
 		public boolean failed() {
 			return this.failureMessage != null;
 		}
 
 		/* Static Creation Methods */
 
+		/**
+		 * Avoid creating a new object every time a check is successful.
+		 */
+		private static Result SUCCESSFUL = new Result();
+
+		/* Implementation  */
 		public static Result success() {
-			return new Result();
+			return SUCCESSFUL;
 		}
 
 		/**
@@ -63,7 +71,7 @@ public interface Check<T> {
 		 * {@link ApiLibSettings#DEFAULT_INVALID_PARAMETER_MESSAGE}.
 		 */
 		public static Result failure() {
-			return failure(ApiLibSettings.DEFAULT_INVALID_PARAMETER_MESSAGE);
+			return new Result(ApiLibSettings.DEFAULT_INVALID_PARAMETER_MESSAGE);
 		}
 
 		/**
@@ -73,7 +81,10 @@ public interface Check<T> {
 		 */
 		public static Result failure(String failureMessage) {
 			if (failureMessage == null) {
-				// cannot be null or need to add a boolean to differentiate a failure
+				/*
+				* Cannot be null or would need to add a boolean to differentiate a failure
+				* from success, due to how successful and failure methods are implemented.
+				* */
 				return new Result(ApiLibSettings.DEFAULT_INVALID_PARAMETER_MESSAGE);
 			}
 			return new Result(failureMessage);
@@ -111,16 +122,16 @@ public interface Check<T> {
 	 * is of the correct type.
 	 *
 	 * @param clazz class (or parent class) the parameter must be an instance of (will fail if it is not)
-	 * @param invalidMessage failure message returned if param is not of correct type
+	 * @param invalidClassErrorMessage failure message returned if param is not of correct type
 	 * @param <T> type of the parameter
 	 * @return
 	 */
-	static <T> Check<T> alwaysPass(Class<T> clazz, String invalidMessage) {
+	static <T> Check<T> alwaysPass(Class<T> clazz, String invalidClassErrorMessage) {
 		return param -> clazz.isInstance(param)
 			?
 			Check.Result.success()
 			:
-			Check.Result.failure(invalidMessage);
+			Check.Result.failure(invalidClassErrorMessage);
 
 	}
 
@@ -151,61 +162,8 @@ public interface Check<T> {
 	}
 
 	/**
-	 * Creates check which ensures at least one of the checks provided passes. Combines failure
-	 * messages from each check if they all fail, joining them with the string " OR ".
-	 *
-	 * @param checks one of these checks must pass
-	 * @param <T> the parameter type
-	 * @return a check that passes if one of the supplied checks passes. otherwise it will fail.
-	 */
-	@SafeVarargs
-	public static <T> Check<T> orConditionalCheck(Check<T>... checks) {
-		return orConditionalCheck(null, checks);
-	}
-
-	/**
-	 * Creates check which ensures at least one of the checks provided passes.
-	 *
-	 * @param failureMessage overrides failure messages returned from checks. if this is null then
-	 *                       the error messages from each check will be collected and combined with
-	 *                       the string " OR ".
-	 * @param checks one of these checks must pass
-	 * @param <T> the parameter type
-	 * @return a check that passes if one of the supplied checks passes. otherwise it will fail.
-	 */
-	@SafeVarargs
-	public static <T> Check<T> orConditionalCheck(String failureMessage, Check<T>... checks) {
-		CollectionUtils.requireNonNullEntries(checks);
-		return param -> {
-			/*
-			 * Used to combine error messages if an explicit failure message is not provided.
-			 * If a failure
-			 * */
-			List<String> combinedErrorMessages = null;
-			for (int i = 0; i < checks.length; i++) {
-				Check.Result result = checks[i].check(param);
-				if (result.failed()) {
-					if (failureMessage == null) {
-						if (combinedErrorMessages == null) {
-							combinedErrorMessages = new ArrayList<>();
-						}
-						combinedErrorMessages.add(result.failureMessage);
-					}
-				} else {
-					// if any single check passes this is successful
-					return Check.Result.success();
-				}
-			}
-			if (failureMessage != null) {
-				return Check.Result.failure(failureMessage);
-			}
-			return Check.Result.failure(String.join(" OR ", combinedErrorMessages));
-		};
-	}
-
-	/**
 	 * Check that the value of the parameter satisfies this check.
-	 * @param param
+	 * @param param the parameter value to check
 	 * @return
 	 */
 	Result check(T param);

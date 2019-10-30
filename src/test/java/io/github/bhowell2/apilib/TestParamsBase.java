@@ -37,18 +37,18 @@ public abstract class TestParamsBase {
 	public static final String PASSWORD_KEY = "password";
 
 	public static final ApiSingleParam<String> USERNAME_PARAM =
-		ApiSingleParamBuilder.builder(USERNAME_KEY, String.class)
+		ApiSingleParam.builder(USERNAME_KEY, String.class)
 		                     .addChecks(StringChecks.doesNotBeginWithCodePoints("abc"))
 		                     .addChecks(StringChecks.lengthGreaterThan(3))
 		                     .build();
 
 	public static final ApiSingleParam<String> EMAIL_PARAM =
-		ApiSingleParamBuilder.builder(EMAIL_KEY, String.class)
+		ApiSingleParam.builder(EMAIL_KEY, String.class)
 		                     .addChecks(StringChecks.MATCHES_BASIC_EMAIL_PATTERN)
 		                     .build();
 
 	public static final ApiSingleParam<String> PASSWORD_PARAM =
-		ApiSingleParamBuilder.builder(PASSWORD_KEY, String.class)
+		ApiSingleParam.builder(PASSWORD_KEY, String.class)
 		                     .addChecks(StringChecks.lengthGreaterThan(5),
 		                                StringChecks.containsCodePointsInRange(1, "0", "9", false))
 		                     .build();
@@ -57,17 +57,6 @@ public abstract class TestParamsBase {
 	/* CUSTOM PARAMS */
 
 	public static final String CUSTOM_PARAM_NAME_USERNAME_OR_EMAIL = "username_or_email";
-
-	// this is a bit contrived, because it is more likely there would be one field that accepts email or username,
-	// rather than a field of one or the other
-//	public static final ApiCustomParam USERNAME_OR_EMAIL_CUSTOM_PARAM =
-//		new ApiCustomParam(CUSTOM_PARAM_NAME_USERNAME_OR_EMAIL, "Only username or email required.") {
-//			@Override
-//			public ApiCustomParamCheckResult check(Map<String, Object> params) {
-//				// utilizing SINGLE_PARAM_CHECKS above
-//
-//			}
-//		};
 
 	/* MAP PARAMS */
 

@@ -1,9 +1,10 @@
 package io.github.bhowell2.apilib;
 
-import io.github.bhowell2.apilib.checks.ConditionalCheck;
-
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -11,7 +12,7 @@ import java.util.Set;
  * An ApiMapParam is a parameter that contains other, named, parameters. This can be viewed
  * as a JsonObject. All parameters (strings, doubles, arrays, even nested Maps/JsonObjects,
  * etc.) exist within a Map and can be obtained by a string (the parameter's key name). Each
- * parameter will be checked by the provided {@link ApiSingleParam}, {@link ApiArrayOfMapsParam},
+ * parameter will be checked by the provided {@link ApiSingleParam}, {@link ApiCollectionParam},
  * {@link ApiMapParam}, or {@link ApiCustomParam} (with the map being passed to each one so that
  * the parameter can be retrieved from it and re-inserted into the map if it is formatted).
  *
@@ -21,7 +22,7 @@ import java.util.Set;
  *
  * -  If the required parameter is provided and the check passes the parameter's name will be
  *    added to the list of successfully checked parameters. If the parameter is of type
- *    {@link ApiMapParam} or {@link ApiArrayOfMapsParam} the parameter's name will still be
+ *    {@link ApiMapParam} or {@link ApiCollectionParam} the parameter's name will still be
  *    added to the list of successfully checked parameters, but will also return the result of
  *    that each check so the user will know what parameters were supplied and correctly checked
  *    in each of them.
@@ -37,84 +38,782 @@ import java.util.Set;
  *
  * -  If the optional parameter is provided and the check succeeds the parameter's name will be
  *    added to the list of successfully checked parameters. If the parameter is of type
- *    {@link ApiMapParam} or {@link ApiArrayOfMapsParam} the parameter's name will still be
+ *    {@link ApiMapParam} or {@link ApiCollectionParam} the parameter's name will still be
  *    added to the list of successfully checked parameters, but will also return the result of
  *    that each check so the user will know what parameters were supplied and correctly checked
  *    in each of them.
  *
  * @author Blake Howell
  */
-public class ApiMapParam extends ApiParamBase<Map<String, Object>, ApiMapCheckResult> {
+public class ApiMapParam extends ApiParamBase<Map<String, Object>, ApiMapParam.Result> {
 
-	private static void ensureHasKeyNameAndNotNull(ApiParamBase<?, ?>... params) {
-		// the array itself could be null, but if it is not make sure no entries are null and nameless
-		if (params != null) {
-			for (ApiParamBase param : params) {
-				if (param == null) {
-					throw new IllegalArgumentException("Cannot add parameter to map parameter that is null");
-				} else if (param.keyName == null) {
-					throw new IllegalArgumentException("Cannot add parameter to map parameter that does not have a key name.");
-				}
-			}
-		}
+	/**
+	 * Creates a builder for a top-level Map or a Map that is in an array
+	 * (i.e., Maps that are not retrieved from other Maps by name).
+	 * canBeNull and continueOnOptionalFailure default to {@code false}. All
+	 * parameters are empty and must be added as desired. If the ApiMapParam
+	 * has a name (not null), then a map of the given name will be retrieved
+	 * from the Map passed into {@link #check(Map)}; otherwise the Map passed
+	 * into check will itself be checked.
+	 *
+	 * @return
+	 */
+	public static Builder builder() {
+		return builder((String) null);
 	}
+
+
+	/**
+	 * Creates a builder for an {@link ApiMapParam} with the given key name.
+	 * canBeNull and continueOnOptionalFailure default to {@code false}. All
+	 * parameters are empty and must be added as desired. If the ApiMapParam
+	 * has a name, then a map of the given name must be retrievable from the
+	 * Map passed into {@link #check(Map)}.
+	 *
+	 * @param keyName name of the map that the {@link ApiMapParam} built by this builder
+	 *                should check. a value of null would not attempt to retrieve a
+	 *                map from the Map input to {@link #check(Map)}, but check the input
+	 *                map itself.
+	 * @return a builder
+	 */
+	public static Builder builder(String keyName) {
+		return new Builder(keyName);
+	}
+
+	/**
+	 * Copies everything from the provided {@link ApiMapParam}. This includes
+	 * key name, display name, can be null, continue on optional failure, and all
+	 * required/optional parameters and conditional checks.
+	 *
+	 * @param copyFrom the parameter to copy
+	 * @return a builder with pre-set fields from the copied ApiMapParam
+	 */
+	public static Builder builder(ApiMapParam copyFrom) {
+		return new Builder(copyFrom.keyName, copyFrom);
+	}
+
+	/**
+	 * Copies everything from the provided {@link ApiMapParam}. This includes
+	 * display name, can be null, continue on optional failure, and all
+	 * required/optional parameters and conditional checks.
+	 *
+	 * @param keyName the key name to use for this parameter
+	 * @param copyFrom the parameter to copy
+	 * @return a builder with pre-set fields from the copied ApiMapParam
+	 */
+	public static Builder builder(String keyName, ApiMapParam copyFrom) {
+		return new Builder(keyName, copyFrom);
+	}
+
+
+	/*
+	 *
+	 * FIELDS
+	 *
+	 * */
 
 	final boolean continueOnOptionalFailure;
 	final ApiSingleParam<?>[] requiredSingleParams, optionalSingleParams;
 	final ApiMapParam[] requiredMapParams, optionalMapParams;
-	final ApiArrayOrListParam[] requiredArrayParams, optionalArrayParams;
+	final ApiCollectionParam<Map<String, Object>, ?, ?>[] requiredCollectionParams, optionalCollectionParams;
 	final ApiCustomParam[] requiredCustomParams, optionalCustomParams;
-	final ConditionalCheck[] conditionalChecks;
+	final ApiMapParamConditionalCheck[] conditionalChecks;
+
+
+	/*
+	 *
+	 * BUILDER
+	 *
+	 * */
 
 	/**
-	 *
-	 * @param keyName
-	 * @param displayName
-	 * @param canBeNull
-	 * @param continueOnOptionalFailure
-	 * @param requiredSingleParams
-	 * @param optionalSingleParams
-	 * @param requiredMapParams
-	 * @param optionalMapParams
-	 * @param requiredCustomParams
-	 * @param optionalCustomParams
+	 * Facilitates building an {@link ApiMapParam}. Generally greatly reduces
+	 * the boilerplate needed to create the map parameter and ensures that a
+	 * parameter (by key name) has not already been added to another parameter
+	 * type.
 	 */
-	public ApiMapParam(String keyName,
-	                   String displayName,
-	                   String invalidErrorMessage,
-	                   boolean canBeNull,
-	                   boolean continueOnOptionalFailure,
-	                   ApiSingleParam<?>[] requiredSingleParams,
-	                   ApiSingleParam<?>[] optionalSingleParams,
-	                   ApiMapParam[] requiredMapParams,
-	                   ApiMapParam[] optionalMapParams,
-	                   ApiArrayOrListParam[] requiredArrayParams,
-	                   ApiArrayOrListParam[] optionalArrayParams,
-	                   ApiCustomParam[] requiredCustomParams,
-	                   ApiCustomParam[] optionalCustomParams,
-	                   ConditionalCheck[] conditionalChecks) {
-		super(keyName, displayName, invalidErrorMessage, canBeNull);
-		this.continueOnOptionalFailure = continueOnOptionalFailure;
-		this.requiredSingleParams = requiredSingleParams;
-		ensureHasKeyNameAndNotNull(requiredSingleParams);
-		this.optionalSingleParams = optionalSingleParams;
-		ensureHasKeyNameAndNotNull(optionalSingleParams);
-		this.requiredMapParams = requiredMapParams;
-		ensureHasKeyNameAndNotNull(requiredMapParams);
-		this.optionalMapParams = optionalMapParams;
-		ensureHasKeyNameAndNotNull(optionalMapParams);
-		this.requiredArrayParams = requiredArrayParams;
-		ensureHasKeyNameAndNotNull(requiredArrayParams);
-		this.optionalArrayParams = optionalArrayParams;
-		ensureHasKeyNameAndNotNull(optionalArrayParams);
-		/*
-		* Custom parameters are not restricted to having a name since they could be
-		* checking multiple parameters or even none at all and simply ensuring that
-		* a condition is met - though ConditionalChecks are usually preferable.
-		* */
-		this.requiredCustomParams = requiredCustomParams;
-		this.optionalCustomParams = optionalCustomParams;
-		this.conditionalChecks = conditionalChecks;
+	public static class Builder extends ApiParamBase.Builder<ApiMapParam, Builder> {
+
+		// default to false, avoids potential problems for user down the line
+		private boolean continueOnOptionalFailure = false;
+
+		// using maps to easily keep track of already added params (by key name)
+		private Map<String, ApiSingleParam<?>> requiredSingleParams, optionalSingleParams;
+		private Map<String, ApiMapParam> requiredMapParams, optionalMapParams;
+		private Map<String, ApiCollectionParam<Map<String, Object>, ?, ?>> requiredCollectionParams, optionalCollectionParams;
+
+		// custom parameters and conditional checks do not have names
+		private List<ApiCustomParam> requiredCustomParams, optionalCustomParams;
+		private List<ApiMapParamConditionalCheck> conditionalChecks;
+
+		private static <T extends ApiParamBase<?,?>> Map<String, T> makeMapForCopyFromParamArray(T[] copyFromArray) {
+			Map<String, T> copyFromMap = new HashMap<>();
+			if (copyFromArray != null) {
+				for (int i = 0; i < copyFromArray.length; i++) {
+					// these should never be null, but checking for good measure...
+					T param = copyFromArray[i];
+					if (param != null) {
+						copyFromMap.put(param.keyName, param);
+					}
+				}
+			}
+			return copyFromMap;
+		}
+
+		private static <T> List<T> makeListForCopyFromParamArray(T[] copyFromArray) {
+			List<T> list = new ArrayList<>();
+			if (copyFromArray != null) {
+				for (int i = 0; i < copyFromArray.length; i++) {
+					T param = copyFromArray[i];
+					if (param != null) {
+						list.add(param);
+					}
+				}
+			}
+			return list;
+		}
+
+
+		public Builder(String keyName) {
+			super(keyName);
+			this.requiredSingleParams = new HashMap<>();
+			this.optionalSingleParams = new HashMap<>();
+			this.requiredMapParams = new HashMap<>();
+			this.optionalMapParams = new HashMap<>();
+			this.requiredCollectionParams = new HashMap<>();
+			this.optionalCollectionParams = new HashMap<>();
+			this.requiredCustomParams = new ArrayList<>();
+			this.optionalCustomParams = new ArrayList<>();
+			this.conditionalChecks = new ArrayList<>();
+		}
+
+		/**
+		 * Copies everything from the provided {@link ApiMapParam}. This includes the
+		 * displayName, canBeNull, invalidErrorMessage, continueOnOptionalFailure, and
+		 * all required/optional parameters and conditional checks.
+		 * @param keyName
+		 * @param copyFrom
+		 */
+		public Builder(String keyName, ApiMapParam copyFrom) {
+			super(keyName);
+			this.displayName = copyFrom.displayName;
+			this.canBeNull = copyFrom.canBeNull;
+			this.invalidErrorMessage = copyFrom.invalidErrorMessage;
+			this.continueOnOptionalFailure = copyFrom.continueOnOptionalFailure;
+			this.requiredSingleParams = makeMapForCopyFromParamArray(copyFrom.requiredSingleParams);
+			this.optionalSingleParams = makeMapForCopyFromParamArray(copyFrom.optionalSingleParams);
+			this.requiredMapParams = makeMapForCopyFromParamArray(copyFrom.requiredMapParams);
+			this.optionalMapParams = makeMapForCopyFromParamArray(copyFrom.optionalMapParams);
+			this.requiredCollectionParams = makeMapForCopyFromParamArray(copyFrom.requiredCollectionParams);
+			this.optionalCollectionParams = makeMapForCopyFromParamArray(copyFrom.optionalCollectionParams);
+			this.requiredCustomParams = makeListForCopyFromParamArray(copyFrom.requiredCustomParams);
+			this.optionalCustomParams = makeListForCopyFromParamArray(copyFrom.optionalCustomParams);
+			if (arrayIsNotNullOrEmpty(copyFrom.conditionalChecks)) {
+				this.conditionalChecks.addAll(Arrays.asList(copyFrom.conditionalChecks));
+			}
+		}
+
+		/**
+		 * Set whether or not the {@link ApiMapParam} should continue checking if an
+		 * optional parameter fails in any way other than {@link ApiErrorType#MISSING_PARAMETER}.
+		 *
+		 * If {@link ApiMapParam#continueOnOptionalFailure} is {@link true} an
+		 * optional parameter that fails in any way will NOT fail the check and will
+		 * NOT be added to the list of {@link ApiMapParam.Result#checkedKeyNames}.
+		 *
+		 * @param continueOnOptionalFailure whether or not to continue on an optional failure
+		 * @return this builder
+		 */
+		public Builder setContinueOnOptionalFailure(boolean continueOnOptionalFailure) {
+			this.continueOnOptionalFailure = continueOnOptionalFailure;
+			return this;
+		}
+
+		// checks that the parameter by the given name has not been added to
+		private void checkHasNotBeenAdded(ApiParamBase<?, ?> param) {
+			// redundancy check since checkVarArgs... is used everywhere
+			if (param == null) {
+				throw new IllegalArgumentException("Cannot add null parameter.");
+			}
+			String keyName = param.keyName;
+			if (keyName == null) {
+				throw new IllegalArgumentException("Cannot add parameter with null key name to ApiMapParam");
+			}
+			if (this.requiredSingleParams.containsKey(keyName)) {
+				throw new IllegalArgumentException("Parameter of keyName=" + keyName +
+					                                   " has already been added to required single params.");
+			} else if (this.optionalSingleParams.containsKey(keyName)) {
+				throw new IllegalArgumentException("Parameter of keyName=" + keyName +
+					                                   " has already been added to optional single params.");
+			} else if (this.requiredCollectionParams.containsKey(keyName)) {
+				throw new IllegalArgumentException("Parameter of keyName=" + keyName +
+					                                   " has already been added to required array params.");
+			} else if (this.optionalCollectionParams.containsKey(keyName)) {
+				throw new IllegalArgumentException("Parameter of keyName=" + keyName +
+					                                   " has already been added to optional array params.");
+			} else if (this.requiredMapParams.containsKey(keyName)) {
+				throw new IllegalArgumentException("Parameter of keyName=" + keyName +
+					                                   " has already been added to required map params.");
+			} else if (this.optionalMapParams.containsKey(keyName)) {
+				throw new IllegalArgumentException("Parameter of keyName=" + keyName +
+					                                   " has already been added to optional map params.");
+			}
+		}
+
+		@SafeVarargs
+		@SuppressWarnings("unchecked")
+		public final Builder addRequiredParams(ApiParam<Map<String, Object>, ?>... params) {
+			checkVarArgsNotNullAndValuesNotNull(params);
+			for (ApiParam p : params) {
+				if (p instanceof ApiSingleParam) {
+					this.requiredSingleParams.put(((ApiSingleParam) p).keyName, (ApiSingleParam) p);
+				} else if (p instanceof ApiCollectionParam) {
+					this.requiredCollectionParams.put(((ApiCollectionParam) p).keyName,
+					                                  (ApiCollectionParam<Map<String, Object>, ?, ?>) p);
+				} else if (p instanceof ApiMapParam) {
+					this.requiredMapParams.put(((ApiMapParam) p).keyName, (ApiMapParam) p);
+				} else if (p instanceof ApiCustomParam) {
+					this.requiredCustomParams.add((ApiCustomParam) p);
+				} else {
+					throw new IllegalArgumentException("Unknown ApiParam implementation.");
+				}
+			}
+			return this;
+		}
+
+		@SafeVarargs
+		@SuppressWarnings("unchecked")
+		public final Builder addOptionalParams(ApiParam<Map<String, Object>, ?>... params) {
+			checkVarArgsNotNullAndValuesNotNull(params);
+			for (ApiParam p : params) {
+				if (p instanceof ApiSingleParam) {
+					this.optionalSingleParams.put(((ApiSingleParam) p).keyName, (ApiSingleParam) p);
+				} else if (p instanceof ApiCollectionParam) {
+					this.optionalCollectionParams.put(((ApiCollectionParam) p).keyName,
+					                                  (ApiCollectionParam<Map<String, Object>, ?, ?>) p);
+				} else if (p instanceof ApiMapParam) {
+					this.optionalMapParams.put(((ApiMapParam) p).keyName, (ApiMapParam) p);
+				} else if (p instanceof ApiCustomParam) {
+					this.optionalCustomParams.add((ApiCustomParam) p);
+				} else {
+					throw new IllegalArgumentException("Unknown ApiParam implementation.");
+				}
+			}
+			return this;
+		}
+
+		/**
+		 * Removes the parameters of the given key name from the builder (both
+		 * optional and required) - this includes parameters that were added by
+		 * copying another ApiMapParam.
+		 *
+		 * Note this does not include {@link ApiCustomParam} as they do not have
+		 * a key name and must be removed with {@link #removeCustomParams(ApiCustomParam...)}.
+		 *
+		 * @param keyNames all key names to remove
+		 * @return this builder
+		 */
+		public final Builder removeParams(String... keyNames) {
+			checkVarArgsNotNullAndValuesNotNull(keyNames);
+			for (String key : keyNames) {
+				this.requiredSingleParams.remove(key);
+				this.optionalSingleParams.remove(key);
+				this.requiredMapParams.remove(key);
+				this.optionalMapParams.remove(key);
+				this.requiredCollectionParams.remove(key);
+				this.optionalCollectionParams.remove(key);
+			}
+			return this;
+		}
+
+		/**
+		 * Removes the parameters from any of the already added (required or
+		 * optional) parameters - this includes parameters that were added by
+		 * copying another ApiMapParam.
+		 *
+		 * Note this does not include {@link ApiCustomParam} as they do not have
+		 * a key name and must be removed with {@link #removeCustomParams(ApiCustomParam...)}.
+		 *
+		 * @param params the parameters to remove (will retrieve key name and remove them)
+		 * @return this builder
+		 */
+		public Builder removeParams(ApiParamBase<?,?>... params) {
+		  checkVarArgsNotNullAndValuesNotNull(params);
+			return removeParams(Arrays.stream(params).map(p -> p.keyName).toArray(String[]::new));
+		}
+
+		/**
+		 * Removes the parameters from the required parameters of the builder
+		 * - this includes parameters that were added by copying another ApiMapParam.
+		 *
+		 * Note this does not include {@link ApiCustomParam} as they do not have
+		 * a key name and must be removed with {@link #removeRequiredCustomParams(ApiCustomParam...)}.
+		 *
+		 * @param keyNames all key names to remove
+		 * @return this builder
+		 */
+		public final Builder removeRequiredParams(String... keyNames) {
+			checkVarArgsNotNullAndValuesNotNull(keyNames);
+			for (String key : keyNames) {
+				this.requiredSingleParams.remove(key);
+				this.requiredMapParams.remove(key);
+				this.requiredCollectionParams.remove(key);
+			}
+			return this;
+		}
+
+		/**
+		 * Removes the parameters from the required parameters of the builder
+		 * - this includes parameters that were added by copying another ApiMapParam.
+		 *
+		 * Note this does not include {@link ApiCustomParam} as they do not have
+		 * a key name and must be removed with {@link #removeRequiredCustomParams(ApiCustomParam...)}.
+		 *
+		 * @param params the parameters to remove (will retrieve key name and remove them)
+		 * @return this builder
+		 */
+		public final Builder removeRequiredParams(ApiParamBase<?,?>... params) {
+			checkVarArgsNotNullAndValuesNotNull(params);
+			return removeRequiredParams(Arrays.stream(params).map(p -> p.keyName).toArray(String[]::new));
+		}
+
+
+		/**
+		 * Removes the parameters from the optional parameters of the builder
+		 * - this includes parameters that were added by copying another ApiMapParam.
+		 *
+		 * Note this does not include {@link ApiCustomParam} as they do not have
+		 * a key name and must be removed with {@link #removeOptionalCustomParams(ApiCustomParam...)}.
+		 *
+		 * @param keyNames  list of keynames to remove
+		 * @return this builder
+		 */
+		public final Builder removeOptionalParams(String... keyNames) {
+			checkVarArgsNotNullAndValuesNotNull(keyNames);
+			for (String key : keyNames) {
+				this.optionalSingleParams.remove(key);
+				this.optionalMapParams.remove(key);
+				this.optionalCollectionParams.remove(key);
+			}
+			return this;
+		}
+
+		/**
+		 * Removes the parameters from the optional parameters of the builder
+		 * - this includes parameters that were added by copying another ApiMapParam.
+		 *
+		 * Note this does not include {@link ApiCustomParam} as they do not have
+		 * a key name and must be removed with {@link #removeOptionalCustomParams(ApiCustomParam...)}.
+		 *
+		 * @param params the parameters to remove (will retrieve key name and remove them)
+		 * @return this builder
+		 */
+		public final Builder removeOptionalParams(ApiParamBase<?,?>... params) {
+			checkVarArgsNotNullAndValuesNotNull(params);
+			return removeOptionalParams(Arrays.stream(params).map(p -> p.keyName).toArray(String[]::new));
+		}
+
+
+		/**
+		 * Removes a parameter from the required or optional custom parameters
+		 * of the builder - this includes parameters that were added by copying
+		 * another ApiMapParam.
+		 *
+		 * @param params the parameters to remove
+		 * @return this builder
+		 */
+		public final Builder removeCustomParams(ApiCustomParam... params) {
+			checkVarArgsNotNullAndValuesNotNull(params);
+			List<ApiCustomParam> customParamsToRemove = Arrays.asList(params);
+			this.requiredCustomParams.removeAll(customParamsToRemove);
+			this.optionalCustomParams.removeAll(customParamsToRemove);
+			return this;
+		}
+
+		/**
+		 * Removes a parameter from the required custom parameters. Does nothing if
+		 * the parameter has been added as optional.
+		 *
+		 * @param params custom parameters to remove
+		 * @return this builder
+		 */
+		public final Builder removeRequiredCustomParams(ApiCustomParam... params) {
+			checkVarArgsNotNullAndValuesNotNull(params);
+			this.requiredCustomParams.removeAll(Arrays.asList(params));
+			return this;
+		}
+
+		/**
+		 * Removes a parameter from the optional custom parameters. Does nothing if
+		 * the parameter has been added as required.
+		 *
+		 * @param params custom parameters to remove
+		 * @return this builder
+		 */
+		public final Builder removeOptionalCustomParams(ApiCustomParam... params) {
+			checkVarArgsNotNullAndValuesNotNull(params);
+			this.optionalCustomParams.removeAll(Arrays.asList(params));
+			return this;
+		}
+
+		/**
+		 * Adds the parameters to the required parameters group if the key names
+		 * do not already exist in any other group. If a parameter by the same
+		 * key name exists in the required parameters group it will be overridden.
+		 * @param params
+		 * @return
+		 */
+		public Builder addRequiredSingleParams(ApiSingleParam<?>... params) {
+			checkVarArgsNotNullAndValuesNotNull(params);
+			if (this.requiredSingleParams == null && params.length > 0) {
+				this.requiredSingleParams = new HashMap<>();
+			}
+			for (ApiSingleParam p : params) {
+				checkHasNotBeenAdded(p);
+				this.requiredSingleParams.put(p.keyName, p);
+			}
+			return this;
+		}
+
+		public Builder addOptionalSingleParams(ApiSingleParam<?>... params) {
+			checkVarArgsNotNullAndValuesNotNull(params);
+			if (this.optionalSingleParams == null && params.length > 0) {
+				this.optionalSingleParams = new HashMap<>();
+			}
+			for (ApiSingleParam p : params) {
+				checkHasNotBeenAdded(p);
+				this.optionalSingleParams.put(p.keyName, p);
+			}
+			return this;
+		}
+
+		public Builder addRequiredMapParams(ApiMapParam... params) {
+			checkVarArgsNotNullAndValuesNotNull(params);
+			if (this.requiredMapParams == null && params.length > 0) {
+				this.requiredMapParams = new HashMap<>();
+			}
+			for (ApiMapParam p : params) {
+				checkHasNotBeenAdded(p);
+				this.requiredMapParams.put(p.keyName, p);
+			}
+			return this;
+		}
+
+		public Builder addOptionalMapParams(ApiMapParam... params) {
+			checkVarArgsNotNullAndValuesNotNull(params);
+			if (this.optionalMapParams == null && params.length > 0) {
+				this.optionalMapParams = new HashMap<>();
+			}
+			for (ApiMapParam p : params) {
+				checkHasNotBeenAdded(p);
+				this.optionalMapParams.put(p.keyName, p);
+			}
+			return this;
+		}
+
+		@SafeVarargs
+		public final Builder addRequiredCollectionParams(ApiCollectionParam<Map<String, Object>, ?, ?>... params) {
+			checkVarArgsNotNullAndValuesNotNull(params);
+			if (this.requiredCollectionParams == null && params.length > 0) {
+				this.requiredCollectionParams = new HashMap<>();
+			}
+			for (ApiCollectionParam<Map<String, Object>, ?, ?> p : params) {
+				checkHasNotBeenAdded(p);
+				this.requiredCollectionParams.put(p.keyName, p);
+			}
+			return this;
+		}
+
+		@SafeVarargs
+		public final Builder addOptionalCollectionParams(ApiCollectionParam<Map<String, Object>, ?, ?>... params) {
+			checkVarArgsNotNullAndValuesNotNull(params);
+			if (this.optionalCollectionParams == null && params.length > 0) {
+				this.optionalCollectionParams = new HashMap<>();
+			}
+			for (ApiCollectionParam<Map<String, Object>, ?, ?> p : params) {
+				checkHasNotBeenAdded(p);
+				this.optionalCollectionParams.put(p.keyName, p);
+			}
+			return this;
+		}
+
+		public final Builder addRequiredCustomParams(ApiCustomParam... params) {
+			checkVarArgsNotNullAndValuesNotNull(params);
+			if (this.requiredCustomParams == null) {
+				this.requiredCustomParams = new ArrayList<>();
+			}
+			/*
+			* Need to check whether or not it has already been added since this is
+			* a list and not a map where the other parameters are identified by key name.
+			* */
+			for (ApiCustomParam p : params) {
+				if (!this.requiredCustomParams.contains(p)) {
+					this.requiredCustomParams.add(p);
+				}
+			}
+			return this;
+		}
+
+		public final Builder addOptionalCustomParams(ApiCustomParam... params) {
+			checkVarArgsNotNullAndValuesNotNull(params);
+			if (this.optionalCustomParams == null) {
+				this.optionalCustomParams = new ArrayList<>();
+			}
+			/*
+			 * Need to check whether or not it has already been added since this is
+			 * a list and not a map where the other parameters are identified by key name.
+			 * */
+			for (ApiCustomParam p : params) {
+				if (!this.optionalCustomParams.contains(p)) {
+					this.optionalCustomParams.add(p);
+				}
+			}
+			return this;
+		}
+
+		public Builder addConditionalChecks(ApiMapParamConditionalCheck... conditionalChecks) {
+			checkVarArgsNotNullAndValuesNotNull(conditionalChecks);
+			if (this.conditionalChecks == null) {
+				this.conditionalChecks = new ArrayList<>();
+			}
+			/*
+			 * Need to check whether or not it has already been added since this is
+			 * a list and not a map where the other parameters are identified by key name.
+			 * */
+			for (ApiMapParamConditionalCheck check : conditionalChecks) {
+				if (!this.conditionalChecks.contains(check)) {
+					this.conditionalChecks.add(check);
+				}
+			}
+			return this;
+		}
+
+		public Builder removeConditionalChecks(ApiMapParamConditionalCheck... conditionalChecks) {
+			checkVarArgsNotNullAndValuesNotNull(conditionalChecks);
+			this.conditionalChecks.removeAll(Arrays.asList(conditionalChecks));
+		  return this;
+		}
+
+		private static <T extends ApiParamBase<?, ?>> Map<String, T> mergeCopyFromParams(T[] copyFromParams,
+		                                                                                 Map<String, T> builderMap) {
+			if (copyFromParams != null) {
+				Map<String, T> copyMap = new HashMap<>();
+				for (T p : copyFromParams) {
+					copyMap.put(p.keyName, p);
+				}
+				copyMap.putAll(builderMap);
+				return copyMap;
+			}
+			// do nothing, just return builder's map
+			return builderMap;
+		}
+
+		private static <T> List<T> mergeCopyFromArray(T[] copyFromList, List<T> builderList) {
+			if (copyFromList != null) {
+				List<T> copyList = new ArrayList<>(Arrays.asList(copyFromList));
+				copyList.addAll(builderList);
+				return copyList;
+			}
+			// do nothing, just return builder's list
+			return builderList;
+		}
+
+
+		@SuppressWarnings("unchecked")
+		@Override
+		public ApiMapParam build() {
+			return new ApiMapParam(this);
+		}
+	}
+
+	/*
+	 *
+	 * RESULT
+	 *
+	 * */
+
+	public static class Result extends ApiParamBase.Result {
+
+		/**
+		 * Name (keyName) of all successfully checked parameters.
+		 * Note: this contains all parameter's key names in the
+		 * {@link #checkedCollectionResults} and {@link #checkedMapResults},
+		 * but does not contain the keyName of a custom param.
+		 */
+		public final Set<String> checkedKeyNames;
+
+		/**
+		 * Name (keyName) of the successfully checked map parameters. These
+		 * are nested maps within this checked map parameter. These key names
+		 * also appear in {@link #checkedKeyNames}.
+		 */
+		public final Map<String, Result> checkedMapResults;
+
+		/**
+		 * Name (keyName) of the successfully checked arrays/lists of maps.
+		 * If the innermost {@link ApiCollectionParam.Result} does not contain
+		 * {@link ApiCollectionParam.Result#mapResults} then it will
+		 * be ignored and only appear in {@link #checkedKeyNames}.
+		 */
+		public final Map<String, ApiCollectionParam.Result> checkedCollectionResults;
+
+		/**
+		 * If {@link ApiCustomParam.Result} returns a customValue, it will
+		 * be available here. This requires the ApiCustomParam.Result return
+		 * a key name (enforced by constructor).
+		 */
+		public final Map<String, Object> customValues;
+
+		public Result(String keyName,
+		              Set<String> checkedKeyNames,
+		              Map<String, Result> checkedMapResults,
+		              Map<String, ApiCollectionParam.Result> checkedCollectionResults,
+		              Map<String, Object> customValues) {
+			super(keyName);
+			this.checkedKeyNames = checkedKeyNames;
+			this.checkedMapResults = checkedMapResults;
+			this.checkedCollectionResults = checkedCollectionResults;
+			this.customValues = customValues;
+		}
+
+		public Result(ApiParamError error) {
+			super(error);
+			this.checkedKeyNames = null;
+			this.checkedMapResults = null;
+			this.checkedCollectionResults = null;
+			this.customValues = null;
+		}
+
+		/**
+		 * Whether or not any key names were provided.
+		 * @return
+		 */
+		public boolean hasCheckedKeyNames() {
+			return this.checkedKeyNames != null;
+		}
+
+		/**
+		 * Converts the set containing parameter key names to a list.
+		 * @return
+		 */
+		public List<String> getCheckedParamsAsList() {
+			return this.checkedKeyNames != null ? new ArrayList<>(this.checkedKeyNames) : new ArrayList<>();
+		}
+
+		/**
+		 * Can be used to check if any given parameter has been supplied. Every p
+		 * @param parameterName
+		 * @return
+		 */
+		public boolean containsParameter(String parameterName) {
+			return this.checkedKeyNames != null && checkedKeyNames.contains(parameterName);
+		}
+
+		/* MAP */
+
+		public boolean hasCheckedMapResults() {
+			return this.checkedMapResults != null;
+		}
+
+		/**
+		 * @param mapKeyName name of the object parameter that was checked
+		 * @return the result or null
+		 */
+		public Result getMapResult(String mapKeyName) {
+			return this.checkedMapResults != null ? checkedMapResults.get(mapKeyName) : null;
+		}
+
+		/* COLLECTION */
+
+		public boolean hasCheckedCollectionResults() {
+			return this.checkedCollectionResults != null;
+		}
+
+		public ApiCollectionParam.Result getCollectionResult(String collectionKeyName) {
+			return this.checkedCollectionResults != null ? checkedCollectionResults.get(collectionKeyName) : null;
+		}
+
+		/* CUSTOM */
+
+		public boolean hasCustomValues() {
+			return this.customValues != null;
+		}
+
+		public Object getCustomValue(String customKeyName) {
+			return this.customValues != null ? customValues.get(customKeyName) : null;
+		}
+
+		/* Static creation methods */
+
+		/**
+		 * When the Map is null or has no parameters itself.
+		 * @param keyName
+		 * @return
+		 */
+		public static Result success(String keyName) {
+			return new Result(keyName, null, null, null, null);
+		}
+
+
+		public static Result success(String keyName, Set<String> checkedKeyNames) {
+			return new Result(keyName, checkedKeyNames, null, null, null);
+		}
+
+		public static Result success(String keyName,
+		                             Set<String> checkedKeyNames,
+		                             Map<String, Result> checkedMapResults,
+		                             Map<String, ApiCollectionParam.Result> checkedCollectionResults,
+		                             Map<String, Object> customValues) {
+			return new Result(keyName, checkedKeyNames, checkedMapResults, checkedCollectionResults, customValues);
+		}
+
+		public static Result failure(ApiParamError apiParamError) {
+			return new Result(apiParamError);
+		}
+
+	}
+
+	private static boolean mapIsNotNullOrEmpty(Map<?, ?> map) {
+		return map != null && map.size() > 0;
+	}
+
+	/*
+	 *
+	 * IMPLEMENTATION
+	 *
+	 * */
+
+	@SuppressWarnings("unchecked")
+	private ApiMapParam(Builder builder) {
+		super(builder);
+		this.continueOnOptionalFailure = builder.continueOnOptionalFailure;
+		this.requiredSingleParams = mapIsNotNullOrEmpty(builder.requiredSingleParams)
+			? builder.requiredSingleParams.values().toArray(new ApiSingleParam[0])
+			: null;
+		this.optionalSingleParams = mapIsNotNullOrEmpty(builder.optionalSingleParams)
+			? builder.optionalSingleParams.values().toArray(new ApiSingleParam[0])
+			: null;
+		this.requiredMapParams = mapIsNotNullOrEmpty(builder.requiredMapParams)
+			? builder.requiredMapParams.values().toArray(new ApiMapParam[0])
+			: null;
+		this.optionalMapParams = mapIsNotNullOrEmpty(builder.optionalMapParams)
+			? builder.optionalMapParams.values().toArray(new ApiMapParam[0])
+			: null;
+		this.requiredCollectionParams = mapIsNotNullOrEmpty(builder.requiredCollectionParams)
+			? builder.requiredCollectionParams.values().toArray(new ApiCollectionParam[0])
+			: null;
+		this.optionalCollectionParams = mapIsNotNullOrEmpty(builder.optionalCollectionParams)
+			? builder.optionalCollectionParams.values().toArray(new ApiCollectionParam[0])
+			: null;
+		this.requiredCustomParams = listIsNotNullOrEmpty(builder.requiredCustomParams)
+			? builder.requiredCustomParams.toArray(new ApiCustomParam[0])
+			: null;
+		this.optionalCustomParams = listIsNotNullOrEmpty(builder.optionalCustomParams)
+			? builder.optionalCustomParams.toArray(new ApiCustomParam[0])
+			: null;
+		this.conditionalChecks = listIsNotNullOrEmpty(builder.conditionalChecks)
+			? builder.conditionalChecks.toArray(new ApiMapParamConditionalCheck[0])
+			: null;
 	}
 
 	/**
@@ -141,12 +840,8 @@ public class ApiMapParam extends ApiParamBase<Map<String, Object>, ApiMapCheckRe
 	 * not it was "key1" for "innerjson1" or "innerjson2".
 	 *
 	 * This will return an {@link ApiParamError} for (keyName) "innerjson1" which contains an
-	 * ApiParamError for (keyName) "key1" (as {@link ApiParamError#childApiParamError}) so
-	 * that it can be traced. ApiParamError provides
-	 * {@link ApiParamError#getErrorMessageWithDisplayName(String, boolean)}
-	 * and {@link ApiParamError#getErrorMessageWithKeyName(String, boolean)} so that this nested
-	 * error message structure can provide a detailed error message such as "innerjson1.key1
-	 * failed for X reason".
+	 * ApiParamError for (keyName) "key1" (as {@link ApiParamError#childParamError}) so
+	 * that it can be traced to the exact position of failure.
 	 *
 	 * @param apiParamError the original ApiParamError if in the root
 	 * @return
@@ -168,30 +863,30 @@ public class ApiMapParam extends ApiParamBase<Map<String, Object>, ApiMapCheckRe
 	 * of the checks, so can just call and return this in each catch block.
 	 * @param param the parameter that failed
 	 * @param exception the thrown exception...
-	 * @return an ApiMapCheckResult to be returned to the caller of {@link #check(Map)}
+	 * @return an Result to be returned to the caller of {@link #check(Map)}
 	 */
-	private ApiMapCheckResult returnFailedCheckResult(ApiParamBase<?, ?> param, Exception exception) {
+	private Result returnFailedCheckResult(ApiParamBase<?, ?> param, Exception exception) {
 		ApiParamError apiParamError = null;
 		if (exception instanceof ClassCastException) {
 			apiParamError = ApiParamError.cast(param, exception);
 		} else {
 			apiParamError = ApiParamError.exceptional(param, exception);
 		}
-		return ApiMapCheckResult.failure(wrapCheckError(apiParamError));
+		return Result.failure(wrapCheckError(apiParamError));
 	}
 
 	/**
-	 * Creates an {@link ApiMapCheckResult} to return an error. This will wrap the
+	 * Creates an {@link Result} to return an error. This will wrap the
 	 * error if it this is a named map.
 	 * @param failedCheckError
 	 * @return
 	 */
-	private ApiMapCheckResult returnFailedCheckResult(ApiParamError failedCheckError) {
-		return ApiMapCheckResult.failure(wrapCheckError(failedCheckError));
+	private Result returnFailedCheckResult(ApiParamError failedCheckError) {
+		return Result.failure(wrapCheckError(failedCheckError));
 	}
 
 	@SuppressWarnings({"unchecked", "ConstantConditions"})
-	public ApiMapCheckResult check(Map<String, Object> params) {
+	public Result check(Map<String, Object> params) {
 		/*
 		 * All parameters are passed down the map containing their values. If this map does
 		 * not contain a parameter name then it is a top-level/root map (i.e., the parent map
@@ -207,22 +902,22 @@ public class ApiMapParam extends ApiParamBase<Map<String, Object>, ApiMapCheckRe
 
 			if (mapParamToCheck == null) {
 				if (this.canBeNull) {
-					return ApiMapCheckResult.success(this.keyName);
+					return Result.success(this.keyName);
 				} else {
-					return ApiMapCheckResult.failure(ApiParamError.missing(this));
+					return Result.failure(ApiParamError.missing(this));
 				}
 			}
 
 			/*
-			* Currently there are no formatters/re-insertions for ApiMapParam. This likely is
-			* not a problem since all other parameters can re-insert their modified values
-			* back into the map and maps are just references, so any sub-map that has its
-			* parameters formatted and re-inserted into it will appear in the retrieve map
-			* */
+			 * Currently there are no formatters/re-insertions for ApiMapParam. This likely is
+			 * not a problem since all other parameters can re-insert their modified values
+			 * back into the map and maps are just references, so any sub-map that has its
+			 * parameters formatted and re-inserted into it will appear in the retrieve map
+			 * */
 
 			Set<String> checkedKeyNames = null;
-			Map<String, ApiMapCheckResult> checkedMapParams = null;
-			Map<String, ApiArrayOrListCheckResult> checkedArrayParams = null;
+			Map<String, Result> checkedMapResults = null;
+			Map<String, ApiCollectionParam.Result> checkedCollectionResults = null;
 			Map<String, Object> customValues = null;
 
 			// check all required first. will fail faster if something is not provided.
@@ -233,7 +928,7 @@ public class ApiMapParam extends ApiParamBase<Map<String, Object>, ApiMapCheckRe
 				for (ApiSingleParam<?> param : this.requiredSingleParams) {
 					// catch any fall-through exceptions (should never happen for this)
 					try {
-						ApiSingleCheckResult checkResult = param.check(mapParamToCheck);
+						ApiSingleParam.Result checkResult = param.check(mapParamToCheck);
 						if (checkResult.failed()) {
 							return returnFailedCheckResult(checkResult.error);
 						} else if (checkedKeyNames == null) {
@@ -254,54 +949,54 @@ public class ApiMapParam extends ApiParamBase<Map<String, Object>, ApiMapCheckRe
 				for (ApiMapParam param : this.requiredMapParams) {
 					// catch any fall-through exceptions (should never happen for this)
 					try {
-						ApiMapCheckResult checkResult = param.check(mapParamToCheck);
+						Result checkResult = param.check(mapParamToCheck);
 						if (checkResult.failed()) {
 							return returnFailedCheckResult(checkResult.error);
 						}
 						if (checkedKeyNames == null) {
 							checkedKeyNames = new HashSet<>(this.requiredMapParams.length);
 						}
-						if (checkedMapParams == null) {
-							checkedMapParams = new HashMap<>(this.requiredMapParams.length);
+						if (checkedMapResults == null) {
+							checkedMapResults = new HashMap<>(this.requiredMapParams.length);
 						}
 						/*
-						* All maps within maps are required to have key-names (per constructor),
-						* so do not need to check for this here.
-						* */
+						 * All maps within maps are required to have key-names (per constructor),
+						 * so do not need to check for this here.
+						 * */
 						checkedKeyNames.add(checkResult.keyName);
-						checkedMapParams.put(checkResult.keyName, checkResult);
+						checkedMapResults.put(checkResult.keyName, checkResult);
 					} catch (Exception e) {
 						return returnFailedCheckResult(param, e);
 					}
 				}
 			}
 
-			if (this.requiredArrayParams != null) {
-				for (ApiArrayOrListParam<Map<String, Object>, ?> param : this.requiredArrayParams) {
+			if (this.requiredCollectionParams != null) {
+				for (ApiCollectionParam<Map<String, Object>, ?, ?> param : this.requiredCollectionParams) {
 					// catch any fall-through exceptions (should never happen for this)
 					try {
-						ApiArrayOrListCheckResult checkResult = param.check(mapParamToCheck);
+						ApiCollectionParam.Result checkResult = param.check(mapParamToCheck);
 						if (checkResult.failed()) {
 							return returnFailedCheckResult(checkResult.error);
 						}
 						if (checkedKeyNames == null) {
-							checkedKeyNames = new HashSet<>(this.requiredArrayParams.length);
-						}
-						if (checkedArrayParams == null) {
-							checkedArrayParams = new HashMap<>(this.requiredArrayParams.length);
+							checkedKeyNames = new HashSet<>(this.requiredCollectionParams.length);
 						}
 						/*
-						* All arrays within maps are required to have key names (per constructor),
-						* so do not need to check for name here.
-						* */
+						 * All arrays within maps are required to have key names (per constructor),
+						 * so do not need to check for name here.
+						 * */
 						checkedKeyNames.add(checkResult.keyName);
 						/*
 						 * Do not want to add if the array did not provide an inner array (which
 						 * also requires either another inner array or map check results - per
 						 * ApiArrayParam/ApiListParam)
 						 * */
-						if (checkResult.hasInnerArrayCheckResults() || checkResult.hasMapCheckResults()) {
-							checkedArrayParams.put(checkResult.keyName, checkResult);
+						if (checkResult.hasInnerCollectionResults() || checkResult.hasMapResults()) {
+							if (checkedCollectionResults == null) {
+								checkedCollectionResults = new HashMap<>(this.requiredCollectionParams.length);
+							}
+							checkedCollectionResults.put(checkResult.keyName, checkResult);
 						}
 					} catch (Exception e) {
 						return returnFailedCheckResult(param, e);
@@ -312,7 +1007,7 @@ public class ApiMapParam extends ApiParamBase<Map<String, Object>, ApiMapCheckRe
 			if (this.requiredCustomParams != null) {
 				for (ApiCustomParam param : this.requiredCustomParams) {
 					try {
-						ApiCustomCheckResult checkResult = param.check(mapParamToCheck);
+						ApiCustomParam.Result checkResult = param.check(mapParamToCheck);
 						if (checkResult.failed()) {
 							return returnFailedCheckResult(checkResult.error);
 						}
@@ -328,17 +1023,17 @@ public class ApiMapParam extends ApiParamBase<Map<String, Object>, ApiMapCheckRe
 							}
 							checkedKeyNames.addAll(checkResult.checkedKeyNames);
 						}
-						if (checkResult.hasCheckedArrayOfMapsParams()) {
-							if (checkedArrayParams == null) {
-								checkedArrayParams = new HashMap<>();
+						if (checkResult.hasCheckedCollectionParams()) {
+							if (checkedCollectionResults == null) {
+								checkedCollectionResults = new HashMap<>();
 							}
-							checkedArrayParams.putAll(checkResult.checkedArrayOfMapsParams);
+							checkedCollectionResults.putAll(checkResult.checkedCollectionParams);
 						}
 						if (checkResult.hasCheckedMapParams()) {
-							if (checkedMapParams == null) {
-								checkedMapParams = new HashMap<>();
+							if (checkedMapResults == null) {
+								checkedMapResults = new HashMap<>();
 							}
-							checkedMapParams.putAll(checkResult.checkedMapParams);
+							checkedMapResults.putAll(checkResult.checkedMapParams);
 						}
 						if (checkResult.hasCustomValue()) {
 							if (customValues == null) {
@@ -351,7 +1046,7 @@ public class ApiMapParam extends ApiParamBase<Map<String, Object>, ApiMapCheckRe
 							customValues.put(checkResult.keyName, checkResult.customValue);
 						}
 					} catch (Exception e) {
-						// custom parameters do not have names, so error is considered in
+						// custom parameters do not have names, so error is considered to be with the map itself
 						return returnFailedCheckResult(this, e);
 					}
 				}
@@ -364,7 +1059,7 @@ public class ApiMapParam extends ApiParamBase<Map<String, Object>, ApiMapCheckRe
 				for (ApiSingleParam<?> param : this.optionalSingleParams) {
 					// catch any fall-through exceptions (should never happen for this)
 					try {
-						ApiSingleCheckResult checkResult = param.check(mapParamToCheck);
+						ApiSingleParam.Result checkResult = param.check(mapParamToCheck);
 						if (checkResult.failed()) {
 							if (this.continueOnOptionalFailure || checkResult.error.errorType == ApiErrorType.MISSING_PARAMETER) {
 								continue;
@@ -388,7 +1083,7 @@ public class ApiMapParam extends ApiParamBase<Map<String, Object>, ApiMapCheckRe
 				for (ApiMapParam param : this.optionalMapParams) {
 					// catch any fall-through exceptions (should never happen for this)
 					try {
-						ApiMapCheckResult checkResult = param.check(mapParamToCheck);
+						Result checkResult = param.check(mapParamToCheck);
 						if (checkResult.failed()) {
 							if (this.continueOnOptionalFailure || checkResult.error.errorType == ApiErrorType.MISSING_PARAMETER) {
 								continue;
@@ -398,15 +1093,15 @@ public class ApiMapParam extends ApiParamBase<Map<String, Object>, ApiMapCheckRe
 						if (checkedKeyNames == null) {
 							checkedKeyNames = new HashSet<>();
 						}
-						if (checkedMapParams == null) {
-							checkedMapParams = new HashMap<>();
+						if (checkedMapResults == null) {
+							checkedMapResults = new HashMap<>();
 						}
 						/*
 						 * All maps within maps are required to have key-names (per constructor),
 						 * so do not need to check for this here.
 						 * */
 						checkedKeyNames.add(checkResult.keyName);
-						checkedMapParams.put(checkResult.keyName, checkResult);
+						checkedMapResults.put(checkResult.keyName, checkResult);
 					} catch (Exception e) {
 						return returnFailedCheckResult(param, e);
 					}
@@ -414,11 +1109,11 @@ public class ApiMapParam extends ApiParamBase<Map<String, Object>, ApiMapCheckRe
 			}
 
 
-			if (this.optionalArrayParams != null) {
-				for (ApiArrayOrListParam<Map<String, Object>, ?> param : this.optionalArrayParams) {
+			if (this.optionalCollectionParams != null) {
+				for (ApiCollectionParam<Map<String, Object>, ?, ?> param : this.optionalCollectionParams) {
 					// catch any fall-through exceptions (should never happen for this)
 					try {
-						ApiArrayOrListCheckResult checkResult = param.check(mapParamToCheck);
+						ApiCollectionParam.Result checkResult = param.check(mapParamToCheck);
 						if (checkResult.failed()) {
 							if (this.continueOnOptionalFailure || checkResult.error.errorType == ApiErrorType.MISSING_PARAMETER) {
 								continue;
@@ -427,9 +1122,6 @@ public class ApiMapParam extends ApiParamBase<Map<String, Object>, ApiMapCheckRe
 						}
 						if (checkedKeyNames == null) {
 							checkedKeyNames = new HashSet<>();
-						}
-						if (checkedArrayParams == null) {
-							checkedArrayParams = new HashMap<>();
 						}
 						/*
 						 * All arrays within maps are required to have key names (per constructor),
@@ -441,8 +1133,11 @@ public class ApiMapParam extends ApiParamBase<Map<String, Object>, ApiMapCheckRe
 						 * also requires either another inner array or map check results - per
 						 * ApiArrayParam/ApiListParam)
 						 * */
-						if (checkResult.hasInnerArrayCheckResults() || checkResult.hasMapCheckResults()) {
-							checkedArrayParams.put(checkResult.keyName, checkResult);
+						if (checkResult.hasInnerCollectionResults() || checkResult.hasMapResults()) {
+							if (checkedCollectionResults == null) {
+								checkedCollectionResults = new HashMap<>();
+							}
+							checkedCollectionResults.put(checkResult.keyName, checkResult);
 						}
 					} catch (Exception e) {
 						return returnFailedCheckResult(param, e);
@@ -453,7 +1148,7 @@ public class ApiMapParam extends ApiParamBase<Map<String, Object>, ApiMapCheckRe
 			if (this.optionalCustomParams != null) {
 				for (ApiCustomParam param : this.optionalCustomParams) {
 					try {
-						ApiCustomCheckResult checkResult = param.check(mapParamToCheck);
+						ApiCustomParam.Result checkResult = param.check(mapParamToCheck);
 						if (checkResult.failed()) {
 							if (this.continueOnOptionalFailure || checkResult.error.errorType == ApiErrorType.MISSING_PARAMETER) {
 								continue;
@@ -472,17 +1167,17 @@ public class ApiMapParam extends ApiParamBase<Map<String, Object>, ApiMapCheckRe
 							}
 							checkedKeyNames.addAll(checkResult.checkedKeyNames);
 						}
-						if (checkResult.hasCheckedArrayOfMapsParams()) {
-							if (checkedArrayParams == null) {
-								checkedArrayParams = new HashMap<>();
+						if (checkResult.hasCheckedCollectionParams()) {
+							if (checkedCollectionResults == null) {
+								checkedCollectionResults = new HashMap<>();
 							}
-							checkedArrayParams.putAll(checkResult.checkedArrayOfMapsParams);
+							checkedCollectionResults.putAll(checkResult.checkedCollectionParams);
 						}
 						if (checkResult.hasCheckedMapParams()) {
-							if (checkedMapParams == null) {
-								checkedMapParams = new HashMap<>();
+							if (checkedMapResults == null) {
+								checkedMapResults = new HashMap<>();
 							}
-							checkedMapParams.putAll(checkResult.checkedMapParams);
+							checkedMapResults.putAll(checkResult.checkedMapParams);
 						}
 						if (checkResult.hasCustomValue()) {
 							if (customValues == null) {
@@ -495,274 +1190,34 @@ public class ApiMapParam extends ApiParamBase<Map<String, Object>, ApiMapCheckRe
 							customValues.put(checkResult.keyName, checkResult.customValue);
 						}
 					} catch (Exception e) {
-						// custom parameters do not have names, so error is considered in
+						// custom parameters do not have names, so error is considered to be with the map itself
 						return returnFailedCheckResult(this, e);
 					}
 				}
 			}
 
 			// create here to pass to conditional checks if exist
-			ApiMapCheckResult thisMapCheckResult = ApiMapCheckResult.success(this.keyName,
-			                                                          checkedKeyNames,
-			                                                          checkedMapParams,
-			                                                          checkedArrayParams,
-			                                                          customValues);
+			Result thisMapCheckResult = Result.success(this.keyName,
+			                                           checkedKeyNames,
+			                                           checkedMapResults,
+			                                           checkedCollectionResults,
+			                                           customValues);
 
 			if (this.conditionalChecks != null) {
-				for (ConditionalCheck cc : this.conditionalChecks) {
-					ConditionalCheck.Result checkResult = cc.check(mapParamToCheck, thisMapCheckResult);
+				for (ApiMapParamConditionalCheck cc : this.conditionalChecks) {
+					ApiMapParamConditionalCheck.Result checkResult = cc.check(mapParamToCheck, thisMapCheckResult);
 					if (checkResult.failed()) {
-						return returnFailedCheckResult(ApiParamError.conditional(checkResult.failureMessage));
+						return returnFailedCheckResult(checkResult.error);
 					}
 				}
 			}
 
 			return thisMapCheckResult;
 		} catch (ClassCastException e) {
-			return ApiMapCheckResult.failure(ApiParamError.cast(this, e));
+			return Result.failure(ApiParamError.cast(this, e));
 		} catch (Exception e) {
-			return ApiMapCheckResult.failure(ApiParamError.exceptional(this, e));
+			return Result.failure(ApiParamError.exceptional(this, e));
 		}
 	}
 
 }
-//package io.github.bhowell2.apilib;
-//
-//import io.github.bhowell2.apilib.checks.ConditionalCheck;
-//
-//import java.util.HashMap;
-//import java.util.HashSet;
-//import java.util.Map;
-//import java.util.Set;
-//
-///**
-// * Allows for checking any type of parameter.
-// * @author Blake Howell
-// */
-//public class ApiMapParam extends ApiParamBase<Map<String, Object>, ApiMapCheckResult> {
-//
-//	final boolean continueOnOptionalFailure;
-//	final ApiParam<Map<String, Object>, ?>[] requiredParams;
-//	final ApiParam<Map<String, Object>, ?>[] optionalParams;
-//	final ConditionalCheck[] conditionalChecks;
-//
-//	public ApiMapParam(String keyName,
-//	                   String displayName,
-//	                   String invalidErrorMessage,
-//	                   boolean canBeNull,
-//	                   boolean continueOnOptionalFailure,
-//	                   ApiParam<Map<String, Object>, ?>[] requiredParams,
-//	                   ApiParam<Map<String, Object>, ?>[] optionalParams,
-//	                   ConditionalCheck[] conditionalChecks) {
-//		super(keyName, displayName, invalidErrorMessage, canBeNull);
-//		this.continueOnOptionalFailure = continueOnOptionalFailure;
-//		this.requiredParams = requiredParams;
-//		this.optionalParams = optionalParams;
-//		this.conditionalChecks = conditionalChecks;
-//	}
-//
-//	/**
-//	 * If this map is named (i.e., not root level or a map in an array index) the
-//	 * name of the map needs to be passed back so that the user can determine
-//	 * which map the error actually occurred in.
-//	 * @param error
-//	 */
-//	private void injectMapKeyNameAndDisplayNameIntoError(ApiParamError error) {
-//		if (this.keyName != null) {
-//			error.addParentKeyAndDisplayNames(this.keyName, this.displayName);
-//		}
-//	}
-//
-//	/**
-//	 * @param params The map to retrieve this parameter from. For top-level/root/unnamed
-//	 *               {@link ApiMapParam}s this will not retrieve anything, but use the
-//	 *               supplied map itself.
-//	 * @return if the parameter is provided at all it will be
-//	 */
-//	@SuppressWarnings("unchecked")
-//	public ApiMapCheckResult check(Map<String, Object> params) {
-//		Map<String, Object> paramToCheck = params;
-//		if (this.keyName != null) {
-//			paramToCheck = (Map<String, Object>) params.get(this.keyName);
-//		}
-//
-//		if (paramToCheck == null) {
-//			if (this.canBeNull) {
-//				return ApiMapCheckResult.success(this.keyName);
-//			} else {
-//				return ApiMapCheckResult.failure(ApiParamError.missing(this));
-//			}
-//		}
-//
-//		MapApiMapCheckResultBuilder checkResultBuilder = MapApiMapCheckResultBuilder.builder();
-//		if (this.requiredParams != null && this.requiredParams.length > 0) {
-//			for (ApiParam<Map<String, Object>, ?> apiParam : this.requiredParams) {
-//				ApiMapCheckResult checkResult = apiParam.check(paramToCheck);
-//				if (checkResult.failed()) {
-//					injectMapKeyNameAndDisplayNameIntoError(checkResult.error);
-//					return checkResult;
-//				}
-//				checkResultBuilder.mergeCheckResult(checkResult);
-//			}
-//		}
-//		if (this.optionalParams != null && this.optionalParams.length > 0) {
-//			for (ApiParam<Map<String, Object>> apiParam : this.optionalParams) {
-//				ApiMapCheckResult checkResult = apiParam.check(paramToCheck);
-//				if (checkResult.failed()) {
-//					if (this.continueOnOptionalFailure || checkResult.error.errorType == ApiErrorType.MISSING_PARAMETER) {
-//						continue;
-//					} else {
-//						injectMapKeyNameAndDisplayNameIntoError(checkResult.error);
-//						return checkResult;
-//					}
-//				}
-//				checkResultBuilder.mergeCheckResult(checkResult);
-//			}
-//		}
-//
-//		ApiMapCheckResult checkResult = checkResultBuilder.setKeyName(this.keyName).build();
-//		if (this.conditionalChecks != null && this.conditionalChecks.length > 0) {
-//			for (int i = 0; i < this.conditionalChecks.length; i++) {
-//				ConditionalCheck.Result result = this.conditionalChecks[i].check(paramToCheck, checkResult);
-//				if (result.failed()) {
-//					return ApiMapCheckResult.failure(ApiParamError.conditional(this.keyName,
-//					                                                        this.displayName,
-//					                                                        result.failureMessage));
-//				}
-//			}
-//		}
-//
-//		return checkResult;
-//	}
-//
-//	/**
-//	 * Provides functionality to generate the checked key names and checked inner parameters
-//	 * (map or array of maps) for the map where this builder is run. Any ApiMapCheckResult that
-//	 * returns only the keyName (all other fields set to null or empty collections) is added
-//	 * to the ApiMapParam's {@link ApiMapCheckResult#checkedKeyNames}, but if the keyName is set
-//	 * AND other fields are set, the keyName is added to the ApiMapParam's
-//	 * {@link ApiMapCheckResult#checkedKeyNames} and {@link ApiMapCheckResult#innerCheckResults}. If
-//	 * NO keyName is set, but other fields are returned they will be merged. An ApiMapParam does
-//	 * not set {@link ApiMapCheckResult#arrayCheckResults} at all.
-//	 */
-//	private static class MapApiMapCheckResultBuilder {
-//
-//		public static MapApiMapCheckResultBuilder builder() {
-//			return new MapApiMapCheckResultBuilder();
-//		}
-//
-//		// the maps name itself
-//		String keyName;
-//		// these are keys that were successfully checked for the current map
-//		Set<String> checkedKeyNames;
-//		// for maps or arrays of maps (within the map)
-//		Map<String, ApiMapCheckResult> innerCheckResults;
-//
-//		public MapApiMapCheckResultBuilder() {}
-//
-//		/**
-//		 * Used for the name of the current map.
-//		 * @param keyName
-//		 * @return
-//		 */
-//		MapApiMapCheckResultBuilder setKeyName(String keyName) {
-//			this.keyName = keyName;
-//			return this;
-//		}
-//
-//		MapApiMapCheckResultBuilder addToCheckedKeyNames(String keyName) {
-//			if (keyName != null) {
-//				if (this.checkedKeyNames == null) {
-//					this.checkedKeyNames = new HashSet<>();
-//				}
-//				this.checkedKeyNames.add(keyName);
-//			}
-//			return this;
-//		}
-//
-//		MapApiMapCheckResultBuilder mergeCheckedKeyNames(Set<String> checkedKeyNames) {
-//			if (checkedKeyNames != null) {
-//				if (this.checkedKeyNames == null) {
-//					this.checkedKeyNames = new HashSet<>();
-//				}
-//				this.checkedKeyNames.addAll(checkedKeyNames);
-//			}
-//			return this;
-//		}
-//
-//		MapApiMapCheckResultBuilder addInnerCheckResult(String keyName, ApiMapCheckResult checkResult) {
-//			if (keyName != null && checkResult != null) {
-//				if (this.innerCheckResults == null) {
-//					this.innerCheckResults = new HashMap<>();
-//				}
-//				this.innerCheckResults.put(keyName, checkResult);
-//			}
-//			return this;
-//		}
-//
-//		MapApiMapCheckResultBuilder mergeInnerCheckResults(Map<String, ApiMapCheckResult> innerCheckResults) {
-//			if (innerCheckResults != null) {
-//				this.innerCheckResults.putAll(innerCheckResults);
-//			}
-//			return this;
-//		}
-//
-//		/**
-//		 * Checks whether or not ONLY the key name has been set. If any of the other
-//		 * fields are set (even {@link ApiMapCheckResult#customReturnValue} - which is
-//		 * not set by any parameters in ApiLib, but may be set by the user with their
-//		 * own implementation of {@link ApiParam}
-//		 *
-//		 * @param checkResult
-//		 * @return
-//		 */
-//		private static boolean onlyKeyNameIsSet(ApiMapCheckResult checkResult) {
-//			return checkResult.keyName != null &&
-//				checkResult.checkedKeyNames == null &&
-//				checkResult.innerCheckResults == null &&
-//				checkResult.arrayCheckResults == null &&
-//				checkResult.customReturnValue == null;
-////				!(checkResult.checkedKeyNames != null && checkResult.checkedKeyNames.size() > 0) &&
-////				!(checkResult.arrayCheckResults != null && checkResult.arrayCheckResults.size() > 0) &&
-////				!(checkResult.innerCheckResults != null && checkResult.innerCheckResults.size() > 0) &&
-////				// the user may set this with their own implementation of ApiParam, so it should be
-////				// returned if it is set.
-////				checkResult.customReturnValue == null;
-//		}
-//
-//		/**
-//		 * Any ApiMapCheckResult that returns only the keyName (all other fields set to
-//		 * null or empty collections) is added to the ApiMapParam's
-//		 * {@link ApiMapCheckResult#checkedKeyNames}, but if the keyName is set AND other
-//		 * fields are set, the keyName is added to the ApiMapParam's
-//		 * {@link ApiMapCheckResult#checkedKeyNames} and {@link ApiMapCheckResult#innerCheckResults}.
-//		 * If NO keyName is set, but other fields are returned they will be merged. An
-//		 * ApiMapParam does not set {@link ApiMapCheckResult#arrayCheckResults} at all, so it is
-//		 * ignored completely - the only way that {@link ApiMapCheckResult#arrayCheckResults} will
-//		 * be obtained by something returned from ApiMapParam is via
-//		 * {@link ApiMapCheckResult#innerCheckResults}.
-//		 * @param checkResult
-//		 * @return
-//		 */
-//		MapApiMapCheckResultBuilder mergeCheckResult(ApiMapCheckResult checkResult) {
-//			if (onlyKeyNameIsSet(checkResult)) {
-//				this.addToCheckedKeyNames(checkResult.keyName);
-//			} else if (checkResult.keyName != null) {
-//				this.addToCheckedKeyNames(checkResult.keyName);
-//				this.addInnerCheckResult(checkResult.keyName, checkResult);
-//			} else {
-//				mergeCheckedKeyNames(checkResult.checkedKeyNames);
-//				mergeInnerCheckResults(checkResult.innerCheckResults);
-//				// again, there are no arrayCheckResults for a Map.
-//			}
-//			return this;
-//		}
-//
-//		public ApiMapCheckResult build() {
-//			return new ApiMapCheckResult(this.keyName, this.checkedKeyNames, this.innerCheckResults, null);
-//		}
-//
-//	}
-//
-//}
-//

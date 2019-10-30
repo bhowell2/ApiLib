@@ -3,6 +3,7 @@ package io.github.bhowell2.apilib;
 import io.github.bhowell2.apilib.checks.Check;
 import io.github.bhowell2.apilib.formatters.Formatter;
 
+import java.lang.reflect.Field;
 import java.util.function.BiFunction;
 import java.util.function.Function;
 
@@ -10,6 +11,11 @@ import java.util.function.Function;
  * @author Blake Howell
  */
 public class ApiLibSettings {
+
+	/**
+	 * Allows for
+	 */
+	public static volatile boolean SET_DISPLAY_NAME_TO_KEY_NAME_IF_NULL = false;
 
 	/**
 	 * Used when a parameter is set to null, but null is not a valid value for the parameter.
@@ -44,16 +50,6 @@ public class ApiLibSettings {
 	 * {@link Formatter.Result#failure(String)} was not supplied.
 	 */
 	public static volatile String DEFAULT_FORMATTING_ERROR_MESSAGE = "Was not formattable.";
-
-	/**
-	 * Used to
-	 */
-	public static volatile Function<Integer, String> DEFAULT_ARRAY_PARAMETER_APPENDED_POSITION_FAILURE = pos ->
-		"Failure occurred at index " + pos + ".";
-
-	public static volatile BiFunction<Integer, Integer, String> DEFAULT_ARRAY_OF_ARRAY_PARAMETER_APPENDED_POSITION_FAILURE =
-		(outer, inner) -> "Failure occurred at position (" + outer + "," + inner + ").";
-
 
 	/**
 	 * These are used to set the

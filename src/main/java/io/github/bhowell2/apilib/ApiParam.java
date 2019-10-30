@@ -7,7 +7,7 @@ package io.github.bhowell2.apilib;
  * @author Blake Howell
  */
 @FunctionalInterface
-public interface ApiParam<In, Result> {
+interface ApiParam<In, Result> {
 
 	/**
 	 * Retrieves the parameter to be checked from the supplied Map and returns
