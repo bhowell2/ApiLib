@@ -5,4 +5,6 @@ package io.github.bhowell2.apilib.formatters;
  */
 public final class IntegerFormatters {
 
+
+
 }

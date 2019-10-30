@@ -10,7 +10,7 @@ public interface Formatter<In, Out> {
 
 	final class Result<Out> {
 
-		String failureMessage;    // can be null, will cause library to use default
+		String failureMessage;    // cannot be null, will cause library to use default
 		Out formattedValue;
 
 		/**
@@ -60,9 +60,9 @@ public interface Formatter<In, Out> {
 		public static Result<Object> failure(String failureMessage) {
 			if (failureMessage == null) {
 				/*
-				* cannot be null or need to add boolean to differentiate a failure
-				* (formatted value could be null, so can't check just that)
-				* */
+				 * Cannot be null or would need to add a boolean to differentiate a failure
+				 * from success, due to how successful and failure methods are implemented.
+				 * */
 				failureMessage = ApiLibSettings.DEFAULT_FORMATTING_ERROR_MESSAGE;
 			}
 			Result<Object> r = new Result<>();

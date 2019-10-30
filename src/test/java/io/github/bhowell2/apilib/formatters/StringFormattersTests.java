@@ -36,4 +36,13 @@ public class StringFormattersTests {
 		assertEquals("\n\t  some leading and trailing whitespace", result.formattedValue);
 	}
 
+	@Test
+	public void shouldUppercaseCharactersOfString() throws Exception {
+		String s = "lower cased";
+		String uppercasedS = s.toUpperCase();
+		Formatter.Result<String> result = StringFormatters.TO_UPPERCASE.format(s);
+		assertTrue(result.successful());
+		assertEquals(uppercasedS, result.formattedValue);
+	}
+
 }

@@ -2,6 +2,8 @@ package io.github.bhowell2.apilib;
 
 import io.github.bhowell2.apilib.checks.Check;
 
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -20,17 +22,21 @@ import java.util.Map;
 public class ApiParamError {
 
 	/**
-	 * In most cases keyName and displayName will be set. This is not the
-	 * case when the failure is of type {@link ApiErrorType#CONDITIONAL_ERROR} and
-	 * the error occurs in the top-most/root ApiMapParam. This may also not
-	 * be the case in an {@link ApiCustomParam} check.
+	 * In most cases the key name will be set, but this is not the case when
+	 * the failure is of type {@link ApiErrorType#CONDITIONAL_ERROR} and this
+	 * may also not be the case in an {@link ApiCustomParam} check.
 	 */
-	public final String keyName, displayName;
+	public final String keyName;
 
 	/**
-	 * In the case of arrays/lists this is used to track the index where error
-	 * occurred. This can be combined with {@link #childParamError} for
-	 * multidimensional arrays/lists. If an {@link ApiParamError} has {@link #index}
+	 *
+	 */
+	public final String displayName;
+
+	/**
+	 * In the case of {@link ApiCollectionParam} this is used to track the index
+	 * where the error occurred. This can be combined with {@link #childParamError}
+	 * for multidimensional collections. If an {@link ApiParamError} has {@link #index}
 	 * set and a {@link #childParamError} then it is either a multidimensional array
 	 * or an array of maps.
 	 */
@@ -58,9 +64,9 @@ public class ApiParamError {
 	public final Exception exception;
 
 	/**
-	 * Allows for tracking exactly where the error occurred. Container parameters
-	 * (i.e., {@link ApiMapParam} and {@link ApiListParam}/{@link ApiArrayOrListParam})
-	 * will wrap the error of a child parameter with their name and/or index.
+	 * Allows for tracking exactly where the error occurred by wrapping the error in
+	 * an error for {@link ApiMapParam} and {@link ApiCollectionParam} where the occur.
+	 *
 	 */
 	public final ApiParamError childParamError;
 
@@ -111,14 +117,62 @@ public class ApiParamError {
 	}
 
 	/**
-	 * @return true if error message is not null
+	 * In certain cases there will not be a key-name.
+	 * E.g., an {@link ApiMapParamConditionalCheck} may not return
+	 * an
+	 * @return true if the key name is not null. false otherwise.
+	 */
+	public boolean hasKeyName() {
+		return this.keyName != null;
+	}
+
+	/**
+	 * @return true if the display name is not null. false otherwise.
+	 */
+	public boolean hasDisplayName() {
+		return this.displayName != null;
+	}
+
+	public boolean hasIndex() {
+		return this.index != null;
+	}
+
+	/**
+	 * @return true if error message is not null. false otherwise.
 	 */
 	public boolean hasErrorMessage() {
 		return this.errorMessage != null;
 	}
 
+	/**
+	 * @return true if child param error is not null. false otherwise.
+	 */
 	public boolean hasChildError() {
 		return this.childParamError != null;
+	}
+
+	/**
+	 * Creates a list for this error and all of its child errors. These are
+	 * in order where index 0 is this error and the ascending indices are
+	 * the previous index's child.
+	 *
+	 * Note: if this error is the child of another error the parent is not
+	 * included (as the child does not have a reference to the parent so it
+	 * cannot retrieve it).
+	 * @return
+	 */
+	public List<ApiParamError> getErrorsAsList() {
+		if (this.hasChildError()) {
+			ApiParamError error = this;
+			List<ApiParamError> errorList = new ArrayList<>(2);
+			while (error.hasChildError()) {
+				errorList.add(error);
+				error = error.childParamError;
+			}
+			errorList.add(error);
+			return errorList;
+		}
+		return Collections.singletonList(this);
 	}
 
 	/**
@@ -150,143 +204,6 @@ public class ApiParamError {
 		return map;
 	}
 
-	private static String joinKeyOrDisplayParentsIfExists(String keyOrDisplayName,
-	                                                      List<String> parentKeyOrDisplayNames,
-	                                                      String delimiter,
-	                                                      boolean reversed) {
-		if (parentKeyOrDisplayNames == null) {
-			return keyOrDisplayName;
-		}
-		if (reversed) {
-			StringBuilder builder = new StringBuilder();
-			for (int i = parentKeyOrDisplayNames.size() - 1; i >= 0; i--) {
-				builder.append(parentKeyOrDisplayNames.get(i))
-				       .append(delimiter);
-			}
-			// has final delimiter from above
-			return builder.append(keyOrDisplayName).toString();
-		} else {
-			return keyOrDisplayName + delimiter + String.join(delimiter, parentKeyOrDisplayNames);
-		}
-	}
-
-//	/**
-//	 * @return the list of the parameter's parents' key names. null if error is not nested.
-//	 */
-//	public List<String> getParentKeyNames() {
-//		return this.parentKeyNames;
-//	}
-//
-//	/**
-//	 * Joins the parent key names with the key name of the failed parameter.
-//	 *
-//	 * The normal order is error-key-name -> parent 1 -> grandparent 1 -> great grand parent
-//	 * @param delimiter delimiter between key names
-//	 * @param reverse true for order from the error key name to topmost (named) map or
-//	 *                false for the order from the topmost (named) map to the error key name.
-//	 * @return
-//	 */
-//	public String joinParentKeyNamesWithErrorKeyName(String delimiter, boolean reverse) {
-//		return joinKeyOrDisplayParentsIfExists(this.keyName, this.parentKeyNames, delimiter, reverse);
-//	}
-//
-//	/**
-//	 * @return the list of the parameter's parents' display names. null if error is not nested.
-//	 */
-//	public List<String> getParentDisplayNames() {
-//		return parentDisplayNames;
-//	}
-//
-//	public String joinParentDisplayNamesWithErrorDisplayName(String delimiter, boolean reverse) {
-//		return joinKeyOrDisplayParentsIfExists(this.displayName, this.parentDisplayNames, delimiter, reverse);
-//	}
-
-	/**
-	 * Whether or not this error was caused by an exception. In the case that
-	 * this error was not caused by an exception it was caused by a strict
-	 * checking failure of the parameter (e.g., parameter is missing or parameter
-	 * did not satisfy checks).
-	 * @return
-	 */
-	public boolean wasExceptionalError() {
-		return this.errorType == ApiErrorType.EXCEPTIONAL;
-	}
-
-
-	/**
-	 * Injects the display name into the error message (at '$PARAM_NAME$').
-	 * For all {@link Check}s used from this library this will generate a
-	 * coherent error message (e.g., "'Username' must have a length greater
-	 * than 3.") The user should be mindful of this when creating their own
-	 * {@link Check}s and put '$PARAM_NAME$' where it makes the most sense.
-	 *
-	 * The {@link #childApiParamError} is used when an {@link ApiMapParam} is
-	 * nested within another {@link ApiMapParam}. It allows for creating a
-	 * graph of sorts to determine where the error occurred. This method will
-	 * traverse the {@link #childApiParamError}s until it is null and create
-	 * the graph joining them all the way up to the root. The order the parameter
-	 * names (display name or key name) is reversible. By default (non-reversed),
-	 * the top-most parameter is given first.
-	 *
-	 * E.g., (JSON)
-	 * {
-	 *   inner1: {
-	 *     inner2: {
-	 *       param1: "this will fail because it contains more than 10 characters"
-	 *     }
-	 *   }
-	 * }
-	 *
-	 * With joinDelimiter = "." and reverseNameOrder = false a string will be
-	 * returned that looks like:
-	 * "inner1.inner2.param1 cannot be longer than 10 characters."
-	 *
-	 * With joinDelimiter = " of " and reverseNameOrder = true a string will be
-	 * returned that looks like:
-	 * "param1 of inner2 of inner1 cannot be longer than 10 characters."
-	 *
-	 * @param joinDelimiter will be placed between display name and error message (spaces should be added as desired)
-	 * @param reverseNameOrder whether or not to reverse the order display names appear
-	 * @return  the display name (and display name's of parent {@link ApiMapParam}s if applicable ) joined with
-	 *          the error message
-	 */
-//	public String getErrorMessageWithDisplayName(String joinDelimiter, boolean reverseNameOrder) {
-//		if (hasChildError()) {
-//			ApiParamError traverser = this;
-//			// size 2 for THIS and the child. rarely will depth be more than 1, so should not have to resize list often.
-//			List<String> displayNames = new ArrayList<>(2);
-//			// add first time, before changing traverser
-//			displayNames.add(traverser.displayName);
-//			String innerMostErrorMessage = traverser.errorMessage;
-//			while (traverser.hasChildError()) {
-//				traverser = traverser.childApiParamError;
-//				// add after changing traverser
-//				displayNames.add(traverser.displayName);
-//				innerMostErrorMessage = traverser.errorMessage;
-//			}
-//			return generateErrorMessage(innerMostErrorMessage, displayNames, joinDelimiter, reverseNameOrder);
-//		} else {
-//			/*
-//			 * StringBuilder.replace is much more efficient that String.replace since the latter uses
-//			 * a Pattern (and creates a new one every-time at that).
-//			 * */
-//			int startTemplateVarPos = this.errorMessage.indexOf(PARAM_NAME_TEMPLATE_VAR);
-//			if (startTemplateVarPos >= 0) {
-//				int endTemplateVarPos = startTemplateVarPos + PARAM_NAME_TEMPLATE_VAR_LENGTH;
-//				return new StringBuilder(this.errorMessage)
-//					.replace(startTemplateVarPos, endTemplateVarPos, this.displayName == null ? "" : this.displayName)
-//					.toString();
-//			}
-//			// nothing to replace, just return message.
-//			return this.errorMessage;
-//		}
-//	}
-//
-//	public String getErrorMessageWithKeyName() {
-//		return getErrorMessageWithKeyName(".", false);
-//	}
-//
-
 	@Override
 	public String toString() {
 		return "Key name: " + this.keyName +
@@ -296,75 +213,11 @@ public class ApiParamError {
 			(this.exception != null ? ("Exception message: " + this.exception.getMessage()) : ".");
 	}
 
-	/**
-	 * Combines the key name with the error message. For all {@link Check}s used from this library this will
-	 * generate a coherent error message (e.g., 'Username' must have a length greater than 3.) The user should be
-	 * mindful of this when creating their own {@link Check}s.
-	 *
-	 * The {@link #childApiParamError} is used when an {@link ApiMapParam} is nested within another {@link ApiMapParam}.
-	 * It allows for creating a graph of sorts to determine where the error occurred. This method will traverse the
-	 * {@link #childApiParamError}s until it is null and create the graph joining them all the way up to the root. The
-	 * order the parameter names (display name or key name) is reversible. By default (non-reversed), the top-most
-	 * parameter is given first.
-	 * E.g., (JSON)
-	 * {
-	 *   inner1: {
-	 *     inner2: {
-	 *       param1: "this will fail because it contains more than 10 characters"
-	 *     }
-	 *   }
-	 * }
-	 *
-	 * With joinDelimiter = "." and reverseNameOrder = false a string will be returned that looks like:
-	 * "inner1.inner2.param1 cannot be longer than 10 characters."
-	 *
-	 * With joinDelimiter = " of " and reverseNameOrder = true a string will be returned that looks like:
-	 * "param1 of inner2 of inner1 cannot be longer than 10 characters."
-	 *
-	 * @param joinDelimiter will be placed between display name and error message (spaces should be added as desired)
-	 * @param reverseNameOrder whether or not to reverse the order display names appear
-	 * @return  the display name (and display name's of parent {@link ApiMapParam}s if applicable ) joined with
-	 *          the error message
-	 */
-//	public String getErrorMessageWithKeyName(String joinDelimiter, boolean reverseNameOrder) {
-//		if (hasChildError()) {
-//			ApiParamError traverser = this;
-//			// size 2 for THIS and the child. rarely will depth be more than 1, so should not have to resize list often.
-//			List<String> keyNames = new ArrayList<>(2);
-//			// add first time, before changing traverser
-//			keyNames.add(traverser.displayName);
-//			String innerMostErrorMessage = traverser.errorMessage;
-//			while (traverser.hasChildError()) {
-//				traverser = traverser.childApiParamError;
-//				// add after changing traverser
-//				keyNames.add(traverser.keyName);
-//				innerMostErrorMessage = traverser.errorMessage;
-//			}
-//			return generateErrorMessage(innerMostErrorMessage, keyNames, joinDelimiter, reverseNameOrder);
-//		} else {
-//			/*
-//			 * StringBuilder.replace is much more efficient that String.replace since the latter uses
-//			 * a Pattern (and creates a new one every-time at that).
-//			 * */
-//			int startTemplateVarPos = this.errorMessage.indexOf(PARAM_NAME_TEMPLATE_VAR);
-//			if (startTemplateVarPos >= 0) {
-//				int endTemplateVarPos = startTemplateVarPos + PARAM_NAME_TEMPLATE_VAR_LENGTH;
-//				return new StringBuilder(this.errorMessage)
-//					.replace(startTemplateVarPos, endTemplateVarPos, this.displayName == null ? "" : this.keyName)
-//					.toString();
-//			}
-//			// nothing to replace, just return message.
-//			return this.errorMessage;
-//		}
-//	}
-
-
 
 	/* Static Creation Methods */
 
-
-	public static ApiParamError invalid(String failureMessage) {
-		return invalid(null, null, failureMessage);
+	public static ApiParamError invalid(String keyName) {
+		return invalid(keyName, null);
 	}
 
 	/**
@@ -379,8 +232,8 @@ public class ApiParamError {
 	 * Creates ApiParamError with {@link ApiErrorType#INVALID_PARAMETER}
 	 * and {@link ApiLibSettings#DEFAULT_INVALID_PARAMETER_MESSAGE}.
 	 */
-	public static ApiParamError invalid(ApiParamBase apiParam, String templatedErrMsg) {
-		return invalid(apiParam.keyName, apiParam.displayName, templatedErrMsg);
+	public static ApiParamError invalid(ApiParamBase apiParam, String errorMessage) {
+		return invalid(apiParam.keyName, apiParam.displayName, errorMessage);
 	}
 
 	/**

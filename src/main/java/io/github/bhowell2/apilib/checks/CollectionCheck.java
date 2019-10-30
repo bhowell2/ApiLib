@@ -1,13 +1,14 @@
 package io.github.bhowell2.apilib.checks;
 
-import io.github.bhowell2.apilib.ApiArrayOrListParam;
-
 import java.util.List;
 
 /**
+ * Checks type for {@link io.github.bhowell2.apilib.ApiCollectionParam}. These are
+ * similar to {@link Check}, but the index that is being checked is also provided.
+ *
  * @author Blake Howell
  */
-public interface ArrayCheck<Param> {
+public interface CollectionCheck<Param> {
 
 	/**
 	 * Takes a regular check and wraps it. Use then when the index is irrelevant
@@ -16,7 +17,7 @@ public interface ArrayCheck<Param> {
 	 * @param <Param>
 	 * @return
 	 */
-	static <Param> ArrayCheck<Param> wrapCheck(Check<Param> check) {
+	static <Param> CollectionCheck<Param> wrapCheck(Check<Param> check) {
 		return (i, value) -> check.check(value);
 	}
 
@@ -27,7 +28,7 @@ public interface ArrayCheck<Param> {
 	 * @param <Param>
 	 * @return
 	 */
-	static <Param> ArrayCheck<Param> checkEvenAndOdd(Check<Param>[] evenIndexChecks, Check<Param>[] oddIndexChecks) {
+	static <Param> CollectionCheck<Param> checkEvenAndOdd(Check<Param>[] evenIndexChecks, Check<Param>[] oddIndexChecks) {
 		return (i, value) -> {
 			if (i % 2 == 0) {
 				for (int j = 0; j < evenIndexChecks.length; j++) {
@@ -49,19 +50,20 @@ public interface ArrayCheck<Param> {
 	}
 
 	@SuppressWarnings("unchecked")
-	static <Param> ArrayCheck<Param> checkEvenAndOdd(List<Check<Param>> evenIndexChecks, List<Check<Param>> oddIndexChecks) {
+	static <Param> CollectionCheck<Param> checkEvenAndOdd(List<Check<Param>> evenIndexChecks, List<Check<Param>> oddIndexChecks) {
 		return checkEvenAndOdd(evenIndexChecks.toArray(new Check[0]), oddIndexChecks.toArray(new Check[0]));
 	}
 
 	/**
-	 * Allows for passing in the index that is being checked in case it
-	 * is needed for the check. Usually this will not be necessary and
-	 * a simple {@link Check} would suffice. However, since this is
-	 * required by {@link ApiArrayOrListParam},
-	 * a wrapper has been supplied for standard checks:
-	 * @param index
-	 * @param value
-	 * @return
+	 * Allows for passing in the index that is being checked in case it is needed
+	 * for the check. Usually this will not be necessary and a simple {@link Check}
+	 * would suffice. However, since this is required by
+	 * {@link io.github.bhowell2.apilib.ApiCollectionParam}, a wrapper has been
+	 * supplied for standard checks: {@link #wrapCheck(Check)}.
+	 *
+	 * @param index the index that is being checked
+	 * @param value the value at the given idnex
+	 * @return whether zor not the check was successful
 	 */
 	Check.Result check(int index, Param value);
 

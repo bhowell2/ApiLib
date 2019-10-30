@@ -27,4 +27,6 @@ public final class StringFormatters {
 		return Formatter.Result.success(s.substring(0, len + 1));
 	};
 
+	public static final Formatter<String, String> TO_UPPERCASE = s -> Formatter.Result.success(s.toUpperCase());
+
 }
