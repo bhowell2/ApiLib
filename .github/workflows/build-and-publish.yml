@@ -19,7 +19,8 @@ jobs:
 
       - name: get version and set version env var
         run: |
-          echo "::set-env name=PROJECT_VERSION::$(./gradlew properties -q | awk '/^version: / {print $2}')"
+          echo "PROJECT_VERSION=$(./gradlew properties -q | awk '/^version: / {print $2}')" >> $GITHUB_ENV
+      #          echo "::set-env name=PROJECT_VERSION::$(./gradlew properties -q | awk '/^version: / {print $2}')"
 
       # Only runs if this is a tag and if this is a release
       - name: ensure release tag matches version
