@@ -1,5 +1,7 @@
 package io.github.bhowell2.apilib;
 
+import io.github.bhowell2.apilib.errors.ApiParamError;
+
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Map;
@@ -20,7 +22,9 @@ import java.util.Set;
 public interface ApiCustomParam extends ApiParam<Map<String, Object>, ApiCustomParam.Result> {
 
 	/**
-	 * Returns everything that the other
+	 * Returns everything that the other Results can return as well as allowing to return
+	 * a custom value with the name. This custom value can them be retrieved downstream
+	 * by the user.
 	 */
 	class Result extends ApiParamBase.Result {
 

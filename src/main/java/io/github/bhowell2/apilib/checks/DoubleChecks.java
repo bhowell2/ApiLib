@@ -14,12 +14,17 @@ public final class DoubleChecks {
 
 	private DoubleChecks() {} // no instantiation
 
+	/**
+	 * Check to ensure the parameter is of Double type.
+	 */
+	public static final Check<Double> IS_DOUBLE = Check.alwaysPass(Double.class);
+
 	public static Check<Double> valueGreaterThan(double d) {
 		return input -> {
 			if (input > d) {
 				return Check.Result.success();
 			} else {
-				return Check.Result.failure("Must be greater than " + d);
+				return Check.Result.failure("Must be greater than " + d + ".");
 			}
 		};
 	}
@@ -29,7 +34,7 @@ public final class DoubleChecks {
 			if (input >= d) {
 				return Check.Result.success();
 			} else {
-				return Check.Result.failure("Must be greater than or equal to " + d);
+				return Check.Result.failure("Must be greater than or equal to " + d + ".");
 			}
 		};
 	}
@@ -39,7 +44,7 @@ public final class DoubleChecks {
 			if (input < d) {
 				return Check.Result.success();
 			} else {
-				return Check.Result.failure("Must be less than " + d);
+				return Check.Result.failure("Must be less than " + d + ".");
 			}
 		};
 	}
@@ -49,7 +54,7 @@ public final class DoubleChecks {
 			if (input <= d) {
 				return Check.Result.success();
 			} else {
-				return Check.Result.failure("Must be less than or equal to " + d);
+				return Check.Result.failure("Must be less than or equal to " + d + ".");
 			}
 		};
 	}
@@ -66,7 +71,7 @@ public final class DoubleChecks {
 			if (input == d) {
 				return Check.Result.success();
 			} else {
-				return Check.Result.failure("Must be equal to " + d);
+				return Check.Result.failure("Must be equal to " + d + ".");
 			}
 		};
 	}
@@ -81,7 +86,7 @@ public final class DoubleChecks {
 			if (input.equals(d)) {
 				return Check.Result.success();
 			} else {
-				return Check.Result.failure("Must be equal to " + d);
+				return Check.Result.failure("Must be equal to " + d + ".");
 			}
 		};
 	}
@@ -94,7 +99,7 @@ public final class DoubleChecks {
 					return Check.Result.success();
 				}
 			}
-			return Check.Result.failure("Must equal one of the following: " + acceptableListForFailureMsg);
+			return Check.Result.failure("Must equal one of the following: " + acceptableListForFailureMsg +".");
 		};
 	}
 

@@ -1,21 +1,19 @@
 package io.github.bhowell2.apilib;
 
 import io.github.bhowell2.apilib.checks.Check;
+import io.github.bhowell2.apilib.errors.ApiParamError;
 import io.github.bhowell2.apilib.formatters.Formatter;
-
-import java.lang.reflect.Field;
-import java.util.function.BiFunction;
-import java.util.function.Function;
 
 /**
  * @author Blake Howell
  */
 public class ApiLibSettings {
 
-	/**
-	 * Allows for
-	 */
-	public static volatile boolean SET_DISPLAY_NAME_TO_KEY_NAME_IF_NULL = false;
+//	/**
+//	 * Allows for setting the display name to the keyName in case the user relies on the
+//	 * display name.
+//	 */
+//	public static volatile boolean SET_DISPLAY_NAME_TO_KEY_NAME_IF_NULL = false;
 
 	/**
 	 * Used when a parameter is set to null, but null is not a valid value for the parameter.
@@ -52,9 +50,10 @@ public class ApiLibSettings {
 	public static volatile String DEFAULT_FORMATTING_ERROR_MESSAGE = "Was not formattable.";
 
 	/**
-	 * These are used to set the
+	 * These are used to set the key names of the map that is generated when calling
+	 * {@link ApiParamError#toMap()}.
 	 */
-	public static class ErrorMessageParamNames {
+	public static class ErrorMessageToMapParamNames {
 		public static volatile String KEY_NAME = "keyName";
 		public static volatile String DISPLAY_NAME = "displayName";
 		public static volatile String INDEX = "index";

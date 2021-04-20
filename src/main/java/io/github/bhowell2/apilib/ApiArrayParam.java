@@ -5,6 +5,8 @@ import java.util.Map;
 
 /**
  * Requires that the parameter be of type Array.
+ * @param <In>
+ * @param <Param>
  * @author Blake Howell
  */
 public class ApiArrayParam<In, Param> extends ApiCollectionParam<In, Param, Param[]> {

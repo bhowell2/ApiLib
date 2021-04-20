@@ -1,6 +1,9 @@
 package io.github.bhowell2.apilib;
 
 
+import io.github.bhowell2.apilib.errors.ApiErrorType;
+import io.github.bhowell2.apilib.errors.ApiParamError;
+
 import java.util.Map;
 
 /**
@@ -9,7 +12,7 @@ import java.util.Map;
  * were provided together (or not provided together). Since this is called at the
  * end of the check, the {@link ApiMapParam.Result} is passed into the conditional
  * check so the user can see which parameters were successfully checked along with
- * the map of parameters so that the value can be retrieved if necessary.
+ * the map of parameters so that value(s) can be retrieved if necessary/desired.
  *
  * This is simpler than using {@link ApiCustomParam} to ensure that multiple parameters
  * are provided together (or not), because it ensures that the parameters are valid
@@ -27,9 +30,16 @@ import java.util.Map;
  * <pre>
  * {@code
  *  Result check(Map<String, Object> params, ApiMapParam.Result result) {
- *    if (result.containsParameter("e_billing") &&
- *        (Boolean)params.get("e_billing") &&
- *        result.containsParameter("email")) {
+ *    // return success if e_billing was NOT provided OR it is provided AND is true AND email was provided
+ *    if (!result.containsParameter("e_billing")
+ *        || (
+ *            result.containsParameter("e_billing")
+ *            &&
+ *            (Boolean)params.get("e_billing")
+ *            &&
+ *            result.containsParameter("email")
+ *            )
+ *        ) {
  *        return Result.success();
  *    }
  *    return Result.failure("Must provide email if e_billing is set to true");
@@ -46,6 +56,15 @@ import java.util.Map;
  * @author Blake Howell
  */
 public interface ApiMapParamConditionalCheck {
+
+	/**
+	 * This is run after all other parameter checks, which ensures that at
+	 * this point all parameters have successfully been checked and now allows
+	 * the user to implement some type of conditional checking.
+	 *
+	 * @return
+	 */
+	Result check(Map<String, Object> params, ApiMapParam.Result mapCheckResult);
 
 	final class Result {
 
@@ -116,13 +135,5 @@ public interface ApiMapParamConditionalCheck {
 			return new Result(error);
 		}
 	}
-
-	/**
-	 * Is run after all other parameter checks. Allows the user
-	 * to implement some type of conditional checking of parameters.
-	 *
-	 * @return
-	 */
-	Result check(Map<String, Object> params, ApiMapParam.Result mapCheckResult);
 
 }

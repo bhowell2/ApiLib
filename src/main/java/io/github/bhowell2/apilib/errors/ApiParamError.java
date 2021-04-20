@@ -1,6 +1,12 @@
-package io.github.bhowell2.apilib;
+package io.github.bhowell2.apilib.errors;
 
-import io.github.bhowell2.apilib.checks.Check;
+
+import io.github.bhowell2.apilib.ApiCollectionParam;
+import io.github.bhowell2.apilib.ApiCustomParam;
+import io.github.bhowell2.apilib.ApiLibSettings;
+import io.github.bhowell2.apilib.ApiMapParam;
+import io.github.bhowell2.apilib.ApiMapParamConditionalCheck;
+import io.github.bhowell2.apilib.ApiParamBase;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -29,7 +35,7 @@ public class ApiParamError {
 	public final String keyName;
 
 	/**
-	 *
+	 * Parameter's display name if it was set.
 	 */
 	public final String displayName;
 
@@ -44,7 +50,8 @@ public class ApiParamError {
 
 	/**
 	 * The error type will be the same for all nested errors. I.e., if the error
-	 * occurs in a nested map the top leve
+	 * occurs in a nested map the top level map will have the same errorType as
+	 * the failing, nested, parameter.
 	 */
 	public final ApiErrorType errorType;
 
@@ -52,8 +59,9 @@ public class ApiParamError {
 	 * Error message will only exist in the root ApiParamError (i.e., the innermost
 	 * childApiParamError). Error messages should be descriptive and usually won't
 	 * return a name in them. The user can use the keyName or displayName and concat
-	 * it with the error message (e.g., "Failure in displayName. Must be at least 5
-	 * characters in length.").
+	 * it with the error message (e.g., The error message "Must be at least 5 characters
+	 * in length." is returned and can be sent back to the user as "Parameter error
+	 * in 'displayName'|'keyName'. Must be at least 5 characters in length.").
 	 */
 	public final String errorMessage;
 
@@ -64,9 +72,7 @@ public class ApiParamError {
 	public final Exception exception;
 
 	/**
-	 * Allows for tracking exactly where the error occurred by wrapping the error in
-	 * an error for {@link ApiMapParam} and {@link ApiCollectionParam} where the occur.
-	 *
+	 * Allows for tracking exactly where the error occurred in nested parameters.
 	 */
 	public final ApiParamError childParamError;
 
@@ -117,9 +123,9 @@ public class ApiParamError {
 	}
 
 	/**
-	 * In certain cases there will not be a key-name.
+	 * In certain cases there will not be a key name.
 	 * E.g., an {@link ApiMapParamConditionalCheck} may not return
-	 * an
+	 * a key name.
 	 * @return true if the key name is not null. false otherwise.
 	 */
 	public boolean hasKeyName() {
@@ -153,13 +159,13 @@ public class ApiParamError {
 
 	/**
 	 * Creates a list for this error and all of its child errors. These are
-	 * in order where index 0 is this error and the ascending indices are
-	 * the previous index's child.
+	 * in order where index 0 is THIS (calling class) error and the ascending
+	 * indices are the previous index's child error.
 	 *
 	 * Note: if this error is the child of another error the parent is not
 	 * included (as the child does not have a reference to the parent so it
 	 * cannot retrieve it).
-	 * @return
+	 * @return list of this ApiParamError and any child errors that caused this ApiParamError.
 	 */
 	public List<ApiParamError> getErrorsAsList() {
 		if (this.hasChildError()) {
@@ -184,22 +190,22 @@ public class ApiParamError {
 	public Map<String, Object> toMap() {
 		Map<String, Object> map = new HashMap<>();
 		if (this.keyName != null) {
-			map.put(ApiLibSettings.ErrorMessageParamNames.KEY_NAME, this.keyName);
+			map.put(ApiLibSettings.ErrorMessageToMapParamNames.KEY_NAME, this.keyName);
 		}
 		if (this.displayName != null) {
-			map.put(ApiLibSettings.ErrorMessageParamNames.DISPLAY_NAME, this.displayName);
+			map.put(ApiLibSettings.ErrorMessageToMapParamNames.DISPLAY_NAME, this.displayName);
 		}
 		if (this.index != null) {
-			map.put(ApiLibSettings.ErrorMessageParamNames.INDEX, this.index);
+			map.put(ApiLibSettings.ErrorMessageToMapParamNames.INDEX, this.index);
 		}
 		if (this.errorMessage != null) {
-			map.put(ApiLibSettings.ErrorMessageParamNames.ERROR_MESSAGE, this.errorMessage);
+			map.put(ApiLibSettings.ErrorMessageToMapParamNames.ERROR_MESSAGE, this.errorMessage);
 		}
 		if (this.errorType != null) {
-			map.put(ApiLibSettings.ErrorMessageParamNames.ERROR_TYPE, this.errorType.name());
+			map.put(ApiLibSettings.ErrorMessageToMapParamNames.ERROR_TYPE, this.errorType.name());
 		}
 		if (this.hasChildError()) {
-			map.put(ApiLibSettings.ErrorMessageParamNames.CHILD_ERROR, this.childParamError.toMap());
+			map.put(ApiLibSettings.ErrorMessageToMapParamNames.CHILD_ERROR, this.childParamError.toMap());
 		}
 		return map;
 	}
@@ -300,16 +306,14 @@ public class ApiParamError {
 
 	/**
 	 * Creates an ApiParamError with {@link ApiErrorType#CONDITIONAL_ERROR}
-	 * and returns the conditional error message supplied.
-	 * @param failureMessage
-	 * @return
+	 * and returns the error message supplied.
 	 */
 	public static ApiParamError conditional(String failureMessage) {
 		return conditional(null, null, failureMessage);
 	}
 
-	public static ApiParamError conditional(String keyname, String displayName, String failureMessage) {
-		return new ApiParamError(keyname, displayName, ApiErrorType.CONDITIONAL_ERROR, failureMessage);
+	public static ApiParamError conditional(String keyName, String displayName, String failureMessage) {
+		return new ApiParamError(keyName, displayName, ApiErrorType.CONDITIONAL_ERROR, failureMessage);
 	}
 
 	/**

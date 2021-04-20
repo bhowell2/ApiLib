@@ -1,21 +1,23 @@
 package io.github.bhowell2.apilib;
 
 import io.github.bhowell2.apilib.checks.Check;
+import io.github.bhowell2.apilib.errors.ApiParamError;
 import io.github.bhowell2.apilib.formatters.Formatter;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 
 /**
  * Used to check a single parameter. The value of the parameter is retrieved from the map
- * with {@link #keyName} and then passed to any provided {@link Formatter}s and {@link Check}s.
+ * with {@link #keyName} and then passed to any provided {@link Formatter}s and then {@link Check}s.
  * If any formatter or check fails an error message may be returned describing the reason for
  * failure - if no failure message is returned, a default message will be returned (these can
  * be overridden, see {@link ApiLibSettings}). If the parameter can be set to null, this should
  * be set with {@link #canBeNull} - in this case, the null value will be passed to the formatters
- * (if they exist) and
+ * (if they exist) and they can return a non-null value if desired.
  *
  * @author Blake Howell
  */
@@ -105,6 +107,7 @@ public class ApiSingleParam<Param> extends ApiParamBase<Map<String, Object>, Api
 
 		public Builder(String keyName) {
 			super(keyName);
+			Objects.requireNonNull(keyName, "keyName for ApiSingleParam cannot be null.");
 			this.checks = new ArrayList<>(1);
 			this.formatters = new ArrayList<>();
 		}
@@ -127,10 +130,9 @@ public class ApiSingleParam<Param> extends ApiParamBase<Map<String, Object>, Api
 		}
 
 		/**
-		 * Formatters are applied in the order they are added, so if a later formatter depends on the parameter being of a
-		 * different type then it must come after the formatter that cast the parameter to a different type.
-		 * @param formatters
-		 * @return
+		 * Formatters are applied in the order they are added, so if a later formatter
+		 * depends on the parameter being of a different type then it must come after
+		 * the formatter that cast the parameter to a different type.
 		 */
 		@SuppressWarnings("varargs")
 		public Builder<Param> addFormatters(Formatter<?, ?>... formatters) {
@@ -149,39 +151,17 @@ public class ApiSingleParam<Param> extends ApiParamBase<Map<String, Object>, Api
 			}
 			// ensure some checks are provided
 			if (checks == null || checks.size() == 0) {
-				throw new RuntimeException("No checks were provided for parameter (key name) '" + keyName + "'." +
-					                           "If this is intentional, provide a check that always passes or always fails." +
-					                           "If the check should always pass Check.alwaysPass() has been provided for this " +
-					                           "case and Check.alwaysFail() has been provided if the parameter check should " +
-					                           "always fail.");
+				throw new RuntimeException("No checks were provided for parameter (key name) '" + keyName + "'."
+					                           + " If this is intentional, provide a check that always passes or "
+					                           + "always fails. If the check should always pass Check.alwaysPass() "
+					                           + "has been provided for this case and Check.alwaysFail() has been "
+					                           + "provided if the parameter check should always fail.");
 			}
 			return new ApiSingleParam<>(this);
 		}
 
 	}
 
-	/**
-	 * Result for {@link ApiSingleParam#check(Map)}.
-	 */
-	public static class Result extends ApiParamBase.Result {
-
-		public Result(String keyName) {
-			super(keyName);
-		}
-
-		public Result(ApiParamError error) {
-			super(error);
-		}
-
-		public static Result success(String keyName) {
-			return new Result(keyName);
-		}
-
-		public static Result failure(ApiParamError error) {
-			return new Result(error);
-		}
-
-	}
 
 	@SuppressWarnings("unchecked")
 	private ApiSingleParam(Builder<Param> builder) {
@@ -239,7 +219,7 @@ public class ApiSingleParam<Param> extends ApiParamBase<Map<String, Object>, Api
 				formatted = true;
 				Object paramToFormat = param;
 				for (Formatter<? super Object, ? super Object> formatter : this.formatters) {
-					Formatter.Result formatResult = formatter.format(paramToFormat);
+					Formatter.Result<Object> formatResult = formatter.format(paramToFormat);
 					if (formatResult.failed()) {
 						return formatResult.hasFailureMessage()
 							?
@@ -287,13 +267,36 @@ public class ApiSingleParam<Param> extends ApiParamBase<Map<String, Object>, Api
 	/**
 	 * Copies all settings (checks, formatters, and canBeNull) from this ApiSingleParam
 	 * and overwrites the keyName and displayName.
-	 * @param keyName
-	 * @param displayName
-	 * @return
+	 * @param keyName the new builder's key name
+	 * @param displayName the new builder's display name
+	 * @return the builder for a new ApiSingleParam with THIS parameter's checks.
 	 */
 	public Builder<Param> toBuilder(String keyName, String displayName) {
 		return ApiSingleParam.builder(keyName, this)
 		                     .setDisplayName(displayName);
+	}
+
+	/**
+	 * Result for {@link ApiSingleParam#check(Map)}.
+	 */
+	public static class Result extends ApiParamBase.Result {
+
+		public Result(String keyName) {
+			super(keyName);
+		}
+
+		public Result(ApiParamError error) {
+			super(error);
+		}
+
+		public static Result success(String keyName) {
+			return new Result(keyName);
+		}
+
+		public static Result failure(ApiParamError error) {
+			return new Result(error);
+		}
+
 	}
 
 }

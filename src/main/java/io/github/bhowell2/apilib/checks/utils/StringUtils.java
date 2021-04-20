@@ -6,8 +6,8 @@ import java.util.HashSet;
 import java.util.Set;
 
 /**
- * Provides utility methods for strings. These are more used to ensure that the parameters provided to create checks
- * in {@link StringChecks} are valid.
+ * Provides utility methods for strings. These are more used to ensure that the parameters
+ * provided to create checks in {@link StringChecks} are valid.
  * @author Blake Howell
  */
 public class StringUtils {

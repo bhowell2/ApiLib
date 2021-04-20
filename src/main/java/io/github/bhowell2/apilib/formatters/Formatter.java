@@ -48,7 +48,8 @@ public interface Formatter<In, Out> {
 			return r;
 		}
 
-		public static Result<Object> failure() {
+		// uses type <T> to avoid casting issues for user
+		public static <T> Result<T> failure() {
 			return failure(ApiLibSettings.DEFAULT_FORMATTING_ERROR_MESSAGE);
 		}
 
@@ -57,7 +58,7 @@ public interface Formatter<In, Out> {
 		 * If the failure message is null it will be set to
 		 * {@link ApiLibSettings#DEFAULT_FORMATTING_ERROR_MESSAGE}.
 		 */
-		public static Result<Object> failure(String failureMessage) {
+		public static <T> Result<T> failure(String failureMessage) {
 			if (failureMessage == null) {
 				/*
 				 * Cannot be null or would need to add a boolean to differentiate a failure
@@ -65,7 +66,7 @@ public interface Formatter<In, Out> {
 				 * */
 				failureMessage = ApiLibSettings.DEFAULT_FORMATTING_ERROR_MESSAGE;
 			}
-			Result<Object> r = new Result<>();
+			Result<T> r = new Result<>();
 			r.failureMessage = failureMessage;
 			return r;
 		}
@@ -73,9 +74,10 @@ public interface Formatter<In, Out> {
 	}
 
 	/**
-	 *
+	 * Takes in a parameter of type In and formats it in someway, possibly changing
+	 * it to a different type of type Out.
 	 * @param param the parameter to format. this will never be null.
-	 * @return
+	 * @return the successful result of formatting
 	 */
 	Result<Out> format(In param);
 

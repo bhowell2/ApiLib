@@ -18,84 +18,14 @@ import java.util.Map;
 public interface Check<T> {
 
 	/**
-	 * Allows for returning whether or not the parameter's value was successfully
-	 * checked or that it failed and an failure message can optionally be returned.
+	 * Provides the functionality to always pass a check, regardless fo the parameter's
+	 * type. This should be used in rare cases and will basically only ensure that the
+	 * user provided the paramter.
+	 * @param <T> typing
+	 * @return a check that always passes
 	 */
-	final class Result {
-
-		public String failureMessage;
-
-		/**
-		 * Requiring use of static creation methods to disambiguate a successful result
-		 * (no param in constructor) and a failure (requiring value for failure message).
-		 */
-		private Result() {}
-
-		// for failure
-		private Result(String failureMessage) {
-			/*
-			* this cannot be null due to successful and failed methods below
-			* would need to add additional boolean for success status otherwise
-			* */
-			this.failureMessage = failureMessage;
-		}
-
-		/**
-		 * Whether or not the check was successful.
-		 */
-		public boolean successful() {
-			return this.failureMessage == null;
-		}
-
-		/**
-		 * Whether or not the check failed.
-		 */
-		public boolean failed() {
-			return this.failureMessage != null;
-		}
-
-		/* Static Creation Methods */
-
-		/**
-		 * Avoid creating a new object every time a check is successful.
-		 */
-		private static Result SUCCESSFUL = new Result();
-
-		/* Implementation  */
-		public static Result success() {
-			return SUCCESSFUL;
-		}
-
-		/**
-		 * Creates a failed check result with the default failure message:
-		 * {@link ApiLibSettings#DEFAULT_INVALID_PARAMETER_MESSAGE}.
-		 */
-		public static Result failure() {
-			return new Result(ApiLibSettings.DEFAULT_INVALID_PARAMETER_MESSAGE);
-		}
-
-		/**
-		 * Creates a failed check result with the provided failure message.
-		 * If the failure message is null it will be set to
-		 * {@link ApiLibSettings#DEFAULT_INVALID_PARAMETER_MESSAGE}.
-		 */
-		public static Result failure(String failureMessage) {
-			if (failureMessage == null) {
-				/*
-				* Cannot be null or would need to add a boolean to differentiate a failure
-				* from success, due to how successful and failure methods are implemented.
-				* */
-				return new Result(ApiLibSettings.DEFAULT_INVALID_PARAMETER_MESSAGE);
-			}
-			return new Result(failureMessage);
-		}
-
-		/**
-		 * To avoid creating a new always failing check every time with {@link Check#alwaysFail()},
-		 * this is used instead. It is created here in a package-private manner so that it is not
-		 * accessible to the public, but can be used by the outer interface.
-		 */
-		static final Check ALWAYS_FAIL_UNTYPED_CHECK = t -> Result.failure();
+	static <T> Check<T> alwaysPassUnsafeTyping() {
+		return param -> Check.Result.success();
 	}
 
 	/**
@@ -167,5 +97,86 @@ public interface Check<T> {
 	 * @return
 	 */
 	Result check(T param);
+
+	/**
+	 * Allows for returning whether or not the parameter's value was successfully
+	 * checked or that it failed and an failure message can optionally be returned.
+	 */
+	final class Result {
+
+		public String failureMessage;
+
+		/**
+		 * Requiring use of static creation methods to disambiguate a successful result
+		 * (no param in constructor) and a failure (requiring value for failure message).
+		 */
+		private Result() {}
+
+		// for failure
+		private Result(String failureMessage) {
+			/*
+			 * this cannot be null due to successful and failed methods below
+			 * would need to add additional boolean for success status otherwise
+			 * */
+			this.failureMessage = failureMessage;
+		}
+
+		/**
+		 * Whether or not the check was successful.
+		 */
+		public boolean successful() {
+			return this.failureMessage == null;
+		}
+
+		/**
+		 * Whether or not the check failed.
+		 */
+		public boolean failed() {
+			return this.failureMessage != null;
+		}
+
+		/* Static Creation Methods */
+
+		/**
+		 * Avoid creating a new object every time a check is successful.
+		 */
+		private static Result SUCCESSFUL = new Result();
+
+		/* Implementation  */
+		public static Result success() {
+			return SUCCESSFUL;
+		}
+
+		/**
+		 * Creates a failed check result with the default failure message:
+		 * {@link ApiLibSettings#DEFAULT_INVALID_PARAMETER_MESSAGE}.
+		 */
+		public static Result failure() {
+			return new Result(ApiLibSettings.DEFAULT_INVALID_PARAMETER_MESSAGE);
+		}
+
+		/**
+		 * Creates a failed check result with the provided failure message.
+		 * If the failure message is null it will be set to
+		 * {@link ApiLibSettings#DEFAULT_INVALID_PARAMETER_MESSAGE}.
+		 */
+		public static Result failure(String failureMessage) {
+			if (failureMessage == null) {
+				/*
+				 * Cannot be null or would need to add a boolean to differentiate a failure
+				 * from success, due to how successful and failure methods are implemented.
+				 * */
+				return new Result(ApiLibSettings.DEFAULT_INVALID_PARAMETER_MESSAGE);
+			}
+			return new Result(failureMessage);
+		}
+
+		/**
+		 * To avoid creating a new always failing check every time with {@link Check#alwaysFail()},
+		 * this is used instead. It is created here in a package-private manner so that it is not
+		 * accessible to the public, but can be used by the outer interface.
+		 */
+		static final Check ALWAYS_FAIL_UNTYPED_CHECK = t -> Result.failure();
+	}
 
 }

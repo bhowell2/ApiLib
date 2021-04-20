@@ -1,5 +1,7 @@
 package io.github.bhowell2.apilib;
 
+import io.github.bhowell2.apilib.errors.ApiErrorType;
+import io.github.bhowell2.apilib.errors.ApiParamError;
 import org.junit.jupiter.api.Test;
 
 import java.util.Map;
@@ -56,13 +58,13 @@ public class ApiParamErrorTests {
 
 		Map<String, Object> errorAsMap = apiParamError.toMap();
 		int mapDepthCounter = 0;
-		while (errorAsMap.get(ApiLibSettings.ErrorMessageParamNames.CHILD_ERROR) != null) {
-			assertEquals("" + mapDepthCounter, errorAsMap.get(ApiLibSettings.ErrorMessageParamNames.KEY_NAME));
-			errorAsMap = (Map<String, Object>) errorAsMap.get(ApiLibSettings.ErrorMessageParamNames.CHILD_ERROR);
+		while (errorAsMap.get(ApiLibSettings.ErrorMessageToMapParamNames.CHILD_ERROR) != null) {
+			assertEquals("" + mapDepthCounter, errorAsMap.get(ApiLibSettings.ErrorMessageToMapParamNames.KEY_NAME));
+			errorAsMap = (Map<String, Object>) errorAsMap.get(ApiLibSettings.ErrorMessageToMapParamNames.CHILD_ERROR);
 			mapDepthCounter++;
 		}
 
-		assertEquals(keyName, errorAsMap.get(ApiLibSettings.ErrorMessageParamNames.KEY_NAME));
+		assertEquals(keyName, errorAsMap.get(ApiLibSettings.ErrorMessageToMapParamNames.KEY_NAME));
 		assertEquals(5, mapDepthCounter); // depth is 6, but starts at 0 so goes counter goes to 5...
 
 		for (int i = 0; i <= depth; i++) {

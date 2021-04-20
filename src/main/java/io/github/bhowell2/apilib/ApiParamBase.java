@@ -1,10 +1,12 @@
 package io.github.bhowell2.apilib;
 
 
+import io.github.bhowell2.apilib.errors.ApiParamError;
+
 import java.util.List;
 
 /**
- * Base that all parameters in ApiLib extend.
+ * Base that all parameters in ApiLib extend, provides common functionality.
  * @author Blake Howell
  */
 public abstract class ApiParamBase<In, Result extends ApiParamBase.Result> implements ApiParam<In, Result> {
@@ -17,7 +19,7 @@ public abstract class ApiParamBase<In, Result extends ApiParamBase.Result> imple
 	 * @param <B> the extending builder. needed to provide common fluent functionality
 	 */
 	public static abstract class Builder<
-		P extends ApiParamBase,
+		P extends ApiParamBase<?,?>,
 		B extends Builder<P, B>
 		> {
 
@@ -98,6 +100,33 @@ public abstract class ApiParamBase<In, Result extends ApiParamBase.Result> imple
 
 	}
 
+	protected static <T> boolean arrayIsNotNullOrEmpty(T[] array) {
+		return array != null && array.length > 0;
+	}
+
+	/**
+	 * Used by various extending classes to test whether or not a list is
+	 * empty and/or empty to avoid accessing null or empty lists.
+	 * @return true of the list is not null and not empty
+	 */
+	protected static boolean listIsNotNullOrEmpty(List<?> list) {
+		return list != null && list.size() > 0;
+	}
+
+	@SuppressWarnings("unchecked")
+	protected static <T> T[] getArrayIfNotNullOrEmpty(List<T> list, T[] emptyCollection) {
+		return listIsNotNullOrEmpty(list)
+			? list.toArray(emptyCollection)
+			: null;
+	}
+
+	protected ApiParamBase(Builder<?, ?> builder) {
+		this.keyName = builder.keyName;
+		this.displayName = builder.displayName;
+		this.invalidErrorMessage = builder.invalidErrorMessage;
+		this.canBeNull = builder.canBeNull;
+	}
+
 	/**
 	 * The result returned from {@link ApiParam#check(Object)}. This is just common
 	 * functionality shared by all param results. Basically a keyName should be returned
@@ -162,27 +191,6 @@ public abstract class ApiParamBase<In, Result extends ApiParamBase.Result> imple
 			return keyName;
 		}
 
-	}
-
-	protected static <T> boolean arrayIsNotNullOrEmpty(T[] array) {
-		return array != null && array.length > 0;
-	}
-
-	/**
-	 * Used by various extending classes to test whether or not a list is
-	 * empty and/or empty to avoid accessing null or empty lists.
-	 * @param list
-	 * @return
-	 */
-	protected static boolean listIsNotNullOrEmpty(List<?> list) {
-		return list != null && list.size() > 0;
-	}
-
-	protected ApiParamBase(Builder builder) {
-		this.keyName = builder.keyName;
-		this.displayName = builder.displayName;
-		this.invalidErrorMessage = builder.invalidErrorMessage;
-		this.canBeNull = builder.canBeNull;
 	}
 
 }

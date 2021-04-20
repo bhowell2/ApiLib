@@ -1,5 +1,8 @@
 package io.github.bhowell2.apilib;
 
+import io.github.bhowell2.apilib.errors.ApiErrorType;
+import io.github.bhowell2.apilib.errors.ApiParamError;
+
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -628,157 +631,6 @@ public class ApiMapParam extends ApiParamBase<Map<String, Object>, ApiMapParam.R
 
 	/*
 	 *
-	 * RESULT
-	 *
-	 * */
-
-	public static class Result extends ApiParamBase.Result {
-
-		/**
-		 * Name (keyName) of all successfully checked parameters.
-		 * Note: this contains all parameter's key names in the
-		 * {@link #checkedCollectionResults} and {@link #checkedMapResults},
-		 * but does not contain the keyName of a custom param.
-		 */
-		public final Set<String> checkedKeyNames;
-
-		/**
-		 * Name (keyName) of the successfully checked map parameters. These
-		 * are nested maps within this checked map parameter. These key names
-		 * also appear in {@link #checkedKeyNames}.
-		 */
-		public final Map<String, Result> checkedMapResults;
-
-		/**
-		 * Name (keyName) of the successfully checked arrays/lists of maps.
-		 * If the innermost {@link ApiCollectionParam.Result} does not contain
-		 * {@link ApiCollectionParam.Result#mapResults} then it will
-		 * be ignored and only appear in {@link #checkedKeyNames}.
-		 */
-		public final Map<String, ApiCollectionParam.Result> checkedCollectionResults;
-
-		/**
-		 * If {@link ApiCustomParam.Result} returns a customValue, it will
-		 * be available here. This requires the ApiCustomParam.Result return
-		 * a key name (enforced by constructor).
-		 */
-		public final Map<String, Object> customValues;
-
-		public Result(String keyName,
-		              Set<String> checkedKeyNames,
-		              Map<String, Result> checkedMapResults,
-		              Map<String, ApiCollectionParam.Result> checkedCollectionResults,
-		              Map<String, Object> customValues) {
-			super(keyName);
-			this.checkedKeyNames = checkedKeyNames;
-			this.checkedMapResults = checkedMapResults;
-			this.checkedCollectionResults = checkedCollectionResults;
-			this.customValues = customValues;
-		}
-
-		public Result(ApiParamError error) {
-			super(error);
-			this.checkedKeyNames = null;
-			this.checkedMapResults = null;
-			this.checkedCollectionResults = null;
-			this.customValues = null;
-		}
-
-		/**
-		 * Whether or not any key names were provided.
-		 * @return
-		 */
-		public boolean hasCheckedKeyNames() {
-			return this.checkedKeyNames != null;
-		}
-
-		/**
-		 * Converts the set containing parameter key names to a list.
-		 * @return
-		 */
-		public List<String> getCheckedParamsAsList() {
-			return this.checkedKeyNames != null ? new ArrayList<>(this.checkedKeyNames) : new ArrayList<>();
-		}
-
-		/**
-		 * Can be used to check if any given parameter has been supplied. Every p
-		 * @param parameterName
-		 * @return
-		 */
-		public boolean containsParameter(String parameterName) {
-			return this.checkedKeyNames != null && checkedKeyNames.contains(parameterName);
-		}
-
-		/* MAP */
-
-		public boolean hasCheckedMapResults() {
-			return this.checkedMapResults != null;
-		}
-
-		/**
-		 * @param mapKeyName name of the object parameter that was checked
-		 * @return the result or null
-		 */
-		public Result getMapResult(String mapKeyName) {
-			return this.checkedMapResults != null ? checkedMapResults.get(mapKeyName) : null;
-		}
-
-		/* COLLECTION */
-
-		public boolean hasCheckedCollectionResults() {
-			return this.checkedCollectionResults != null;
-		}
-
-		public ApiCollectionParam.Result getCollectionResult(String collectionKeyName) {
-			return this.checkedCollectionResults != null ? checkedCollectionResults.get(collectionKeyName) : null;
-		}
-
-		/* CUSTOM */
-
-		public boolean hasCustomValues() {
-			return this.customValues != null;
-		}
-
-		public Object getCustomValue(String customKeyName) {
-			return this.customValues != null ? customValues.get(customKeyName) : null;
-		}
-
-		/* Static creation methods */
-
-		/**
-		 * When the Map is null or has no parameters itself.
-		 * @param keyName
-		 * @return
-		 */
-		public static Result success(String keyName) {
-			return new Result(keyName, null, null, null, null);
-		}
-
-
-		public static Result success(String keyName, Set<String> checkedKeyNames) {
-			return new Result(keyName, checkedKeyNames, null, null, null);
-		}
-
-		public static Result success(String keyName,
-		                             Set<String> checkedKeyNames,
-		                             Map<String, Result> checkedMapResults,
-		                             Map<String, ApiCollectionParam.Result> checkedCollectionResults,
-		                             Map<String, Object> customValues) {
-			return new Result(keyName, checkedKeyNames, checkedMapResults, checkedCollectionResults, customValues);
-		}
-
-		public static Result failure(ApiParamError apiParamError) {
-			return new Result(apiParamError);
-		}
-
-	}
-
-	private static boolean mapIsNotNullOrEmpty(Map<?, ?> map) {
-		return map != null && map.size() > 0;
-	}
-
-	/*
-	 *
 	 * IMPLEMENTATION
 	 *
 	 * */
@@ -1220,4 +1072,154 @@ public class ApiMapParam extends ApiParamBase<Map<String, Object>, ApiMapParam.R
 		}
 	}
 
+	/*
+	 *
+	 * RESULT
+	 *
+	 * */
+
+	public static class Result extends ApiParamBase.Result {
+
+		/**
+		 * Name (keyName) of all successfully checked parameters.
+		 * Note: this contains all parameter's key names in the
+		 * {@link #checkedCollectionResults} and {@link #checkedMapResults},
+		 * but does not contain the keyName of a custom param.
+		 */
+		public final Set<String> checkedKeyNames;
+
+		/**
+		 * Name (keyName) of the successfully checked map parameters. These
+		 * are nested maps within this checked map parameter. These key names
+		 * also appear in {@link #checkedKeyNames}.
+		 */
+		public final Map<String, Result> checkedMapResults;
+
+		/**
+		 * Name (keyName) of the successfully checked arrays/lists of maps.
+		 * If the innermost {@link ApiCollectionParam.Result} does not contain
+		 * {@link ApiCollectionParam.Result#mapResults} then it will
+		 * be ignored and only appear in {@link #checkedKeyNames}.
+		 */
+		public final Map<String, ApiCollectionParam.Result> checkedCollectionResults;
+
+		/**
+		 * If {@link ApiCustomParam.Result} returns a customValue, it will
+		 * be available here. This requires the ApiCustomParam.Result return
+		 * a key name (enforced by constructor).
+		 */
+		public final Map<String, Object> customValues;
+
+		public Result(String keyName,
+		              Set<String> checkedKeyNames,
+		              Map<String, Result> checkedMapResults,
+		              Map<String, ApiCollectionParam.Result> checkedCollectionResults,
+		              Map<String, Object> customValues) {
+			super(keyName);
+			this.checkedKeyNames = checkedKeyNames;
+			this.checkedMapResults = checkedMapResults;
+			this.checkedCollectionResults = checkedCollectionResults;
+			this.customValues = customValues;
+		}
+
+		public Result(ApiParamError error) {
+			super(error);
+			this.checkedKeyNames = null;
+			this.checkedMapResults = null;
+			this.checkedCollectionResults = null;
+			this.customValues = null;
+		}
+
+		/**
+		 * Whether or not any key names were provided.
+		 * @return
+		 */
+		public boolean hasCheckedKeyNames() {
+			return this.checkedKeyNames != null;
+		}
+
+		/**
+		 * Converts the set containing parameter key names to a list.
+		 * @return
+		 */
+		public List<String> getCheckedParamsAsList() {
+			return this.checkedKeyNames != null ? new ArrayList<>(this.checkedKeyNames) : new ArrayList<>();
+		}
+
+		/**
+		 * Can be used to check if any given parameter has been supplied. Every p
+		 * @param parameterName
+		 * @return
+		 */
+		public boolean containsParameter(String parameterName) {
+			return this.checkedKeyNames != null && checkedKeyNames.contains(parameterName);
+		}
+
+		/* MAP */
+
+		public boolean hasCheckedMapResults() {
+			return this.checkedMapResults != null;
+		}
+
+		/**
+		 * @param mapKeyName name of the object parameter that was checked
+		 * @return the result or null
+		 */
+		public Result getMapResult(String mapKeyName) {
+			return this.checkedMapResults != null ? checkedMapResults.get(mapKeyName) : null;
+		}
+
+		/* COLLECTION */
+
+		public boolean hasCheckedCollectionResults() {
+			return this.checkedCollectionResults != null;
+		}
+
+		public ApiCollectionParam.Result getCollectionResult(String collectionKeyName) {
+			return this.checkedCollectionResults != null ? checkedCollectionResults.get(collectionKeyName) : null;
+		}
+
+		/* CUSTOM */
+
+		public boolean hasCustomValues() {
+			return this.customValues != null;
+		}
+
+		public Object getCustomValue(String customKeyName) {
+			return this.customValues != null ? customValues.get(customKeyName) : null;
+		}
+
+		/* Static creation methods */
+
+		/**
+		 * When the Map is null or has no parameters itself.
+		 * @param keyName
+		 * @return
+		 */
+		public static Result success(String keyName) {
+			return new Result(keyName, null, null, null, null);
+		}
+
+
+		public static Result success(String keyName, Set<String> checkedKeyNames) {
+			return new Result(keyName, checkedKeyNames, null, null, null);
+		}
+
+		public static Result success(String keyName,
+		                             Set<String> checkedKeyNames,
+		                             Map<String, Result> checkedMapResults,
+		                             Map<String, ApiCollectionParam.Result> checkedCollectionResults,
+		                             Map<String, Object> customValues) {
+			return new Result(keyName, checkedKeyNames, checkedMapResults, checkedCollectionResults, customValues);
+		}
+
+		public static Result failure(ApiParamError apiParamError) {
+			return new Result(apiParamError);
+		}
+
+	}
+
+	private static boolean mapIsNotNullOrEmpty(Map<?, ?> map) {
+		return map != null && map.size() > 0;
+	}
 }

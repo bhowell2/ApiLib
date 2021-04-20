@@ -1,4 +1,8 @@
-package io.github.bhowell2.apilib;
+package io.github.bhowell2.apilib.errors;
+
+import io.github.bhowell2.apilib.ApiLibSettings;
+import io.github.bhowell2.apilib.ApiMapParam;
+import io.github.bhowell2.apilib.ApiSingleParam;
 
 import java.util.Map;
 
@@ -38,7 +42,7 @@ public enum ApiErrorType {
 	FORMAT_ERROR,
 
 	/**
-	 * Some condition ({@link io.github.bhowell2.apilib.checks.ConditionalCheck})
+	 * Some condition ({@link io.github.bhowell2.apilib.checks.ConditionalChecks})
 	 * is not met in {@link ApiMapParam}. A failed condition may return a failure
 	 * message that will be returned in {@link ApiParamError}.
 	 * Default message: {@link ApiLibSettings#DEFAULT_CONDITIONAL_FAILURE_MESSAGE}.
