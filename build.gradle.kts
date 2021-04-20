@@ -3,6 +3,7 @@ plugins {
     `java-library`
     `maven-publish`
     signing
+    jacoco
     id("io.github.gradle-nexus.publish-plugin") version "1.0.0"
 }
 
@@ -27,6 +28,17 @@ dependencies {
 
 tasks.withType(JavaCompile::class) {
     options.compilerArgs.add("-Xlint:unchecked")
+}
+
+tasks.jacocoTestReport {
+    reports {
+        xml.setEnabled(true)
+        html.setEnabled(false)
+    }
+}
+
+tasks.check {
+    dependsOn.add(tasks.jacocoTestReport)
 }
 
 tasks {
