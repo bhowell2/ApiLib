@@ -191,9 +191,9 @@ public abstract class ApiCollectionParam<In, Param, Collection>
 		@SuppressWarnings("unchecked")
 		public final B addIndexChecks(Check<Param>... indexChecks) {
 			checkVarArgsNotNullAndValuesNotNull(indexChecks);
-			return this.addIndexChecks(Arrays.stream(indexChecks)
-			                                 .map(CollectionIndexCheck::wrapCheck)
-			                                 .<CollectionIndexCheck<Param>>toArray(CollectionIndexCheck[]::new));
+			return (B) this.addIndexChecks(Arrays.stream(indexChecks)
+			                                     .map(CollectionIndexCheck::wrapCheck)
+			                                     .<CollectionIndexCheck<Param>>toArray(CollectionIndexCheck[]::new));
 		}
 
 		/**
@@ -362,10 +362,10 @@ public abstract class ApiCollectionParam<In, Param, Collection>
 	}
 
 	/*
-	*
-	* IMPLEMENTATION
-	*
-	* */
+	 *
+	 * IMPLEMENTATION
+	 *
+	 * */
 
 	@SuppressWarnings("unchecked")
 	protected ApiCollectionParam(Builder<In, Param, Collection, ?, ?> builder) {
