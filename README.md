@@ -1,300 +1,407 @@
-# API Parameter Library
-A library to facilitate the creation and checking of parameters for an API. ApiLib was built in a semi-opinionated way, but was built heavily on
-generics so that it could be applied to many different scenarios. The semi-opinionated nature is as follows: all of the parameters of a request will
-be received in one object (e.g., Map<String, Object>) and some of those parameters MUST be provided (required) and some parameters may or may not be
-provided (optional). Depending on your requirements, this library takes some setup to use in your application, but once this has been taken care of
-your API can be very quickly built. An extension to the library has been created for  `Map<String, Object>` type parameters ([ApiMapParam](
-./src/main/java/io/bhowell2/ApiLib/extensions/map/ApiMapParam.java) -- this further reduces some boilerplate for the user and can be used as an
-example for the user to create an extension specific to their needs/framework if this the Map extension does not suffice.
+![](https://github.com/bhowell2/ApiLib/workflows/build/badge.svg)
+[![codecov](https://codecov.io/gh/bhowell2/ApiLib/branch/master/graph/badge.svg?token=7qiOJ8Vs7G)](https://codecov.io/gh/bhowell2/ApiLib)
+![](https://img.shields.io/maven-central/v/io.github.bhowell2/api-lib)
 
-## Return Objects
-Data classes have been created to return objects from each layer of the library. These, generally, return the successfully
-checked parameter name, or a [ParamError](./src/main/java/io/bhowell2/ApiLib/ParamError.java).
-Whether or not the parameter was successfully checked can be determined by checking `ApiParamCheck.successful()` (or `ApiParamCheck.failed()` could be
- used).
-This was done to avoid having to throw errors since it is quite possible that an API checking library could throw a lot of errors (and thus have a 
-non-trivial impact on performance). These are named `ApiParamCheck`, `ApiObjParamCheck`, `ApiCustomParamCheck`.
+# API Library
+Library to aid API parameter checking. Facilitates rapidly creating a structured API where each parameter will be checked
+to ensure that it meets certain conditions. The list of successfully checked parameters will be returned so that the user
+may be certain which parameters are valid (have met checks). This library assumes that the parameters are stored in an 
+object of type `Map<String, Object>`. It is probably most helpful to think of `Map` and `JsonObject` as synonymous - Java 
+does not have a native `JsonObject` type, but in most libraries the `JsonObject` is backed by `Map<String, Object>`.
 
-**A word of warning that will be reiterated again below. Only trust the ApiObjParamCheck.providedParamNames and not all of the parameters in the
-request if the request passes your ApiObjParam check. This is because you may have set the ApiObjParam to continue on optional failure and the
-optional parameter was invalid (and thus not supplied to `ApiObjParamCheck.providedParamNames`, but is still in the request parameters.**
-
-**The examples below are pretty long, but this is to display the full functionality of the library. Using the map extension (or writing your own)
-helps reduce this a good bit and you really should only be defining parameters and whether or not they are required in the ApiObjParam**.
-
-## Errors
-To keep the return objects as simple as possible, an error will only return what the [error type](./src/main/java/io/bhowell2/ApiLib/ErrorType.java)
-is, the parameter that failed (for object parameters, the parameter name will be of the form 'ParameterName of ObjectParameterName'), and
-an error message with the [ParamError](./src/main/java/io/bhowell2/ApiLib/ParamError.java), which can be conditionally tested for. If an error occurs
-the check short-circuits and returns immediately, propagating all the way to the `ApiObjParam` check.
-
-### ErrorType
-*Invalid* - does not meet check requirements
-*Missing* - was not provided
-*Cast* - was not of correct type
-
-## [ApiParam](./src/main/java/io/bhowell2/ApiLib/ApiParam.java)
-This is the base of the library. Everything is built on top of ApiParams. A [builder](./src/main/java/io/bhowell2/ApiLib/ApiParamBuilder.java)
-is provided to more cleanly and descriptively create a parameter. The `ApiParam` requires a name (string), `CheckFunction`s, and a
-`ParameterRetrievalFunction`. The parameter name will be sent to the `ParameterRetrievalFunction` so that it can be used to retrieve the parameter
-from the object that stores the parameter (e.g., Map).
-
-### [CheckFunc](./src/main/java/io/bhowell2/ApiLib/CheckFunc.java)
-Used to check whether a parameter meets certain conditions. ApiParam may use one or multiple of these to check the parameter. At least one is required
-. Some common check functionality has already been provided for Strings, Doubles, and Integers in [utils](./src/main/java/io/bhowell2/ApiLib/utils).
-This returns [CheckFuncResult](./src/main/java/io/bhowell2/ApiLib/CheckFuncResult.java), which returns whether the parameter passed the check
-or if it failed and the reason for failure.
-
-### [ParamRetrievalFunc](./src/main/java/io/bhowell2/ApiLib/ParamRetrievalFunc.java)
-Used to retrieve the parameter for ApiParam to check from the object that holds the parameters (e.g., Map<String, Object>). This is generic so that
-the user can provide their own retrieval function specific to their needs (it's recommended that the user write some constants and reuse them
-throughout, or extend the library like it has been extended for `Map<String, Object>`). As just noted, the library provides an extension for this for
- parameters that are stored in Map<String, Object> type.
-
-### [ApiParamCheck](./src/main/java/io/bhowell2/ApiLib/ApiParamCheck.java)
-The return value of `ApiParam.check()`. Returns the name of the parameter that was successfully checked or a [ParamError](./src/main/java/io/bhowell2/ApiLib/ParamError.java).
-
-#### Example
-```java
-  // Using Java 8 lambdas
-  // Parameter Type: String
-  // The object to retrieve the parameter from is of type Map<String, Object>
-  ApiParam<String, Map<String, Object>> ApiParam =
-      ApiParamBuilder.builder("ParameterName1", (paramName, map) -> {
-        // ParamRetrievalFunc
-        return (String)map.get(paramName);
-      })
-    .addCheckFunction(StringParamChecks.lengthGreaterThan(5))
-    .addCheckFunction(s -> s.length < 1000) // create your own check function (this one is already provided, but just as a lambda example)
-    .build();
-
-  // Using map extension and provided param checks
-  // The parameter type to be checked is String
-  // The object to retrieve the parameter from is of type Map<String, Object>
-  ApiMapParam<String> ApiMapParam = ApiMapParamBuilder.builder("ParameterName1", String.class)
-    .addCheckFunction(StringParamChecks.lengthGreaterThan(5))
-    .build();
-
-  Map<String, Object> paramsToCheck = new HashMap();
-  paramsToCheck.put("ParameterName1", "long enough");
-
-  ApiParamCheck paramCheck = ApiMapParam.check(paramsToCheck);
-  paramCheck.successful();  // true
-
-  Map<String, Object> badParamsToCheck = new HashMap();
-  badParamsToCheck.put("ParameterName1", "short");
-
-  // If you wanted to check the parameter individually yourself, could do this,
-  // but the ApiObjParam will do all of this for you and you can get the
-  // final result from all of the parameters being checked.
-
-  ApiParamCheck failedParamCheck = ApiMapParam.check(badParamsToCheck);
-  failedParamCheck.successful();      // false
-  faiedParamCheck.getParamError();    // gives name of parameter, error type, and reason for failure
+### Maven
+``` 
+<dependency>
+    <groupId>io.github.bhowell2</groupId>
+    <artifactId>api-lib</artifactId>
+    <version>0.2.0</version>
+</dependency>
 ```
 
-## [ApiObjParam](./src/main/java/io/bhowell2/ApiLib/ApiObjParam.java)
-This is the interface to check all parameters provided to the API. The ApiObjParam is made up of `ApiParam`s, `ApiCustomParam`s, and nested `ApiObjParam`s.
-The top level ApiObjParam does not have a name as it is not actually a parameter in itself, but an object that holds all of the request's parameters.
-Some parameters are required and some parameters are optional - this optionality is specified by the builder or the parameters provided to the
-constructor. [ApiObjParamBuilder](./src/main/java/io/bhowell2/ApiLib/ApiObjParamBuilder.java) has been provided to facilitate the creation of these
-parameters. The ApiObjParam allows the specification of whether or not to fail on optional parameter check failure. The default is false - which is to
- help prevent the user from accidentally using a provided, but invalid, optional parameter in their application code. If all required parameters are
- supplied and pass their checks then the ApiObjParam will return as successfully checked if the optional parameters that are provided have passed
- their checks or `continueOnOptionalFailure` is set to true.
-
-### [ApiObjParamCheck](./src/main/java/io/bhowell2/ApiLib/ApiObjParamCheck.java)
-The return object from checking the ApiObjParam. Provides the list of successfully checked parameter names, the ApiCustomParamCheck for successfully
-checked custom parameters, and the ApiObjParamCheck for successfully checked inner objects. If the check fails, a ParamError is returned (all
-other properties are null) that gives the ErrorType (missing, invalid, cast), a failure message, and the parameter name.
-
-**In your application code it is recommended that you only use the returned list of providedParameterNames.
-This is to ensure that you are only using parameters that have passed the API checks.**
-
-#### Example
-```java
-    // this was taken from one of the tests
-    ParamRetrievalFunc<String, Map<String, Object>> stringRetrievalFunc = (String name, Map<String, Object> map) -> (String)map.get(name);
-
-    ApiParam<String, Map<String, Object>> param1 = ApiParamBuilder.builder("param1", stringRetrievalFunc)
-                                                                  .addCheckFunction(StringParamChecks.lengthGreaterThanOrEqual(2))
-                                                                  .build();
-    ApiParam<String, Map<String, Object>> param2 = ApiParamBuilder.builder("param2", stringRetrievalFunc)
-                                                                  .addCheckFunction(StringParamChecks.lengthGreaterThanOrEqual(5))
-                                                                  .build();
-    ApiParam<String, Map<String, Object>> param3 = ApiParamBuilder.builder("param3", stringRetrievalFunc)
-                                                                  .addCheckFunction(ParamChecks.alwaysPass()) // doesnt matter what it is,
-                                                                  .build();
-
-    ApiParam<String, Map<String, Object>> innerParam1 = ApiParamBuilder.builder("innerParam1", stringRetrievalFunc)
-                                                                  .addCheckFunction(ParamChecks.alwaysPass()) // doesnt matter what it is,
-                                                                  .build();
-
-    ApiObjParam<Map<String, Object>, Map<String, Object>> innerObjParam =
-        ApiObjParamBuilder.builder("innerobj", (String name, Map<String, Object> map) -> (Map<String, Object>) map.get(name))
-                          .addRequiredParam(innerParam1)
-                          .build();
-
-    ApiCustomParam<Map<String, Object>> customParam = (map) -> {
-        // don't really need to worry about cast exception (if used in ApiObjParam as it will catch it)
-        List<String> stringListParam = (List<String>) map.get("customparam");
-        if (stringListParam == null) {
-            return ApiCustomParamCheck.failure(ErrorType.MISSING_PARAMETER, "customparam");
-        } else {
-            // exists, does it meet conditions?
-            // let's say that every string in the list must have a length greater than 5
-            for (String s : stringListParam) {
-                if (s.length() <= 5) {
-                    return ApiCustomParamCheck.failure(ErrorType.INVALID_PARAMETER, "customparam");
-                }
-            }
-            return ApiCustomParamCheck.success("SomeSpecialCustomParamName", new HashSet<>(Arrays.asList("customparam")));
-        }
-    };
-
-    ApiObjParam<Map<String, Object>, Map<String, Object>> rootObjParam =
-        ApiObjParamBuilder.rootObjBuilder((String name, Map<String, Object> map) -> map)    // just return the map since it is the root
-                          .addRequiredParams(param1, param2)
-                          .addOptionalParam(param3)
-                          .addOptionalObjParam(innerObjParam)
-                          .addRequiredCustomParam(customParam)
-                          .build();
-
-    Map<String, Object> innerObjOfRequest = new HashMap<>(1);
-    innerObjOfRequest.put("innerParam1", "whatever");
-    innerObjOfRequest.put("anything", "won't be returned in ApiObjParamCheck, because it is not a parameter that is checked by innerObjParam");
-
-    Map<String, Object> requestParams = new HashMap<>(4);
-    requestParams.put("param1", "long enough");
-    requestParams.put("param2", "long enough too");
-    requestParams.put("param3", "doesn't matter");
-    requestParams.put("customparam", Arrays.asList("long enough", "still long enough"));
-    requestParams.put("innerobj", innerObjOfRequest);
-
-    ApiObjParamCheck check = rootObjParam.check(requestParams);
-    assertTrue(check.successful());
-    assertEquals(5, check.providedParamNames.size());
-    assertEquals(1, check.providedCustomParams.size());
-    assertEquals(1, check.providedObjParams.get("innerobj").providedParamNames.size());
-    assertTrue(check.providedObjParams.get("innerobj").providedParamNames.contains("innerParam1"));
+### Gradle
+```
+dependencies {
+    implementation("io.github.bhowell2:api-lib:0.2.0")
+}
 ```
 
-## [ApiCustomParam](./src/main/java/io/bhowell2/ApiLib/ApiCustomParam.java)
-Allows the user to create their own parameter check(s). This can be used for uncommon conditional checks (e.g., `(P1 &&
-P2) || P3)`) or to check the indices of an array and just about any other use you can think of, but it really should only be used in extenuating
-circumstances or for an array. If you need to use this outside of checking an array and maybe some small conditionals, your API is likely getting too
-complicated. A name is required for the custom parameter to differentiate it from other potential custom parameters in the final returning object. See
- below about what should be returned from the custom parameter check.
+## The Basics
+The entire process is modeled just as you'd create your Map or JsonObject. You just specify the checks for any given
+parameter -- even nested Maps/JsonObjects, made up of other parameters or even more nested Maps! This is just a quick
+overview of the API and a more in depth example is below and also there are plenty of examples in the
+[tests](./src/test/java/io/github/bhowell2/apilib).
 
-### [ApiCustomParamCheck](./src/main/java/io/bhowell2/ApiLib/ApiCustomParamCheck.java)
-Must specify a name for the custom parameter
+### [ApiMapParam](./src/main/java/io/github/bhowell2/apilib/ApiMapParam.java)
+The top level `ApiMapParam` contains [ApiSingleParams](#apisingleparam), nested `ApiMapParam`s, and
+[ApiCollectionParams](#apicollectionparam). The user can also define "custom parameters", but these act like
+the others.
 
-#### Custom Param Conditional Example
+The `ApiMapParam` does not require a `keyName` if it is the root level `ApiMapParam` or if it is used to check the
+indices of an [ApiCollectionParam](#apicollectionparam). The parameters of the request (`Map`/`JsonObject`) are can
+be set such that they are `required` or `optional`.
+
 ```java
-  // Should have both ParameterName1 && ParameterName2 || ParameterName3
-  ApiMapParam<String> ApiMapParam1 = ApiMapParamBuilder.builder("ParameterName1", String.class)
-      .addCheckFunction(StringParamChecks.lengthGreaterThan(5))
-      .build();
+ApiMapParam rootParam = ApiMapParam.builder()
+	.addRequiredSingleParams(...)
+	.addRequiredMapParams(...)
+	.addOptionalCollectionParams(...);
+```
 
-  ApiMapParam<String> ApiMapParam2 = ApiMapParamBuilder.builder("ParameterName2", String.class)
-      .addCheckFunction(StringParamChecks.lengthGreaterThan(5))
-      .build();
+#### [ApiMapParam.Result](./src/main/java/io/github/bhowell2/apilib/ApiMapParam.java)
+This is returned with the successful results or failure information of the `ApiMapParam`. This contains all the
+information necessary for the user to find out which parameters were successfully checked (as well as which nested
+parameters were successfully checked).
 
-  ApiMapParam<String> ApiMapParam3 = ApiMapParamBuilder.builder("ParameterName3", String.class)
-      .addCheckFunction(StringParamChecks.lengthGreaterThan(5))
-      .build();
+In the case of an error an [ApiParamError](#apiparamerror) is returned which allows the user to obtain where and
+(potentially) what caused the failure of the `ApiMapParam` check.
 
+See [full example below](#example) or see [tests](./src/test/java/io/github/bhowell2/apilib) for more examples.
 
-  ApiCustomParam<Map<String, Object>> conditionalCheck = (map) -> {
+### [ApiSingleParam](./src/main/java/io/github/bhowell2/apilib/ApiSingleParam.java)
+This can be any type of parameter. Single parameters have a `keyName`, at least one
+[Check](./src/main/java/io/github/bhowell2/apilib/checks/Check.java) (even if that check is
+`Check.alwaysPass()`) which helps ensure the user did not miss providing a check, an optional `displayName`, an optional
+`invalidErrorMessage` and optional
+[Formatter](./src/main/java/io/github/bhowell2/apilib/formatters/Formatter.java)s.
 
-    ApiParamCheck paramCheck1 = ApiMapParam1.check(map);
-    ApiParamCheck paramCheck2 = ApiMapParam2.check(map);
+The user does not really need to worry about the `ApiSingleParam.Result` as it is handled for the user, but for
+completeness the result either returns `successful` or `failed` where the failure contains the reason of failure.
 
-    if (paramCheck1.successful() && paramCheck2.successful()) {
-      Set<String> providedParamNames = new HashSet<>(Arrays.asList(paramCheck1.parameterName, paramCheck2.parameterName));
-      return ApiCustomParamCheck.success("ConditionalCheck", providedParamNames, null, null);
+```java
+ApiSingleParam<String> username =
+	ApiSingleParam
+	.builder<String>("username")
+	.addChecks(StringChecks.lengthGreaterThan(5), StringChecks.lengthLessThan(100))
+	.build();
+
+public static final ApiSingleParam<String> PASSWORD =
+	ApiSingleParam
+	.builder(BodyParamNames.PASSWORD, String.class)
+	.addChecks(StringChecks.lengthGreaterThan(5),
+	           StringChecks.containsCodePointsInRange(1, "0", "9", false),
+	           StringChecks.lengthLessThan(100))
+	.build();
+```
+
+### [ApiCollectionParam](./src/main/java/io/github/bhowell2/apilib/ApiMapParam.java)
+A list-type collection parameter (not a `Map`). This has two, current, extensions:  
+[ApiListParam](./src/main/java/io/github/bhowell2/apilib/ApiListParam.java) and
+[ApiArrayParam](./src/main/java/io/github/bhowell2/apilib/ApiArrayParam.java). Similar to `ApiSingleParam`,
+`ApiCollectionParam`s have a `keyName` (unless they are nested ApiCollectionChecks).
+
+### Custom Parameters
+There are conditional cases that cannot be handled with the `required` or `optional` parameters of `ApiMapParam`,
+necessitating these custom parameters.The custom parameters provide the user with the ability to check parameters
+in any way they want and (in the case of [ApiCustomParam](#apicustomparam)) return the names of the successfully
+checked parameters.
+
+#### [ApiMapParamConditionalCheck](./src/main/java/io/github/bhowell2/apilib/ApiMapParamConditionalCheck.java)
+These are simpler than [ApiCustomParam](#apicustomparam), because they are binary. They can return that they were
+successful (without returning any parameter key names) or that they failed (returning a failure message).
+
+An example for needing the custom parameter is is the user signing up for `e_billing` but not providing an `email`.
+```java
+ApiMapParamConditionalCheck.Result check(Map<String, Object> params, ApiMapParam.Result result){
+	// return success if e_billing was NOT provided OR it is
+	// provided AND is true AND email was provided
+	if(!result.containsParameter("e_billing")
+	  || (
+	      result.containsParameter("e_billing")
+	      &&
+	      (Boolean)params.get("e_billing")
+      	&&
+      	result.containsParameter("email")
+       )
+	) {
+	  return ApiMapParamConditionalCheck.Result.success();
+	}
+	return ApiMapParamConditionalCheck.Result.failure("Must provide email if e_billing is set to true");
+}	
+```
+
+#### [ApiCustomParam](./src/main/java/io/github/bhowell2/apilib/ApiCustomMapParam.java)
+Similar to `ApiCustomMapParam` this allows to check any values of an `ApiMapParam`, but also allows for returning
+everything all the other `Results` return: checked key names and/or checked collection results and/or checked map results.
+
+Example of the previous `ApiCustomMapParam` as an `ApiCustomParam`:
+```java
+public class CheckEmailWithEbillingParam extends ApiCustomParam { 
+  ApiCustomParam.Result check(Map<String, Object> map) {
+    // keep in mind this isn't even checking the value of email and it should be 
+    // verified that email is actually a valid email (could use a check here)
+    if (map.containsKey("e_billing")) {
+      if ((Boolean)map.get("e_billing") && !map.containsKey("email")) {
+        return ApiCustomParam.Result.failed("Must provide email if e_billing is set to true");
+      }
+      Check.Result emailCheckResult = StringChecks.MATCHES_BASIC_EMAIL_PATTERN(map.get("email"));
+      if (emailCheckResult.failed()) {
+        return ApiCustomParam.Result.success("e_billing", "email");
+      }
     }
-    ApiParamCheck paramCheck3 = ApiMapParam3.check(map);
-    if (paramCheck3.successful()) {
-      Set<String> providedParamNames = new HashSet<>(Arrays.asList(paramCheck3.parameterName));
-      return ApiCustomParamCheck.success("ConditionalCheck", providedParamNames, null, null);
-    }
-
-    // check to see if it just wasnt provided or if they just failed to pass the parameter checks
-    if (paramCheck1.ParamError.errorType == ErrorType.MISSING_PARAMETER && paramCheck2.ParamError.errorType == ErrorType.MISSING_PARAMETER
-        && paramCheck3.ParamError.errorType == ErrorType.MISSING_PARAMETER) {
-      return ApiCustomParamCheck.failure(new ParamError(ErrorType.MISSING_PARAMETER, "ParameterName1 AND ParameterName2 OR ParameterName3 were missing."));
-    }
-    return ApiCustomParamCheck.failure(new ParamError(ErrorType.INVALID_PARAMETER, "ParameterName1 AND ParameterName2 OR ParameterName3 failed to meet API requirements."));
-  };
+    // e_billing was not provided and don't care about email then (this is just 
+    // for demonstration purposes! really, you'd want to still return email if it
+    // provided and the check passes - but you'd be better not doing that in a 
+    // single param check)
+    return ApiCustomParam.Result.success();
+  }
+}
 ```
 
-#### Custom Param Array of Objects Example
+There are more examples (in [ApiCustomParamTests](./src/test/java/io/github/bhowell2/apilib/ApiCustomParamTests.java))
+of using custom parameters and returning more complex information (collections and nested maps).
+
+### [Check](./src/main/java/io/github/bhowell2/apilib/checks/Check.java)
+Checks are used to check the values for `ApiSingleParams` or `ApiCollectionParams`. Many common use case checks have
+already been [provided](./src/main/java/io/github/bhowell2/apilib/checks) (e.g. `StringChecks.lengthLessThan(50)`).
+
+In the case of a failure the check can return a decriptive error message that may be returned to the client.
+E.g., `StringChecks.lengthGreaterThan(5).check("hey")` will return the default error message of the check which
+is "Length must be greater than 5.".
+
+### [ApiParamError](./src/main/java/io/github/bhowell2/apilib/errors/ApiParamError.java)
+This returns the `keyName` of the parameter that caused the check to fail an `errorMessage` that may be returned
+to the client if desired (though care should be taken to not divulge too much information -- generally
+`ApiErrorType.MISSING_PARAMETER` or `ApiErrorType.INVALID_PARAMETER` will be safe to return the `keyName` and
+error message).
+
+The `ApiParamError` also provides information for when the error occurred in a nested `ApiMapParam` via
+`ApiParamError.childParamError`, allowing the user to trace the error to the source. (The user can chain the `keyNames`
+of each error if desired to return to the user.)
+
+If a thrown exception caused the error it can be retrieved with `ApiParamError.exception`.
+
+## Example
+A full example will make things more digestible since there are a few parts to the library.
 ```java
-  // taken from a test
+/*
+This is just a possible way to create parameters, but can be done whichever way the user deems 
+appropriate. However, it is HIGHLY recommended that parameters are created statically. Otherwise,
+there would be a lot of overhead recreating the parameters every time they need to be checked. The 
+classes are thread-safe so long as they do not use a Formatter. If a Formatter is supplied, then 
+it will write back to the Map containing the parameters being checked - generally this should not 
+cause problems because the parameters should not be trusted until they have passed all checks.. 
+This can of course be alleviated if the map is synchronized in some way (e.g.,  
+Collections.synchronizedMap(..) or ConcurrentHashMap). 
+*/
 
-    String customParamName = "AnArrayWithObjectsAsValues";
-    String arrayParamName = "objArray";
-    String param1Name = "param1";
-    String param2Name = "param2";
-    String param3Name = "param3";
+public abstract class ApiRequestBase {
+  
+  public final ApiMapParam rootParam;
+  public final Map<String, Object> requestParams;
+  public final ApiMapParamCheckResult checkResult;
 
-    ApiParam<String, Map<String, Object>> param1 = ApiParamBuilder.builder(param1Name,
-                                                                           (String name, Map<String, Object> map) -> (String) map.get(name))
-                                                                  .addCheckFunction(ParamChecks.alwaysPass())
-                                                                  .build();
+  public ApiBase(ApiMapParam rootParam) { 
+    this.rootParam = rootParam;
+  }
 
-    ApiParam<String, Map<String, Object>> param2 = ApiParamBuilder.builder(param2Name,
-                                                                           (String name, Map<String, Object> map) -> (String) map.get(name))
-                                                                  .addCheckFunction(StringParamChecks.lengthGreaterThanOrEqual(2))
-                                                                  .build();
+  public boolean successful() {
+    return checkResult.successful();
+  }
 
-    ApiParam<Integer, Map<String, Object>> param3 = ApiParamBuilder.builder(param3Name, ApiMapParamRetrievalFuncs.getIntegerFromMap())
-                                                                   .addCheckFunction(IntegerParamChecks.valueGreaterThan(3))
-                                                                   .build();
+  public boolean failed() {
+    return checkResult.failed();
+  }
 
-    ParamRetrievalFunc<Map<String, Object>, Map<String, Object>> mapParamRetrievalFunc = (name, map) -> map;
+  public void check(Map<String, Object> requestParams) {
+    // if you want to access from this class later..
+    this.requestParams = requestParams;
+    this.checkResult = this.rootParam.check(requestParams);
+  }
 
-    ApiObjParam<Map<String, Object>, Map<String, Object>> expectedInnerObject =
-        ApiObjParamBuilder.rootObjBuilder(mapParamRetrievalFunc)
-                          .addRequiredParams(param1, param2, param3)
-                          .build();
+  // this only works for top-level parameters, not for embedded map params
+  public boolean containsParameter(String keyName) {
+    return this.checkResult.containsParameter(keyName);
+  }
 
-    ApiCustomParam<Map<String, Object>> mapApiCustomParam = (requestParameters -> {
-        @SuppressWarnings("unchecked")
-        List<Map<String, Object>> arrayOfObjects = (List<Map<String, Object>>) requestParameters.get(arrayParamName);
-        if (arrayOfObjects == null) {
-            return ApiCustomParamCheck.failure(ErrorType.MISSING_PARAMETER, arrayParamName);
-        }
-        List<ApiObjParamCheck> checkedObjectsOfArray = new ArrayList<>();
-        for (Map<String, Object> map : arrayOfObjects) {
-            ApiObjParamCheck check = expectedInnerObject.check(map);
-            if (check.failed()) {
-                return ApiCustomParamCheck.failure(check.paramError);
-            }
-            checkedObjectsOfArray.add(check);
-        }
-        return ApiCustomParamCheck.success(customParamName, checkedObjectsOfArray);
-    });
+  public ApiMapParamCheckResult getMapParamCheck(String keyName) {
+    return this.checkResult.getMapParamCheck(keyName);
+  }
 
-    Map<String, Object> innerPassingReqObj = new HashMap<>(3);
-    innerPassingReqObj.put(param1Name, "always pass");
-    innerPassingReqObj.put(param2Name, "pass");
-    innerPassingReqObj.put(param3Name, 4);
+}
 
-    Map<String, Object> innerPassingReqObj2 = new HashMap<>(3);
-    innerPassingReqObj2.put(param1Name, "always pass");
-    innerPassingReqObj2.put(param2Name, "pass");
-    innerPassingReqObj2.put(param3Name, 4);
+public class Address {
 
-    List<Map<String, Object>> array = Arrays.asList(innerPassingReqObj, innerPassingReqObj2);
-    Map<String, Object> passingReqParams = new HashMap<>(1);
-    passingReqParams.put(arrayParamName, array);
+  public static class ParamNames {
+    public static final String NAME = "name";
+    public static final String LINE1 = "line1";
+    public static final String LINE2 = "line2";
+    public static final String CITY = "city";
+    public static final String STATE = "state";
+    public static final String ZIP = "zip";
+  }
 
-    ApiCustomParamCheck check = mapApiCustomParam.check(passingReqParams);
-    assertTrue(check.successful());
-    assertEquals(2, check.arrayObjParams.size(), "Array size should be 2. One for each object in array position.");
+  public static final ApiSingleParam<String> LINE1 =
+    ApiSingleParamBuilder.builder(BodyParamNames.LINE1, String.class)
+                         .addChecks(StringChecks.IS_NOT_EMPTY_OR_ONLY_WHITESPACE, StringChecks.lengthGreaterThan(2))
+                         .build();
+
+  public static final ApiSingleParam<String> LINE2 =
+    ApiSingleParamBuilder.builder(BodyParamNames.LINE2, String.class)
+                         .addChecks(Check.alwaysPass(String.class))
+                         .build();
+
+  public static final ApiSingleParam<String> LINE3 =
+    ApiSingleParamBuilder.builder(BodyParamNames.LINE3, String.class)
+                         .addChecks(Check.alwaysPass(String.class))
+                         .build();
+
+  public static final ApiSingleParam<String> CITY =
+    ApiSingleParamBuilder.builder(BodyParamNames.CITY, String.class)
+                         .addChecks(StringChecks.IS_NOT_EMPTY_OR_ONLY_WHITESPACE)
+                         .build();
+
+  // only allowing state abbreviation. e.g., TN
+  public static final ApiSingleParam<String> STATE =
+    ApiSingleParamBuilder.builder(BodyParamNames.STATE, String.class)
+                         .addChecks(StringChecks.lengthEqualTo(2))
+                         .build();
+
+  public static final ApiSingleParam<String> ZIP =
+    ApiSingleParamBuilder.builder(BodyParamNames.ZIP, String.class)
+                         .addChecks(StringChecks.IS_NOT_EMPTY_OR_ONLY_WHITESPACE)
+                         .build();
+
+  /*
+   * There is not a single parameter named "shipping_address", but they are part of an array which
+   * is named "shipping_addresses", so it is a root/unnamed parameter.
+   * */
+  public static final ApiMapParam ADDRESS =
+    ApiMapParamBuilder.rootBuilder()
+                      // if line2 or line 3 is supplied, but they fail for whatever reason still continue (just do not use them)
+                      .setContinueOnOptionalFailure(true)
+                      .addRequiredSingleParams(LINE1, CITY, STATE, ZIP)
+                      .addOptionalSingleParams(LINE2, LINE3)
+                      .build();
+
+}
+
+/*
+  Extends request base from above. Which gives some 
+*/
+public class CreateCustomer extends ApiRequestBase {
+
+  public static class ParamNames {
+    public static final String USERNAME = "username";
+    public static final String PASSWORD = "password";
+    public static final String BILLING_ADDRESS = "billing_address";
+    public static final String SHIPPING_ADDRESSES = "shipping_addresses";
+  }
+
+  public static final ApiSingleParam USERNAME =
+    ApiSingleParamBuilder.builder(ParamNames.USERNAME, String.class)
+                         .addCheck(StringChecks.lengthGreaterThan(5)) // ensure that username length > 5
+                         .addCheck(StringChecks.lengthLessThan(100)) // ensure that username length < 100
+                         // ensures no code point is repeated more than 2 times (e.g., cant have aaauser1)
+                         .addCheck(StringChecks.limitConsecutiveCodePoints(2))
+                         // ensure that only A-z and 0-9 may be supplied for username. 
+                         // does not allow white space (the false)
+                         .addCheck(ConditionalChecks.orCheck(StringChecks.limitCodePointsToRange("A", "z", false),
+                                                             StringChecks.limitCodePointsToRange("0", "9", false)))
+                         .build();
+
+
+  public static final ApiSingleParam PASSWORD =
+    ApiSingleParamBuilder.builder(ParamNames.PASSWORD, String.class)
+                         .addCheck(StringChecks.codePointCountGreaterThan(6))  // must contain 7 or more code points
+                         // must contain at least 2 digits in range 0-9 (repeated digits count)
+                         .addCheck(StringChecks.containsCodePointsInRange(2, "0", "9", false))
+                         // must contain at least 1 of the code points in the string
+                         .addCheck(StringChecks.containsCodePoints(1, "!@#$%^&*()", true))
+                         .build();
+
+  public static final ApiMapParam BILLING_ADDRESS =
+    // copies already created map param, but provides different key name and display name (was actually null)
+    ApiMapParam.builder(ParamNames.BILLING_ADDRESS, "Billing Address", Address.ADDRESS).build();
+
+  /*
+    An ApiCustomParam allows for returning a list of ApiMapParamCheckResult, which correspond to 
+    each position in the provided array/list. This wrapper was created specifically for this case.
+    It simply goes through each position in the array and makes sure that the ApiMapParam successfully 
+    checks each position and returns the ApiMapParamCheckResult for that position so the user can 
+    obtain the list of parameters that were successfully checked for each position.
+  */
+  public static final ApiCustomParam SHIPPING_ADDRESSES =
+    // use checkArray* or checkList* based on the data type
+    ArrayChecks.checkArrayWithMapParams(ParamNames.SHIPPING_ADDRESSES, "Shipping Addresses", Address.ADDRESS);
+
+  /*
+    Creates an ApiMapParam that will ensure valid parameters are supplied for username, password, 
+    and billing_address and optionally that some shipping_addresses are supplied. 
+  */
+  public static final ApiMapParam CREATE_CUSTOMER_MAP_PARAM =
+    ApiMapParam.rootBuilder()
+               .addRequiredSingleParams(USERNAME, PASSWORD)
+               .addRequiredMapParam(BILLING_ADDRESS)
+               .addOptionalCustomParam(SHIPPING_ADDRESSES)
+               .build();
+
+  public CreateCustomer() {
+    super(CREATE_CUSTOMER_MAP_PARAM);
+  }
+
+}
+
+// Example running it
+public class Main {
+
+  public static void main(String[] args) {
+
+    // this example can more or less be seen in ApiMapParamTests - with more cases
+    Map<String, Object> request = new HashMap();
+    request.put(CreateCustomer.ParamNames.USERNAME, "OnlyAThroughZAllowedAnd0Through9");
+    request.put(CreateCustomer.ParamNames.PASSWORD, "a secure pass @ 23");
+
+    Map<String, Object> billingAddress = new HashMap();
+    billingAddress.put(Address.ParamNames.NAME, "A Company LLC");
+    billingAddress.put(Address.ParamNames.LINE1, "1234 Main St.");
+    billingAddress.put(Address.ParamNames.LINE2, "Suite 5");
+    billingAddress.put(Address.ParamNames.CITY, "Memphis");
+    billingAddress.put(Address.ParamNames.ZIP, "12345");
+    billingAddress.put(Address.ParamNames.STATE, "TN");
+
+    request.put(CreateCustomer.ParamNames.BILLING_ADDRESS, billingAddress);
+
+    Map<String, Object>[] shippingAddresses = new Map[2];
+
+    // first shipping address same as billing
+    Map<String, Object> shippingAddress1 = new HashMap();
+    shippingAddress1.put(Address.ParamNames.NAME, "A Company LLC");
+    shippingAddress1.put(Address.ParamNames.LINE1, "1234 Main St.");
+    shippingAddress1.put(Address.ParamNames.LINE2, "Suite 5");
+    shippingAddress1.put(Address.ParamNames.CITY, "Memphis");
+    shippingAddress1.put(Address.ParamNames.ZIP, "12345");
+    shippingAddress1.put(Address.ParamNames.STATE, "TN");
+
+    shippingAddresses[0] = shippingAddress1;
+
+    Map<String, Object> shippingAddress2 = new HashMap();
+    shippingAddress2.put(Address.ParamNames.NAME, "A Company LLC");
+    shippingAddress2.put(Address.ParamNames.LINE1, "100 First St.");
+    shippingAddress2.put(Address.ParamNames.CITY, "Nashville");
+    shippingAddress2.put(Address.ParamNames.ZIP, "54321");
+    shippingAddress2.put(Address.ParamNames.STATE, "TN");
+
+    shippingAddresses[1] = shippingAddress2;
+
+    request.put(CreateCustomer.ParamNames.SHIPPING_ADDRESSES, shippingAddresses);
+
+    // now check it
+    ApiMapParamCheckResult result = CreateCustomer.CREATE_CUSTOMER_MAP_PARAM.check(request);
+
+    boolean status = result.successful();    // true
+
+    Set<String> successfullyCheckedParams = 
+        result.providedParamNames(); // contains: username, password, billing_address, and shipping_addresses
+		// note billing address is a nested map/jsonobject
+    ApiMapParamCheckResult providedBillingParams = 
+        result.getMapParamCheck(CreateCustomer.ParamNames.BILLING_ADDRESS);
+    // note each index of the shipping addresses array is a map/jsonobject
+		// now each index of the result has the correct
+    List<ApiMapParamCheckResult> providedShippingAddressParams = 
+        result.getCustomParamCheck(CreateCustomer.ParamNames.SHIPPING_ADDRESSES);
+    
+  }
+
+}
+
 ```
-
-
-**See tests for more examples.**
