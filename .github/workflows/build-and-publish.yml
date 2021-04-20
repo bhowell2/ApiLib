@@ -14,8 +14,8 @@ jobs:
       - name: test
         run: ./gradlew check
 
-      - name: upload codecov
-        uses: codecov/codecov-action@v1.4.0
+#      - name: upload codecov
+#        uses: codecov/codecov-action@v1.4.0
 
       - name: get version and set version env var
         run: |
