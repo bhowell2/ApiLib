@@ -1,6 +1,5 @@
 package io.github.bhowell2.apilib.checks;
 
-import io.github.bhowell2.apilib.ApiParamError;
 import io.github.bhowell2.apilib.checks.utils.CodePointUtils;
 import io.github.bhowell2.apilib.checks.utils.CollectionUtils;
 import io.github.bhowell2.apilib.checks.utils.IntegerUtils;
@@ -14,14 +13,17 @@ import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 /**
- * Great care must be taken when using string checks in Java (and probably any language..). There are a few articles
- * (see below) the user may want to read to brush up on unicode and how "characters" are represented in the various
- * unicode encodings (e.g., UTF-8, UTF-16). Generally speaking a String in Java should be considered to be in UTF-16
- * (which uses 2 bytes, 16 bits, to represent a character), but as of Java 9 strings may be in an optimized format
- * (called compact. encoding: ISO-8859-1/Latin-1) if they ONLY contain characters that can be represented in 1 byte -
- * this is not too relevant to the string checks here, but is worth mentioning.
+ * Great care must be taken when using string checks in Java (and probably any language..).
+ * There are a few articles (see below) the user may want to read to brush up on unicode and
+ * how "characters" are represented in the various unicode encodings (e.g., UTF-8, UTF-16).
+ * Generally speaking, a String in Java should be considered to be in UTF-16 (which uses 2
+ * bytes, 16 bits, to represent a character), but as of Java 9 strings may be in an optimized
+ * format (called compact. encoding: ISO-8859-1/Latin-1) if they ONLY contain characters that
+ * can be represented in 1 byte - this is not too relevant to the string checks here, but is
+ * worth mentioning.
  *
- * This class will provide checks that help the user handle unicode encodings when checking a string for certain conditions.
+ * This class will provide checks that help the user handle unicode encodings when checking a
+ * string for certain conditions.
  *
  * Unicode Articles:
  * https://www.joelonsoftware.com/2003/10/08/the-absolute-minimum-every-software-developer-absolutely-positively-must-know-about-unicode-and-character-sets-no-excuses/
@@ -35,42 +37,51 @@ import java.util.stream.Collectors;
  *
  * Character    - is an overloaded term than can mean many things.
  *
- * Code point   - is the atomic unit of information. Text is a sequence of code points. Each code point is a number
- *                which is given meaning by the Unicode standard.
+ * Code point   - is the atomic unit of information. Text is a sequence of code points. Each code
+ *                point is a number which is given meaning by the Unicode standard.
  *
- * Code unit    - is the unit of storage of a part of an encoded code point. In UTF-8 this means 8-bits, in UTF-16
- *                this means 16-bits. A single code unit may represent a full code point, or part of a code point.
- *                For example, the snowman glyph (☃) is a single code point but 3 UTF-8 code units, and 1 UTF-16 code unit.
+ * Code unit    - is the unit of storage of a part of an encoded code point. In UTF-8 this means 8-bits,
+ *                in UTF-16 this means 16-bits. A single code unit may represent a full code point, or
+ *                part of a code point. For example, the snowman glyph (☃) is a single code point but 3
+ *                UTF-8 code units, and 1 UTF-16 code unit.
  *
- * Grapheme     - is a sequence of one or more code points that are displayed as a single, graphical unit that a reader
- *                recognizes as a single element of the writing system. For example, both a and ä are graphemes, but
- *                they may consist of multiple code points (e.g. ä may be two code points, one for the base character a
- *                followed by one for the diaresis; but there's also an alternative, legacy, single code point
- *                representing this grapheme). Some code points are never part of any grapheme (e.g. the zero-width
- *                non-joiner, or directional overrides).
+ * Grapheme     - is a sequence of one or more code points that are displayed as a single, graphical unit
+ *                that a reader recognizes as a single element of the writing system. For example, both a
+ *                and ä are graphemes, but they may consist of multiple code points (e.g. ä may be two code
+ *                points, one for the base character a followed by one for the diaresis; but there's also
+ *                an alternative, legacy, single code point representing this grapheme). Some code points
+ *                are never part of any grapheme (e.g. the zero-width non-joiner, or directional overrides).
  *
- * Glyph        - is an image, usually stored in a font (which is a collection of glyphs), used to represent graphemes
- *                or parts thereof. Fonts may compose multiple glyphs into a single representation, for example, if the
- *                above ä is a single code point, a font may chose to render that as two separate, spatially overlaid
- *                glyphs. For OTF, the font's GSUB and GPOS tables contain substitution and positioning information to
- *                make this work. A font may contain multiple alternative glyphs for the same grapheme, too.
+ * Glyph        - is an image, usually stored in a font (which is a collection of glyphs), used to represent
+ *                graphemes or parts thereof. Fonts may compose multiple glyphs into a single representation,
+ *                for example, if the above ä is a single code point, a font may chose to render that as two
+ *                separate, spatially overlaid glyphs. For OTF, the font's GSUB and GPOS tables contain
+ *                substitution and positioning information to make this work. A font may contain multiple
+ *                alternative glyphs for the same grapheme, too.
  *
- * As mentioned in the terms above, a Grapheme may appear to be one character, but could consists of multiple code points,
- * so even the string checks provided below may not work exactly as expected. Generally the user should prefer to use
- * the "codePoint*" functions over non-codePoint functions to handle unicode input better.
+ * As mentioned in the terms above, a Grapheme may appear to be one character, but could consists of
+ * multiple code points, so even the string checks provided below may not work exactly as expected.
+ * Generally the user should prefer to use the "codePoint*" functions over non-codePoint functions to
+ * handle unicode input better.
  *
  * E.g., {@code "🤓".length() = 2}, because it consists of 2 characters.
- * The method {@link String#charAt(int)} will return the individual char at the specified position, but this would not
- * be the actual item that was displayed at what is visibly position 0 (array index notation) of the text sequence in the
- * example, because it actually consists of 2 chars. While 2 chars (32 bits) is plenty to represent all
- * of the codepoints in the unicode standard, some "characters" at a given position in a text sequence are
- * actually a combination of codepoints (grapheme) and are thus more than even 2 chars (data type, 16 bits)..
+ * The method {@link String#charAt(int)} will return the individual char at the specified position, but
+ * this would not be the actual item that was displayed at what is visibly position 0 (array index
+ * notation) of the text sequence in the example, because it actually consists of 2 chars. While 2 chars
+ * (32 bits) is plenty to represent all of the codepoints in the unicode standard, some "characters" at
+ * a given position in a text sequence are actually a combination of codepoints (grapheme) and are thus
+ * more than even 2 chars (data type, 16 bits)..
  *
  * @author Blake Howell
  */
 public final class StringChecks {
 
 	private StringChecks() {} // no instantiation
+
+	/**
+	 * Check to ensure that the parameter is a String.
+	 */
+	public static final Check<String> IS_STRING = Check.alwaysPass(String.class);
 
 	/**
 	 * Check to ensure that the string is empty (i.e., length = 0).
@@ -85,7 +96,7 @@ public final class StringChecks {
 		?
 		Check.Result.success()
 		:
-		Check.Result.failure("Cannot be empty");
+		Check.Result.failure("Cannot be empty.");
 
 	/**
 	 * Check to ensure the string is empty or only contains whitespace.
@@ -185,7 +196,7 @@ public final class StringChecks {
 			if (s.length() > min) {
 				return Check.Result.success();
 			} else {
-				return Check.Result.failure("Length must be greater than " + min);
+				return Check.Result.failure("Length must be greater than " + min + ".");
 			}
 		};
 	}
@@ -204,7 +215,7 @@ public final class StringChecks {
 			if (s.codePointCount(0, s.length()) > min) {
 				return Check.Result.success();
 			} else {
-				return Check.Result.failure("Length must be greater than " + min);
+				return Check.Result.failure("Length must be greater than " + min + ".");
 			}
 		};
 	}
@@ -227,7 +238,7 @@ public final class StringChecks {
 			if (s.length() >= min) {
 				return Check.Result.success();
 			} else {
-				return Check.Result.failure("Length must be greater than or equal to " + min);
+				return Check.Result.failure("Length must be greater than or equal to " + min + ".");
 			}
 		};
 	}
@@ -247,7 +258,7 @@ public final class StringChecks {
 			if (s.codePointCount(0, s.length()) >= min) {
 				return Check.Result.success();
 			} else {
-				return Check.Result.failure("Length must be greater than or equal to " + min);
+				return Check.Result.failure("Length must be greater than or equal to " + min + ".");
 			}
 		};
 	}
@@ -270,7 +281,7 @@ public final class StringChecks {
 			if (s.length() < max) {
 				return Check.Result.success();
 			} else {
-				return Check.Result.failure("Length must be less than " + max);
+				return Check.Result.failure("Length must be less than " + max + ".");
 			}
 		};
 	}
@@ -289,7 +300,7 @@ public final class StringChecks {
 			if (s.codePointCount(0, s.length()) < max) {
 				return Check.Result.success();
 			} else {
-				return Check.Result.failure("Length must be less than " + max);
+				return Check.Result.failure("Length must be less than " + max + ".");
 			}
 		};
 	}
@@ -312,7 +323,7 @@ public final class StringChecks {
 			if (s.length() <= max) {
 				return Check.Result.success();
 			} else {
-				return Check.Result.failure("Length must be less than of equal to " + max);
+				return Check.Result.failure("Length must be less than of equal to " + max + ".");
 			}
 		};
 	}
@@ -332,7 +343,7 @@ public final class StringChecks {
 			if (s.codePointCount(0, s.length()) <= max) {
 				return Check.Result.success();
 			} else {
-				return Check.Result.failure("Length must be less than of equal to " + max);
+				return Check.Result.failure("Length must be less than of equal to " + max + ".");
 			}
 		};
 	}
@@ -355,7 +366,7 @@ public final class StringChecks {
 			if (s.length() == length) {
 				return Check.Result.success();
 			} else {
-				return Check.Result.failure("Length must be equal to " + length);
+				return Check.Result.failure("Length must be equal to " + length + ".");
 			}
 		};
 	}
@@ -374,7 +385,7 @@ public final class StringChecks {
 			if (s.codePointCount(0, s.length()) == length) {
 				return Check.Result.success();
 			} else {
-				return Check.Result.failure("Length must be equal to " + length);
+				return Check.Result.failure("Length must be equal to " + length + ".");
 			}
 		};
 	}
@@ -386,8 +397,9 @@ public final class StringChecks {
 	 */
 	public static Check<String> matchesRegex(Pattern pattern) {
 		if (pattern.pattern().equals("")) {
-			throw new IllegalArgumentException("Cannot create check with empty regex. If an empty string is desired use " +
-				                                   "StringChecks.lengthEqualTo(0) or StringChecks.IS_EMPTY");
+			throw new IllegalArgumentException(
+				"Cannot create check with empty regex. If an empty string is desired use "
+					+ "StringChecks.lengthEqualTo(0) or StringChecks.IS_EMPTY.");
 		}
 		return s -> pattern.matcher(s).matches()
 			?
@@ -753,8 +765,10 @@ public final class StringChecks {
 		IntegerUtils.requireIntGreaterThanOrEqualTo(minCodePoint, maxCodePoint,
 		                                            "Maximum code point must be greater than or equal to the minimum.");
 		if (unique && min > maxCodePoint - minCodePoint + 1) {    // add 1 because range is inclusive
-			throw new IllegalArgumentException("N (" + min + ") cannot be greater than difference between min and max " +
-				                                   "code points if the count must be unique.");
+			throw new IllegalArgumentException(
+				"N (" + min + ") cannot be greater than difference between min and max "
+					+ "code points if the count must be unique."
+			);
 		}
 		return s -> {
 			if (s.length() < min) {
@@ -823,8 +837,9 @@ public final class StringChecks {
 		if (unique) {
 			int codePointCount = mustContainCodePoints.codePointCount(0, mustContainCodePoints.length());
 			if (min > codePointCount) {
-				throw new IllegalArgumentException("Cannot have N greater than the maximum number of code points when the " +
-					                                   "code points must be unique as the check would always fail.");
+				throw new IllegalArgumentException(
+					"Cannot have N greater than the maximum number of code points when the "
+						+ "code points must be unique as the check would always fail.");
 			}
 		}
 		return s -> {
@@ -1041,7 +1056,7 @@ public final class StringChecks {
 			?
 			Check.Result.success()
 			:
-			Check.Result.failure("Must equal on of the following strings: " + acceptableListForFailureMsg);
+			Check.Result.failure("Must equal on of the following strings: " + acceptableListForFailureMsg + ".");
 	}
 
 	public static Check<String> equalsStringIgnoreCase(String... strings) {
@@ -1060,7 +1075,7 @@ public final class StringChecks {
 			?
 			Check.Result.success()
 			:
-			Check.Result.failure("Must equal one of the following strings: " + acceptableListForFailureMsg);
+			Check.Result.failure("Must equal one of the following strings: " + acceptableListForFailureMsg + ".");
 	}
 
 	/**
@@ -1082,8 +1097,7 @@ public final class StringChecks {
 		return s ->
 			notEqualsSet.contains(s)
 				?
-				Check.Result.failure("Cannot be one of the following strings: " +
-					                     unacceptableListForFailureMsg)
+				Check.Result.failure("Cannot be one of the following strings: " + unacceptableListForFailureMsg + ".")
 				:
 				Check.Result.success();
 	}
@@ -1103,7 +1117,7 @@ public final class StringChecks {
 		return s ->
 			lowerCasedNotEqualsSet.contains(s.toLowerCase())
 				?
-				Check.Result.failure("Cannot be one of the following strings: " + unacceptableListForFailureMsg)
+				Check.Result.failure("Cannot be one of the following strings: " + unacceptableListForFailureMsg + ".")
 				:
 				Check.Result.success();
 	}

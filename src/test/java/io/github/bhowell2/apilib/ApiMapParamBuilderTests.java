@@ -2,6 +2,7 @@ package io.github.bhowell2.apilib;
 
 import io.github.bhowell2.apilib.checks.Check;
 import io.github.bhowell2.apilib.checks.StringChecks;
+import io.github.bhowell2.apilib.errors.ApiParamError;
 import org.junit.jupiter.api.Test;
 
 import java.util.Map;

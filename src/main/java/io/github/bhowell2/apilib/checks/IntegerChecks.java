@@ -1,7 +1,5 @@
 package io.github.bhowell2.apilib.checks;
 
-import io.github.bhowell2.apilib.ApiParamError;
-
 import java.util.Arrays;
 import java.util.stream.Collectors;
 
@@ -12,12 +10,17 @@ public final class IntegerChecks {
 
 	private IntegerChecks() {}  // no instantiation
 
+	/**
+	 * Check to ensure the parameter is an Integer.
+	 */
+	public static final Check<Integer> IS_INTEGER = Check.alwaysPass(Integer.class);
+
 	public static Check<Integer> valueGreaterThan(int i) {
 		return input -> {
 			if (input > i) {
 				return Check.Result.success();
 			} else {
-				return Check.Result.failure("Must be greater than " + i);
+				return Check.Result.failure("Must be greater than " + i + ".");
 			}
 		};
 	}
@@ -27,7 +30,7 @@ public final class IntegerChecks {
 			if (input >= i) {
 				return Check.Result.success();
 			} else {
-				return Check.Result.failure("Must be greater than or equal to " + i);
+				return Check.Result.failure("Must be greater than or equal to " + i + ".");
 			}
 		};
 	}
@@ -37,7 +40,7 @@ public final class IntegerChecks {
 			if (input < i) {
 				return Check.Result.success();
 			} else {
-				return Check.Result.failure("Must be less than " + i);
+				return Check.Result.failure("Must be less than " + i + ".");
 			}
 		};
 	}
@@ -47,7 +50,7 @@ public final class IntegerChecks {
 			if (input <= i) {
 				return Check.Result.success();
 			} else {
-				return Check.Result.failure("Must be less than or equal to " + i);
+				return Check.Result.failure("Must be less than or equal to " + i + ".");
 			}
 		};
 	}
@@ -57,7 +60,7 @@ public final class IntegerChecks {
 			if (input == i) {
 				return Check.Result.success();
 			} else {
-				return Check.Result.failure("Must be equal to " + i);
+				return Check.Result.failure("Must be equal to " + i + ".");
 			}
 		};
 	}
@@ -77,7 +80,7 @@ public final class IntegerChecks {
 					return Check.Result.success();
 				}
 			}
-			return Check.Result.failure("Does not equal any of the acceptable integers: " + acceptableListForFailureMsg);
+			return Check.Result.failure("Does not equal any of the acceptable integers: " + acceptableListForFailureMsg + ".");
 		};
 	}
 

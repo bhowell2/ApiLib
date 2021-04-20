@@ -1,5 +1,6 @@
 package io.github.bhowell2.apilib;
 
+import io.github.bhowell2.apilib.errors.ApiParamError;
 import org.junit.jupiter.api.Test;
 
 import java.util.Arrays;

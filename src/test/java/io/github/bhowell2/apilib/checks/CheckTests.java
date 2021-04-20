@@ -21,6 +21,12 @@ public class CheckTests {
 	}
 
 	@Test
+	public void shouldAlwaysPassUnsafeType() throws Exception {
+		assertTrue(Check.alwaysPassUnsafeTyping().check(new Object()).successful());
+		assertTrue(Check.alwaysPassUnsafeTyping().check("").successful());
+	}
+
+	@Test
 	public void shouldAlwaysFail() throws Exception {
 	  assertTrue(Check.alwaysFail().check(new Object()).failed());
 		assertTrue(Check.alwaysFail().check("fail always").failed());

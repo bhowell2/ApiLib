@@ -1,5 +1,7 @@
 package io.github.bhowell2.apilib.formatters;
 
+import java.text.Normalizer;
+
 /**
  * @author Blake Howell
  */
@@ -28,5 +30,27 @@ public final class StringFormatters {
 	};
 
 	public static final Formatter<String, String> TO_UPPERCASE = s -> Formatter.Result.success(s.toUpperCase());
+
+	public static final Formatter<String, String> NORMALIZE_NFC = s ->
+		Formatter.Result.success(Normalizer.normalize(s, Normalizer.Form.NFC));
+
+	public static final Formatter<String, String> NORMALIZE_NFD = s ->
+		Formatter.Result.success(Normalizer.normalize(s, Normalizer.Form.NFD));
+
+	public static final Formatter<String, String> NORMALIZE_NFKC = s ->
+		Formatter.Result.success(Normalizer.normalize(s, Normalizer.Form.NFKC));
+
+	public static final Formatter<String, String> NORMALIZE_NFKD = s ->
+		Formatter.Result.success(Normalizer.normalize(s, Normalizer.Form.NFKD));
+
+
+	public static final Formatter<String, Integer> STRING_TO_INTEGER_FORMATTER =
+		(String s) -> {
+			try {
+				return Formatter.Result.success(Integer.parseInt(s));
+			} catch (Exception e) {
+				return Formatter.Result.failure("Failed to parse integer from string '" + s + "'.");
+			}
+		};
 
 }

@@ -1,9 +1,12 @@
 package io.github.bhowell2.apilib;
 
+import io.github.bhowell2.apilib.checks.ArrayChecks;
 import io.github.bhowell2.apilib.checks.Check;
 import io.github.bhowell2.apilib.checks.DoubleChecks;
 import io.github.bhowell2.apilib.checks.IntegerChecks;
 import io.github.bhowell2.apilib.checks.StringChecks;
+import io.github.bhowell2.apilib.errors.ApiErrorType;
+import io.github.bhowell2.apilib.errors.ApiParamError;
 import io.github.bhowell2.apilib.formatters.Formatter;
 import org.junit.jupiter.api.Test;
 
@@ -673,7 +676,7 @@ public class ApiCollectionParamTests {
 		String key = "key";
 	  ApiArrayParam<Map<String, Object>, String> arrayParam =
 		  ApiArrayParam.<Map<String, Object>, String>builder(key)
-			  .setSizeCheck(IntegerChecks.valueGreaterThan(3))
+			  .addCollectionChecks(ArrayChecks.checkSize(IntegerChecks.valueGreaterThan(3)))
 			  .addIndexChecks(StringChecks.lengthGreaterThan(5))
 			  .build();
 

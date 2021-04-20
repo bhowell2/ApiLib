@@ -3,6 +3,7 @@ package io.github.bhowell2.apilib;
 import io.github.bhowell2.apilib.checks.Check;
 import io.github.bhowell2.apilib.checks.DoubleChecks;
 import io.github.bhowell2.apilib.checks.StringChecks;
+import io.github.bhowell2.apilib.errors.ApiErrorType;
 import io.github.bhowell2.apilib.formatters.Formatter;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -340,6 +341,21 @@ public class ApiSingleParamTests {
 		assertEquals(localKey, checkResultMissing.error.keyName);
 		assertEquals(ApiErrorType.MISSING_PARAMETER, checkResultMissing.error.errorType);
 
+	}
+
+	@Test
+	public void shouldProvideTypingForUnsafeAlwaysPassCheck() throws Exception {
+		String key = "key1";
+		ApiSingleParam<String> param = ApiSingleParam.<String>builder(key)
+		                                             .addChecks(Check.alwaysPassUnsafeTyping())
+		                                             .build();
+		Map<String, Object> map = new HashMap<>();
+		map.put(key, 1);
+		ApiSingleParam.Result result = param.check(map);
+		assertTrue(result.successful());
+		map.put(key, "different type");
+		ApiSingleParam.Result resultDiffType = param.check(map);
+		assertTrue(resultDiffType.successful());
 	}
 
 }

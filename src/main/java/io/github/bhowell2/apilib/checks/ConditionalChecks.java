@@ -6,7 +6,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Provides conditional functionality for checks.
+ * Provides conditional functionality for checks. Note, there is no AND conditional check, because
+ * an AND conditional check would be what occurs when using required parameters.
  * @author Blake Howell
  */
 public final class ConditionalChecks {
@@ -64,38 +65,38 @@ public final class ConditionalChecks {
 		};
 	}
 
-	/**
-	 * Behaves like an XOR gate, which ensures that only one of the checks passes, but not both.
-	 *
-	 * Result:
-	 * Both fail: check fails
-	 * One passes: check passes
-	 * Both pass: check fails
-	 *
-	 * @param failureMessage message to return
-	 * @param check1
-	 * @param check2
-	 * @param <T>
-	 * @return
-	 */
-	static <T> Check<T> xorConditionalCheck(String failureMessage, Check<T> check1, Check<T> check2) {
-		return param -> {
-			Check.Result result1 = check1.check(param);
-			Check.Result result2 = check2.check(param);
-			if (result1.failed() && result2.failed() || (result1.successful() && result2.successful())) {
-				return Check.Result.failure(failureMessage);
-			} else {
-				return Check.Result.success();
-			}
-		};
-	}
+//	/**
+//	 * Behaves like an XOR gate, which ensures that only one of the checks passes, but not both.
+//	 *
+//	 * Result:
+//	 * Both fail: check fails
+//	 * One passes: check passes
+//	 * Both pass: check fails
+//	 *
+//	 * @param failureMessage message to return
+//	 * @param check1
+//	 * @param check2
+//	 * @param <T>
+//	 * @return
+//	 */
+//	static <T> Check<T> xorConditionalCheck(String failureMessage, Check<T> check1, Check<T> check2) {
+//		return param -> {
+//			Check.Result result1 = check1.check(param);
+//			Check.Result result2 = check2.check(param);
+//			if (result1.failed() && result2.failed() || (result1.successful() && result2.successful())) {
+//				return Check.Result.failure(failureMessage);
+//			} else {
+//				return Check.Result.success();
+//			}
+//		};
+//	}
 
 	/**
-	 * Only one of the checks may pass.
-	 * @param failureMessage
-	 * @param checks
-	 * @param <T>
-	 * @return
+	 * Only one of the checks can pass, otherwise the failure message is returned.
+	 * @param failureMessage message returned on failure
+	 * @param checks which checks should exclusively pass one another.
+	 * @param <T> the parameter type
+	 * @return a check that passes if only one of the provided checks passes
 	 */
 	@SafeVarargs
 	static <T> Check<T> exclusiveConditionalCheck(String failureMessage, Check<T>... checks) {

@@ -2,6 +2,8 @@ package io.github.bhowell2.apilib;
 
 import io.github.bhowell2.apilib.checks.Check;
 import io.github.bhowell2.apilib.checks.StringChecks;
+import io.github.bhowell2.apilib.errors.ApiErrorType;
+import io.github.bhowell2.apilib.errors.ApiParamError;
 import org.junit.jupiter.api.Test;
 
 import java.util.ArrayList;
@@ -114,8 +116,6 @@ public class ApiMapParamTests {
 	 *   "phone": "some text",
 	 *   "shipping_addresses": [{...}, {...}, ...]
 	 * }
-	 *
-	 *
 	 */
 	public static class PostAccountInfo {
 
@@ -154,7 +154,7 @@ public class ApiMapParamTests {
 			              .addChecks(StringChecks.lengthGreaterThanOrEqualTo(10))
 			              .build();
 
-		public static final ApiMapParamConditionalCheck REQUIRE_EMAIL_IF_EBILLING_IS_TRUE =
+		public static final ApiMapParamConditionalCheck REQUIRE_EMAIL_IF_E_BILLING_IS_TRUE =
 			(params, checkResult) -> {
 				// ebilling was provided, make sure that if it is set to true that email is provided
 				if (checkResult.checkedKeyNames.contains(BodyParamNames.E_BILLING)) {
@@ -182,7 +182,7 @@ public class ApiMapParamTests {
 			           .addRequiredSingleParams(USERNAME, PASSWORD)
 			           .addOptionalSingleParams(EMAIL, PHONE, E_BILLING)
 			           .addOptionalCollectionParams(SHIPPING_ADDRESSES)
-			           .addConditionalChecks(REQUIRE_EMAIL_IF_EBILLING_IS_TRUE)
+			           .addConditionalChecks(REQUIRE_EMAIL_IF_E_BILLING_IS_TRUE)
 			           .build();
 	}
 
@@ -580,6 +580,27 @@ public class ApiMapParamTests {
 		assertFalse(nestedError.hasChildError());
 		assertTrue(nestedError.hasIndex());
 		assertEquals(1, nestedError.index);
+	}
+
+	@Test
+	public void shouldPassOnEmptyMapCheck() throws Exception {
+		ApiMapParam innerMapParam = ApiMapParam.builder("inner")
+		                                       .build();
+		ApiMapParam parentMapParam = ApiMapParam.builder()
+		                                        .addRequiredMapParams(innerMapParam)
+		                                        .build();
+		Map<String, Object> param = new HashMap<>();
+		param.put("inner", new HashMap<>());
+		ApiMapParam.Result checkResult = parentMapParam.check(param);
+		assertTrue(checkResult.hasCheckedKeyNames());
+		assertTrue(checkResult.hasCheckedMapResults());
+		assertFalse(checkResult.hasCheckedCollectionResults());
+		assertEquals(1, checkResult.checkedKeyNames.size());
+		assertTrue(checkResult.checkedKeyNames.contains("inner"));
+		ApiMapParam.Result innerCheckResult = checkResult.getMapResult("inner");
+		assertFalse(innerCheckResult.hasCheckedKeyNames());
+		assertFalse(innerCheckResult.hasCheckedMapResults());
+		assertFalse(innerCheckResult.hasCheckedCollectionResults());
 	}
 
 }
