@@ -1,5 +1,9 @@
 name: build
-on: [push, pull_request]
+on:
+  push:
+  pull_request:
+  release:
+    types: [published]
 
 jobs:
   # Builds, tests, and releases (if a release) the
@@ -20,29 +24,31 @@ jobs:
       - name: get version and set version env var
         run: |
           echo "PROJECT_VERSION=$(./gradlew properties -q | awk '/^version: / {print $2}')" >> $GITHUB_ENV
-      #          echo "::set-env name=PROJECT_VERSION::$(./gradlew properties -q | awk '/^version: / {print $2}')"
 
       # Only runs if this is a tag and if this is a release
       - name: ensure release tag matches version
-        if: contains(github.ref, '/tags/') && contains(github.ref, '-release')
+        if: github.event_name == 'release' && github.event.action == 'published'
         env:
           ref: ${{ github.ref }}
         run: |
-          test $PROJECT_VERSION == $(echo $ref | awk '{n=split($1,A,"/"); split(A[n],B,"-"); print B[1]}')
+          test $PROJECT_VERSION = $(echo $ref | awk '{n=split($1, A, "/"); gsub(/v/, "", A[n]); print A[n]}')
+#          test $PROJECT_VERSION = $(echo $ref | awk '{n=split($1,A,"/"); split(A[n],B,"-"); gsub(/v/,"", B[1]); print B[1]}')
 
-      - name: release
-        if: contains(github.ref, '/tags/') && contains(github.ref, '-release')
-        uses: actions/create-release@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          tag_name: ${{ env.PROJECT_VERSION }}-release
-          release_name: ${{ env.PROJECT_VERSION }}
-          draft: false
-          prerelease: false
+# creating releases manually for now
+#      - name: release
+#        if: github.event_name == 'release' && github.event.action == 'published'
+##        if: contains(github.ref, '/tags/') && contains(github.ref, '-release')
+#        uses: actions/create-release@v1
+#        env:
+#          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+#        with:
+#          tag_name: ${{ env.PROJECT_VERSION }}-release
+#          release_name: ${{ env.PROJECT_VERSION }}
+#          draft: false
+#          prerelease: false
 
       - name: publish to sonatype
-        if: contains(github.ref, '/tags/') && contains(github.ref, '-release')
+        if: github.event_name == 'release' && github.event.action == 'published'
         env:
           ORG_GRADLE_PROJECT_sonatypeUsername: ${{ secrets.sonatypeUsername }}
           ORG_GRADLE_PROJECT_sonatypePassword: ${{ secrets.sonatypePassword }}
