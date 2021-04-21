@@ -69,15 +69,17 @@ completeness the result either returns `successful` or `failed` where the failur
 
 ```java
 ApiSingleParam<String> username =
-	ApiSingleParam.builder<String>("username")
+	ApiSingleParam
+	.builder<String>("username")
 	.addChecks(StringChecks.lengthGreaterThan(5), StringChecks.lengthLessThan(100))
 	.build();
 
 public static final ApiSingleParam<String> PASSWORD =
-	ApiSingleParam.builder(BodyParamNames.PASSWORD, String.class)
+	ApiSingleParam
+	.builder(BodyParamNames.PASSWORD, String.class)
 	.addChecks(StringChecks.lengthGreaterThan(5),
-	StringChecks.containsCodePointsInRange(1, "0", "9", false),
-	StringChecks.lengthLessThan(100))
+	           StringChecks.containsCodePointsInRange(1, "0", "9", false),
+	           StringChecks.lengthLessThan(100))
 	.build();
 ```
 
@@ -99,21 +101,22 @@ successful (without returning any parameter key names) or that they failed (retu
 
 An example for needing the custom parameter is is the user signing up for `e_billing` but not providing an `email`.
 ```java
-ApiMapParamConditionalCheck.Result check(Map<String, Object> params, ApiMapParam.Result result) {
+ApiMapParamConditionalCheck.Result check(Map<String, Object> params, ApiMapParam.Result result){
 	// return success if e_billing was NOT provided OR it is
 	// provided AND is true AND email was provided
-	if (!result.containsParameter("e_billing")
-	|| (
-	result.containsParameter("e_billing")
-	&&
-	(Boolean)params.get("e_billing")
-	&&
-	result.containsParameter("email")
-	)
+	if(!result.containsParameter("e_billing")
+	  || (
+	      result.containsParameter("e_billing")
+	      &&
+	      (Boolean)params.get("e_billing")
+      	&&
+      	result.containsParameter("email")
+       )
 	) {
-	return ApiMapParamConditionalCheck.Result.success();
+	  return ApiMapParamConditionalCheck.Result.success();
 	}
 	return ApiMapParamConditionalCheck.Result.failure("Must provide email if e_billing is set to true");
+}	
 ```
 
 #### [ApiCustomParam](./src/main/java/io/github/bhowell2/apilib/ApiCustomMapParam.java)
@@ -122,25 +125,25 @@ everything all the other `Results` return: checked key names and/or checked coll
 
 Example of the previous `ApiCustomMapParam` as an `ApiCustomParam`:
 ```java
-public class CheckEmailWithEbillingParam extends ApiCustomParam {
-	ApiCustomParam.Result check(Map<String, Object> map) {
-		// keep in mind this isn't even checking the value of email and it should be 
-		// verified that email is actually a valid email (could use a check here)
-		if (map.containsKey("e_billing")) {
-			if ((Boolean)map.get("e_billing") && !map.containsKey("email")) {
-				return ApiCustomParam.Result.failed("Must provide email if e_billing is set to true");
-			}
-			Check.Result emailCheckResult = StringChecks.MATCHES_BASIC_EMAIL_PATTERN(map.get("email"));
-			if (emailCheckResult.failed()) {
-				return ApiCustomParam.Result.success("e_billing", "email");
-			}
-		}
-		// e_billing was not provided and don't care about email then (this is just 
-		// for demonstration purposes! really, you'd want to still return email if it
-		// provided and the check passes - but you'd be better not doing that in a 
-		// single param check)
-		return ApiCustomParam.Result.success();
-	}
+public class CheckEmailWithEbillingParam extends ApiCustomParam { 
+  ApiCustomParam.Result check(Map<String, Object> map) {
+    // keep in mind this isn't even checking the value of email and it should be 
+    // verified that email is actually a valid email (could use a check here)
+    if (map.containsKey("e_billing")) {
+      if ((Boolean)map.get("e_billing") && !map.containsKey("email")) {
+        return ApiCustomParam.Result.failed("Must provide email if e_billing is set to true");
+      }
+      Check.Result emailCheckResult = StringChecks.MATCHES_BASIC_EMAIL_PATTERN(map.get("email"));
+      if (emailCheckResult.failed()) {
+        return ApiCustomParam.Result.success("e_billing", "email");
+      }
+    }
+    // e_billing was not provided and don't care about email then (this is just 
+    // for demonstration purposes! really, you'd want to still return email if it
+    // provided and the check passes - but you'd be better not doing that in a 
+    // single param check)
+    return ApiCustomParam.Result.success();
+  }
 }
 ```
 
